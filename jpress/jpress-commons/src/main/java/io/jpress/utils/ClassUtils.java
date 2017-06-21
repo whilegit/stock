@@ -43,7 +43,9 @@ public class ClassUtils {
 		}
 
 		List<File> classFileList = new ArrayList<File>();
+		System.out.println("---------getRootClassPath---"+PathKit.getRootClassPath()+"-----------------");
 		scanClass(classFileList, PathKit.getRootClassPath());
+		
 
 		List<Class<T>> classList = new ArrayList<Class<T>>();
 		for (File file : classFileList) {
