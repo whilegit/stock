@@ -100,6 +100,11 @@ public class _AdminController extends JBaseController {
 		}
 	}
 
+	public void unauthority(){
+		setAttr("include", "_unauthority_include.html");
+		render("yjt/unauthority.html");
+	}
+	
 	@Before(UCodeInterceptor.class)
 	public void logout() {
 		CookieUtils.remove(this, Consts.COOKIE_LOGINED_USER);

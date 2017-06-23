@@ -51,6 +51,15 @@ public class JBaseQuery {
 		return needWhere;
 	}
 
+	/**
+	 * 追加sql的条件部分，(colName = ? Or colName = ? ...)
+	 * @param builder 输入输出参数，内含sql语句
+	 * @param colName 输入参数，字段名
+	 * @param array   输入参数，字段colName可能的值列表，sql语句使用or连接。如参数为null时，直接返回输入参数needWhere
+	 * @param params　　输入输出参数，加入绑定的参数列表
+	 * @param needWhere 输入参数，是否要在sql后面加上Where字符串
+	 * @return
+	 */
 	protected static boolean appendIfNotEmpty(StringBuilder builder, String colName, Object[] array,
 			List<Object> params, boolean needWhere) {
 		if (null != array && array.length > 0) {

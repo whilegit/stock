@@ -17,11 +17,15 @@ package io.jpress.admin.controller;
 
 import java.math.BigInteger;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import com.jfinal.aop.Before;
+import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.IAtom;
 import com.jfinal.plugin.activerecord.Page;
@@ -35,6 +39,10 @@ import io.jpress.router.RouterNotAllowConvert;
 import io.jpress.template.TemplateManager;
 import io.jpress.utils.EncryptUtils;
 import io.jpress.utils.StringUtils;
+
+import yjt.core.perm.PermAnnotation;
+import yjt.core.perm.PermGroup;
+import yjt.core.perm.PermKit;
 
 @RouterMapping(url = "/admin/user", viewPath = "/WEB-INF/admin/user")
 @Before(ActionCacheClearInterceptor.class)
@@ -201,6 +209,61 @@ public class _UserController extends JBaseCRUDController<User> {
 		setAttr("include", "_edit_include.html");
 		render("edit.html");
 
+	}
+	
+	@PermAnnotation("perm-edit")
+	public void perm(){
+		BigInteger id = getParaToBigInteger("id");
+		if (id != null) {
+			User user = UserQuery.me().findByIdNoCache(id);
+			if(user != null){
+				String perms = this.getPara("perms");
+				if(StrKit.isBlank(perms) == true){
+					//设置用户权限
+					PermGroup[] permGroups = PermKit.getCopyofPermGroups();
+					String userPermStr = user.getPerm();
+					if(StrKit.notBlank(userPermStr)){
+						//为了freemarker中的预先选中
+						String[] permAry = userPermStr.split(",");
+						List<String> permList = Arrays.asList(permAry);
+						for(PermGroup grp : permGroups){
+							List<PermGroup.Perm> m = grp.getPerms();
+							Iterator<PermGroup.Perm> iter = m.iterator();
+							while(iter.hasNext()){
+								PermGroup.Perm p = iter.next();
+								if(permList.contains(p.getKey())){
+									p.setChecked(true);
+								}else{
+									p.setChecked(false);
+								}
+							}
+						}
+					}
+					setAttr("user", UserQuery.me().findById(id));
+					setAttr("permGroups", permGroups);
+					setAttr("include", "_perm_include.html");
+					render("perm.html");
+					return;
+				}else{
+					//保存用户权限
+					String[] permsFromRemote = perms.split(",");
+					for(String p : permsFromRemote){
+						if(PermKit.isLegalPerm(p) == false){
+							this.renderAjaxResultForError("错误：无法识别的用户权限编码 " + p);
+							return;
+						}
+					}
+					user.setPerm(perms);
+					boolean flag = user.update();
+					if(flag) 
+						this.renderAjaxResultForSuccess();
+					else
+						this.renderAjaxResultForError("错误: 保存权限失败");
+					return;
+				}
+			}
+		}
+		renderText("错误：用户不存在");
 	}
 
 	public void frozen() {

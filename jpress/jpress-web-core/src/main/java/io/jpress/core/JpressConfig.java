@@ -62,6 +62,8 @@ import net.sf.ehcache.config.Configuration;
 import net.sf.ehcache.config.ConfigurationFactory;
 import net.sf.ehcache.config.DiskStoreConfiguration;
 
+import yjt.core.perm.PermInterceptor;
+
 public abstract class JpressConfig extends JFinalConfig {
 
 	static Log log = Log.getLog(JpressConfig.class);
@@ -183,6 +185,7 @@ public abstract class JpressConfig extends JFinalConfig {
 		interceptors.add(new JI18nInterceptor());
 		interceptors.add(new GlobalInterceptor());
 		interceptors.add(new AdminInterceptor());
+		interceptors.add(new PermInterceptor());
 		interceptors.add(new HookInterceptor());
 	}
 

@@ -1,0 +1,10 @@
+# 忽略的文件列表
+.metadata/
+.recommenders/
+.DS_Store
+.classpath
+.project
+.settings
+*.class
+/jpress/bin/*
+/Servers/*

@@ -88,6 +88,7 @@
 							<div class="jp-flash-comment">
 								<p class="row-actions jp-cancel-pad">
 									<span class="approve"> <a class="vim-a" href="${CPATH}/admin/user/edit?id=${bean.id}&c=${c!}&p=${p!}">编辑</a></span>
+									<span class="approve"> <a class="vim-a" href="${CPATH}/admin/user/perm?id=${bean.id}">编辑权限</a> </span>
 									<#if "frozen" != bean.status!> 
 									<span class="spam"> | <a class="vim-s vim-destructive" href="javascript:;" onclick="frozen('${bean.id}')">冻结</a></span> 
 									<#else> 

@@ -243,7 +243,15 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	public java.lang.String getRole() {
 		return get("role");
 	}
+	
+	public void setPerm(java.lang.String perm) {
+		set("perm", perm);
+	}
 
+	public java.lang.String getPerm() {
+		return get("perm");
+	}
+	
 	public void setSignature(java.lang.String signature) {
 		set("signature", signature);
 	}

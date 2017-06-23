@@ -91,6 +91,16 @@ public class UserQuery extends JBaseQuery {
 			}
 		});
 	}
+	
+	/**
+	 * 不访问缓布，从数据库直接加载
+	 * @author lzr
+	 * @param userId
+	 * @return
+	 */
+	public User findByIdNoCache(final BigInteger userId){
+		return DAO.findById(userId);
+	}
 
 	public User findUserByEmail(final String email) {
 		return DAO.getCache(email, new IDataLoader() {

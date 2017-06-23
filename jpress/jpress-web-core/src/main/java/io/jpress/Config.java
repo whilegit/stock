@@ -33,9 +33,9 @@ import io.jpress.ui.freemarker.tag.TagsTag;
 import io.jpress.ui.freemarker.tag.TaxonomyTag;
 import io.jpress.ui.freemarker.tag.TaxonomysTag;
 import io.jpress.ui.freemarker.tag.UsersTag;
+import yjt.core.perm.PermKit;
 
 public class Config extends JpressConfig {
-
 
 	@Override
 	public void onJPressStarted() {
@@ -56,6 +56,9 @@ public class Config extends JpressConfig {
 		Jpress.addFunction("METADATA_CHECKED", new MetadataChecked());
 		Jpress.addFunction("METADATA_SELECTED", new MetadataSelected());
 
+		// 初始化权限管理列表
+		PermKit.init();
+		
 		MessageKit.sendMessage(Actions.JPRESS_STARTED);
 
 	}

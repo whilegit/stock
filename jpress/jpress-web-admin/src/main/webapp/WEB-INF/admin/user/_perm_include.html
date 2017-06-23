@@ -1,0 +1,34 @@
+
+<section class="content-header">
+	<h1>用户权限管理</h1>
+</section>
+<!-- Main content -->
+<section class="content">
+	<div style="padding:5px;">
+		<div>用户名：<span style="color:red;">${user.username}</span>&nbsp;&nbsp;&nbsp;&nbsp;id: <span style="color:red">${user.id}</span>　的权限列表</div>
+	</div>
+	<hr />
+	<table style="width:100%;">
+		<thead>
+			<tr><th width="20%">权限组别</th><th width="80%">内容</th></tr>
+		</thead>
+		<tbody>
+			<#list permGroups as grp>
+			<tr gid="${grp.key}">
+				<td style="border-bottom:1px solid #ccc;padding:5px;">${grp.desc}</td>
+				<td style="border-bottom:1px solid #ccc;padding:5px;">
+					<#list grp.perms as perm>
+					<label>${perm.desc}<input name="${perm.key}" value="${perm.key}" <#if perm.checked=true>checked</#if> type="checkbox"/></label><#sep>&nbsp;&nbsp;&nbsp;</#sep>
+					</#list>
+				</td>
+			</tr>
+			</#list>
+		</tbody>
+	</table>
+	<div style="margin-top:20px;"><button style="padding:5px 30px 5px 30px;" id="update">确 定</button></div>
+</section>
+
+
+
+
+
