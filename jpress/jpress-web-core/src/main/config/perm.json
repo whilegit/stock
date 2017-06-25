@@ -3,20 +3,29 @@
 		"key":"perm",
 		"desc":"权限操作",
 		"perms":[
-			{
-				"key":"perm-edit",
-				"desc":"权限编辑"
-			}
+			{"key":"perm-edit","desc":"权限编辑"}
 		]
 	},
 	{
 		"key":"user",
 		"desc":"用户操作",
 		"perms":[
-			{
-				"key":"user-edit",
-				"desc":"用户编辑"
-			}
+			{"key":"user-edit","desc":"用户编辑(新增)"},
+			{"key":"user-list","desc":"查看用户列表"},
+			{"key":"user-view","desc":"查看用户信息"},
+			{"key":"user-delete","desc":"删除用户"},
+			{"key":"user-frozen","desc":"冻结用户"}
+	     ]
+	},
+	{
+		"key":"contract",
+		"desc":"合约操作",
+		"perms":[
+			{"key":"contract-list","desc":"合约列表"},
+			{"key":"contract-list","desc":"合约统计"},
+			{"key":"contract-create","desc":"创建合约"},
+			{"key":"contract-edit","desc":"编辑合约"},
+			{"key":"contract-edit","desc":"删除合约"}
 		]
 	}
 ]

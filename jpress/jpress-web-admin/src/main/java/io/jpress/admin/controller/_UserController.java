@@ -49,6 +49,7 @@ import yjt.core.perm.PermKit;
 @RouterNotAllowConvert
 public class _UserController extends JBaseCRUDController<User> {
 
+	@PermAnnotation("user-list")
 	public void index() {
 		setAttr("userCount", UserQuery.me().findCount());
 		setAttr("adminCount", UserQuery.me().findAdminCount());
@@ -64,6 +65,7 @@ public class _UserController extends JBaseCRUDController<User> {
 		setAttr("include", "_index_include.html");
 	}
 
+	@PermAnnotation("user-edit")
 	public void edit() {
 		BigInteger id = getParaToBigInteger("id");
 		if (id != null) {
@@ -79,8 +81,12 @@ public class _UserController extends JBaseCRUDController<User> {
 
 	}
 
+	/**
+	 * 编辑或新增用户
+	 * 
+	 */
+	@PermAnnotation("user-edit")
 	public void save() {
-
 		HashMap<String, String> files = getUploadFilesMap();
 		final Map<String, String> metas = getMetas(files);
 
@@ -185,6 +191,7 @@ public class _UserController extends JBaseCRUDController<User> {
 		renderAjaxResultForSuccess("ok");
 	}
 
+	@PermAnnotation("user-view")
 	public void info() {
 		User user = getLoginedUser();
 		if (user != null) {
@@ -291,6 +298,7 @@ public class _UserController extends JBaseCRUDController<User> {
 	}
 
 	@Override
+	@PermAnnotation("user-delete")
 	public void delete() {
 		BigInteger id = getParaToBigInteger("id");
 		if (id == null) {
