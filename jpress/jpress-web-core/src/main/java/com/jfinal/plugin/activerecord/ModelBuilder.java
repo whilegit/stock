@@ -34,6 +34,15 @@ import java.util.Map;
  */
 public class ModelBuilder {
 	
+	/**
+	 * 依据ResultSet装组模型对象
+	 * @param rs
+	 * @param modelClass
+	 * @return
+	 * @throws SQLException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 */
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	public static final <T> List<T> build(ResultSet rs, Class<? extends Model> modelClass) throws SQLException, InstantiationException, IllegalAccessException {
 		List<T> result = new ArrayList<T>();

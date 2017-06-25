@@ -48,6 +48,7 @@ public class AdminMenuInitListener implements MessageListener {
 		menuMnager.addMenuGroup(MenuGroup.createBlockGroup());
 
 		menuMnager.addMenuGroup(createUserMenuGroup());
+		menuMnager.addMenuGroup(createContractMenuGroup());
 		menuMnager.addMenuGroup(createTemplateMenuGroup());
 		menuMnager.addMenuGroup(createAddonMenuGroup());
 		menuMnager.addMenuGroup(createSettingMenuGroup());
@@ -114,9 +115,18 @@ public class AdminMenuInitListener implements MessageListener {
 		MenuGroup group = new MenuGroup("user", "fa fa-user", "用户");
 
 		{
-			group.addMenuItem(new MenuItem("list", "/admin/user", "所有用户"));
+			group.addMenuItem(new MenuItem("list", "/admin/user", "用户列表"));
 			group.addMenuItem(new MenuItem("edit", "/admin/user/edit", "添加"));
 			group.addMenuItem(new MenuItem("info", "/admin/user/info", "我的资料"));
+		}
+		return group;
+	}
+	
+	private MenuGroup createContractMenuGroup(){
+		MenuGroup group = new MenuGroup("user", "fa fa-file-text-o", "合约管理");
+		{
+			group.addMenuItem(new MenuItem("list", "/admin/contract", "合约列表"));
+			group.addMenuItem(new MenuItem("info", "/admin/contract/stat", "合约统计"));
 		}
 		return group;
 	}
