@@ -23,5 +23,4 @@ public class _ContractController extends JBaseCRUDController<Contract>{
 	public void stat(){
 		this.renderText("功能暂时未完成");
 	}
-
 }

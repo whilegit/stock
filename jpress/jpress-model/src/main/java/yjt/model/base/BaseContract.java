@@ -141,18 +141,18 @@ public class BaseContract<M extends BaseContract<M>> extends JModel<M> implement
 		return get("contract_type");
 	}
 
-	public void setCreditId(int creditId) {
+	public void setCreditId(java.math.BigInteger creditId) {
 		set("credit_id", creditId);
 	}
 
-	public int getCreditId() {
+	public java.math.BigInteger getCreditId() {
 		return get("credit_id");
 	}
 
-	public void setDebitId(int debitId){
+	public void setDebitId(java.math.BigInteger debitId){
 		set("debit_id", debitId);
 	}
-	public int getDebitId(){
+	public java.math.BigInteger getDebitId(){
 		return get("debit_id");
 	}
 	
