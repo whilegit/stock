@@ -3,6 +3,7 @@
  */
 package yjt.model.base;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.jfinal.plugin.activerecord.IBean;
@@ -133,40 +134,40 @@ public class BaseContract<M extends BaseContract<M>> extends JModel<M> implement
 		return get("contract_number");
 	}
 
-	public void setContractType(int contractType) {
-		set("contract_type", contractType);
+	public void setContractTypeId(int contractTypeId) {
+		set("contract_type_id", contractTypeId);
 	}
 
-	public int getContractType() {
-		return get("contract_type");
+	public Long getContractTypeId() {
+		return get("contract_type_id");
 	}
 
 	public void setCreditId(java.math.BigInteger creditId) {
 		set("credit_id", creditId);
 	}
 
-	public java.math.BigInteger getCreditId() {
+	public Long getCreditId() {
 		return get("credit_id");
 	}
 
 	public void setDebitId(java.math.BigInteger debitId){
 		set("debit_id", debitId);
 	}
-	public java.math.BigInteger getDebitId(){
+	public Long getDebitId(){
 		return get("debit_id");
 	}
 	
 	public void setAmount(double amount){
 		set("amount", amount);
 	}
-	public double getAmount(){
+	public BigDecimal getAmount(){
 		return get("amount");
 	}
 	
 	public void setAnnualRate(double annualRate ){
 		set("annual_rate", annualRate);
 	}
-	public double getAnnualRate(){
+	public BigDecimal getAnnualRate(){
 		return get("annual_rate");
 	}
 	
@@ -227,7 +228,7 @@ public class BaseContract<M extends BaseContract<M>> extends JModel<M> implement
 	public void setAppovalU1(int approvalU1){
 		set("approval_u1", approvalU1);
 	}
-	public int getAppovalU1(){
+	public Long getAppovalU1(){
 		return get("approval_u1");
 	}
 	public void setApprovalTime1(java.util.Date approvalTime1 ){
@@ -240,7 +241,7 @@ public class BaseContract<M extends BaseContract<M>> extends JModel<M> implement
 	public void setAppovalU2(int approvalU2){
 		set("approval_u2", approvalU2);
 	}
-	public int getAppovalU2(){
+	public Long getAppovalU2(){
 		return get("approval_u2");
 	}
 	public void setApprovalTime2(java.util.Date approvalTime2 ){
@@ -253,7 +254,7 @@ public class BaseContract<M extends BaseContract<M>> extends JModel<M> implement
 	public void setAppovalU3(int approvalU3){
 		set("approval_u3", approvalU3);
 	}
-	public int getAppovalU3(){
+	public Long getAppovalU3(){
 		return get("approval_u3");
 	}
 	public void setApprovalTime3(java.util.Date approvalTime3 ){

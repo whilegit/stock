@@ -25,13 +25,13 @@ public class ContractQuery extends JBaseQuery{
 		boolean needWhere = true;
 		needWhere = appendIfNotEmpty(sqlBuilder, "c.status", status, params, needWhere);
 		
-		sqlBuilder.append(" Limit ?, ?");
+		sqlBuilder.append(" Order By c.id Desc Limit ?, ?");
 		params.add(page -1);
 		params.add(pageSize);
 		if(params.isEmpty()){
 			return DAO.find(sqlBuilder.toString());
 		}else{
-			return DAO.find(sqlBuilder.toString(), params);
+			return DAO.find(sqlBuilder.toString(), params.toArray());
 		}
 	}
 }

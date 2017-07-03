@@ -3,6 +3,8 @@
  */
 package yjt.model;
 
+import java.math.BigInteger;
+
 import io.jpress.model.User;
 import io.jpress.model.core.Table;
 import io.jpress.model.query.UserQuery;
@@ -21,14 +23,14 @@ public class Contract extends BaseContract<Contract>{
 		if(debitUser != null) return debitUser;
 		if (getDebitId() == null) return null;
 
-		debitUser = UserQuery.me().findById(getDebitId());
+		debitUser = UserQuery.me().findById(BigInteger.valueOf(getDebitId()));
 		return debitUser;
 	}
 	
 	public User getCreditUser(){
 		if(creditUser != null) return creditUser;
 		if(getCreditId() == null) return null;
-		creditUser = UserQuery.me().findById(getCreditId());
+		creditUser = UserQuery.me().findById(BigInteger.valueOf(getCreditId()));
 		return creditUser;
 	}
 	
