@@ -5,6 +5,8 @@ package yjt.model;
 
 import java.math.BigInteger;
 
+import com.alibaba.fastjson.JSONObject;
+
 import io.jpress.model.User;
 import io.jpress.model.core.Table;
 import io.jpress.model.query.UserQuery;
@@ -34,10 +36,11 @@ public class Contract extends BaseContract<Contract>{
 		return creditUser;
 	}
 	
-	public Status getEnumStatus(){
-		if(enumStatus != null) return enumStatus;
+	public String getStatusDesc(){
+		if(enumStatus != null) System.out.println(JSONObject.toJSONString(enumStatus));
+		if(enumStatus != null) return enumStatus.getName();
 		enumStatus = Status.getEnum(getStatus());
-		return enumStatus;
+		return enumStatus.getName();
 	}
 	
 	

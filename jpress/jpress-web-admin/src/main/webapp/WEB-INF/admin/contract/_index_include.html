@@ -1,0 +1,48 @@
+<section class="content-header">
+	<h1>
+		所有合约
+	</h1>
+</section>
+
+<!-- Main content -->
+<style>
+.content th{padding:5px 10px;background-color:#ccc;}
+.content td{padding:5px 10px;border-bottom:1px solid #088;}
+</style>
+<section class="content">
+	<table>
+		<thead>
+			<tr>
+				<th>合约编号</th>
+				<th>借款人</th>
+				<th>放款人</th>
+				<th>标的金额</th>
+				<th>年化利率</th>
+				<th>起止日期</th>
+				<th>当前状态</th>
+				<th>合约创建时间</th>
+				<th>风控一</th>
+				<th>风控二</th>
+				<th>风控三</th>
+			</tr>
+		</thead>
+		<tbody>
+		<#list list as c>
+			<tr>
+				<td>${c.contract_number!}</td>
+				<td>${c.debitUser.username!}</td>
+				<td>${c.creditUser.username!}</td>
+				<td>${c.amount!}</td>
+				<td>${c.annual_rate}%</td>
+				<td>${c.value_date}~${c.maturity_date}</td>
+				<td>${c.statusDesc!}</td>
+				<td>${c.create_time!}</td>
+				<td><#if c.approval_u1==0>未审批<#elseif c.approval_u1==-1>已拒绝<#else>已同意</#if></td>
+				<td><#if c.approval_u2==0>未审批<#elseif c.approval_u2==-1>已拒绝<#else>已同意</#if></td>
+				<td><#if c.approval_u3==0>未审批<#elseif c.approval_u3==-1>已拒绝<#else>已同意</#if></td>
+			</tr>
+		</#list>
+		</tbody>
+	</table>
+	
+</section>

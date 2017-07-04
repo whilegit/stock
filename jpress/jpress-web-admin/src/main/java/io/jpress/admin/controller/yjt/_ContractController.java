@@ -21,7 +21,10 @@ public class _ContractController extends JBaseCRUDController<Contract>{
 	@PermAnnotation("contract-list")
 	public void index(){
 		List<Contract> list = ContractQuery.me().findList(1, 10, null);
-		this.renderText(JSONObject.toJSONString(list));
+		setAttr("include", "_index_include.html");
+		setAttr("list", list);
+		render("index.html");
+		//this.renderText(JSONObject.toJSONString(list));
 	}
 	
 	@PermAnnotation("contract-stat")

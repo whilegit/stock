@@ -123,7 +123,7 @@ public class AdminMenuInitListener implements MessageListener {
 	}
 	
 	private MenuGroup createContractMenuGroup(){
-		MenuGroup group = new MenuGroup("user", "fa fa-file-text-o", "合约管理");
+		MenuGroup group = new MenuGroup("contract", "fa fa-file-text-o", "合约管理");
 		{
 			group.addMenuItem(new MenuItem("list", "/admin/contract", "合约列表"));
 			group.addMenuItem(new MenuItem("info", "/admin/contract/stat", "合约统计"));
