@@ -7,42 +7,58 @@
 <!-- Main content -->
 <style>
 .content th{padding:5px 10px;background-color:#ccc;}
-.content td{padding:5px 10px;border-bottom:1px solid #088;}
+.content td{padding:10px 10px;border-bottom:1px solid #088;}
+.bg{background-color:#e8e8e8;}
 </style>
 <section class="content">
 	<table>
 		<thead>
 			<tr>
 				<th>合约编号</th>
-				<th>借款人</th>
-				<th>放款人</th>
+				<th width="8%">借款人</th>
+				<th width="8%">放款人</th>
 				<th>标的金额</th>
 				<th>年化利率</th>
 				<th>起止日期</th>
-				<th>当前状态</th>
+				<th>借款天数</th>
+				<th>还款方式</th>
 				<th>合约创建时间</th>
 				<th>风控一</th>
 				<th>风控二</th>
 				<th>风控三</th>
+				<th>当前状态</th>
+				<th>不良分级</th>
+				<th>操作</th>
 			</tr>
 		</thead>
 		<tbody>
 		<#list list as c>
 			<tr>
 				<td>${c.contract_number!}</td>
-				<td>${c.debitUser.username!}</td>
-				<td>${c.creditUser.username!}</td>
+				<td><a title="${c.debitUser.nickname!}" target="_blank" href="${CPATH}/admin/user/edit?id=${c.debitUser.id!}&p=user&c=list">${c.debitUser.username!}</a></td>
+				<td><a title="${c.creditUser.nickname!}" target="_blank" href="${CPATH}/admin/user/edit?id=${c.creditUser.id!}&p=user&c=list">${c.creditUser.username!}</a></td>
 				<td>${c.amount!}</td>
 				<td>${c.annual_rate}%</td>
-				<td>${c.value_date}~${c.maturity_date}</td>
-				<td>${c.statusDesc!}</td>
+				<td>${c.value_date?string("yyyy-MM-dd")}~${c.maturity_date?string("yyyy-MM-dd")}</td>
+				<td>${c.loan_term!}</td>
+				<td><#if c.repayment_method == 1>按月等额本息<#elseif c.repayment_method == 2>按月等额本金<#elseif c.repayment_method == 3>到期还本付息</#if></td>
+				
 				<td>${c.create_time!}</td>
 				<td><#if c.approval_u1==0>未审批<#elseif c.approval_u1==-1>已拒绝<#else>已同意</#if></td>
 				<td><#if c.approval_u2==0>未审批<#elseif c.approval_u2==-1>已拒绝<#else>已同意</#if></td>
 				<td><#if c.approval_u3==0>未审批<#elseif c.approval_u3==-1>已拒绝<#else>已同意</#if></td>
+				<td>${c.statusDesc!}</td>
+				<td><#switch c.repayment_status><#case 0>N/A<#break><#case 1>正常<#break><#case 2>关注<#break><#case 3>次级<#break><#case 3>可疑<#break><#default>未知<#break></#switch></td>
+				<td><a href="#">编辑</a></td>
 			</tr>
 		</#list>
 		</tbody>
 	</table>
+	<div style="margin-top:20px;">
+		<#if page_index gt 1> <a href="${CPATH}/admin/contract/?p=${p!contract}&c=${c!list}&page=${page_index-1}&pagesize=${page_size!10}">上一页</a> </#if>
+		<span style="text-decoration:underline;font-weight:bold;"> ${page_index!1} </span>
+		<#if page_index lt total_pages><a href="${CPATH}/admin/contract/?p=${p!contract}&c=${c!list}&page=${page_index+1}&pagesize=${page_size!10}">下一页</a></#if>
+		<span> (每页 ${page_size!10} 条记录，共有 ${total_pages} 页) </span>
+	</div>
 	
 </section>
