@@ -23,7 +23,7 @@ public class ContractQuery extends JBaseQuery{
 		LinkedList<Object> params = new LinkedList<Object>();
 		
 		boolean needWhere = true;
-		if(cs != null)
+		if(cs != null && cs != Contract.Status.ALL)
 			needWhere = appendIfNotEmpty(sqlBuilder, "c.status", String.valueOf(cs.getIndex()), params, needWhere);
 		
 		sqlBuilder.append(" Order By c.id Desc Limit ?, ?");

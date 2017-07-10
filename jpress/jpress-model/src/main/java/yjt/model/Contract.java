@@ -45,7 +45,7 @@ public class Contract extends BaseContract<Contract>{
 	
 	public static enum Status{
 		//状态，0合约初订立（贷方资金冻结），1风控一批准，2风控二批准，3风控三批准，4资金划转前关闭，5资金划转成功贷款正式进入还款期，6正常结束，7展期, 8损失,
-		INIT("合约初订立", 0), RISK1("风控1", 1), RISK2("风控2", 3), RISK3("风控3", 3), CLOSE("合约关闭", 4), 
+		INIT("合约初订立", 0), RISK1("风控1", 1), RISK2("风控2", 2), RISK3("风控3", 3), CLOSE("合约关闭", 4), 
 		ESTABLISH("生效", 5), FINISH("正常结束", 6), EXTEND("展期", 7), LOST("损失", 8),ALL("全部",100);
 		private String name;
 		private int index;
