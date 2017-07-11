@@ -27,6 +27,15 @@
 			        <option value="${StatusLOSTCode}" <#if status == StatusLOSTCode>selected</#if>>${StatusLOSTName}</option>
 			    </select>
 		    </label>
+		    <label>&nbsp;&nbsp;合约编号
+		    	<input name="contract_number" class="form-inline" value="${contract_number!}" placeholder="输入合约编号">
+		    </label>
+		    <label>&nbsp;&nbsp;借款人
+		    	<input name="debit_account" class="form-inline" value="${debit_account!}" placeholder="借款人帐号">
+		    </label>
+		    <label>&nbsp;&nbsp;放款人
+		    	<input name="credit_account" class="form-inline" value="${credit_account!}" placeholder="放款人帐号">
+		    </label>
 		    <input class="btn btn-primary btn-sm" type="submit" name="search" value="搜索">
     	</div>
 		<table>

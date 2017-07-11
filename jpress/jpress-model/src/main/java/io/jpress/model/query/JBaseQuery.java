@@ -78,6 +78,18 @@ public class JBaseQuery {
 		return needWhere;
 	}
 
+	/**
+	 * 只生成sql的条件部分(and)，不添加where
+	 * @author lzr
+	 */
+	protected static void appendAndIfNotEmpty(StringBuilder builder, String colName, String value, List<Object> params){
+		if(value != null){
+			if(params.size() > 0) builder.append(" And ");
+			builder.append(" ").append(colName).append(" = ? ");
+			params.add(value);
+		}
+	}
+	
 	protected static boolean appendIfNotEmptyWithLike(StringBuilder builder, String colName, String value,
 			List<Object> params, boolean needWhere) {
 		if (StringUtils.isNotBlank(value)) {
