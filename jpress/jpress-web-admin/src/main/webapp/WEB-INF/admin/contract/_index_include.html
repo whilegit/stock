@@ -76,7 +76,7 @@
 					<td><#if c.approval_u3==0>未审批<#elseif c.approval_u3==-1>已拒绝<#else>已同意</#if></td>
 					<td>${c.statusDesc!}</td>
 					<td><#switch c.repayment_status><#case 0>N/A<#break><#case 1>正常<#break><#case 2>关注<#break><#case 3>次级<#break><#case 3>可疑<#break><#default>未知<#break></#switch></td>
-					<td><a href="#">编辑</a></td>
+					<td><a href="${CPATH}/admin/contract/edit?cid=${c.id!0}&p=contract&c=list">编辑</a></td>
 				</tr>
 			</#list>
 			</tbody>

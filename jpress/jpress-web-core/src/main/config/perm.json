@@ -22,10 +22,10 @@
 		"desc":"合约操作",
 		"perms":[
 			{"key":"contract-list","desc":"合约列表"},
-			{"key":"contract-list","desc":"合约统计"},
+			{"key":"contract-stat","desc":"合约统计"},
 			{"key":"contract-create","desc":"创建合约"},
 			{"key":"contract-edit","desc":"编辑合约"},
-			{"key":"contract-edit","desc":"删除合约"}
+			{"key":"contract-delete","desc":"关闭合约"}
 		]
 	}
 ]

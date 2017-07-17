@@ -3,7 +3,6 @@ package io.jpress.admin.controller.yjt;
 import java.math.BigInteger;
 import java.util.List;
 
-import com.alibaba.fastjson.JSONObject;
 import com.jfinal.aop.Before;
 import com.jfinal.kit.StrKit;
 
@@ -80,6 +79,19 @@ public class _ContractController extends JBaseCRUDController<Contract>{
 		
 		setAttr("include", "_index_include.html");
 		render("index.html");
+	}
+	
+	@PermAnnotation("contract-edit")
+	public void edit(){
+		int cid =  (getPara("cid") != null) ? Integer.parseInt(getPara("cid")) : 0;
+		Contract contract = ContractQuery.me().findById(BigInteger.valueOf(cid));
+		if(contract == null) {
+			this.renderError(-1);
+			return;
+		}
+		setAttr("contract", contract);
+		setAttr("include", "_edit_include.html");
+		render("edit.html");
 	}
 	
 	@PermAnnotation("contract-stat")

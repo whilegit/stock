@@ -6,6 +6,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.jfinal.kit.StrKit;
+import com.jfinal.plugin.ehcache.IDataLoader;
+
+import io.jpress.model.User;
 import io.jpress.model.query.JBaseQuery;
 import yjt.model.Contract;
 
@@ -67,5 +70,9 @@ public class ContractQuery extends JBaseQuery{
 		}else{
 			return DAO.doFindCount(sqlBuilder.toString(), params.toArray());
 		}
+	}
+	
+	public Contract findById(final BigInteger id) {
+		return DAO.findById(id);
 	}
 }
