@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Aug 11, 2017 at 01:18 PM
+-- Generation Time: Aug 11, 2017 at 03:17 PM
 -- Server version: 5.7.18
 -- PHP Version: 5.4.16
 
@@ -66,18 +66,21 @@ CREATE TABLE IF NOT EXISTS `jpress_user` (
   `create_source` varchar(128) DEFAULT NULL COMMENT '用户来源（可能来之oauth第三方）',
   `logged` datetime DEFAULT NULL COMMENT '最后的登录时间',
   `activated` datetime DEFAULT NULL COMMENT '激活时间',
-  `member_token` varchar(32) DEFAULT NULL COMMENT '【新增】用户令牌，由app使用'
+  `member_token` varchar(32) DEFAULT NULL COMMENT '【新增】用户令牌，由app使用',
+  `score` int(11) NOT NULL DEFAULT '0' COMMENT '积分',
+  `debits` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '【新增】总计借入资金(即负债)，实时状态，明细查看contract表',
+  `credits` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '总计贷出资金(即资产)，【新增】明细查看contract表'
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COMMENT='用户信息表，保存用户信息。';
 
 --
 -- Dumping data for table `jpress_user`
 --
 
-INSERT INTO `jpress_user` (`id`, `username`, `nickname`, `realname`, `password`, `salt`, `email`, `email_status`, `mobile`, `mobile_status`, `telephone`, `amount`, `gender`, `role`, `perm`, `signature`, `content_count`, `comment_count`, `qq`, `wechat`, `weibo`, `facebook`, `linkedin`, `birthday`, `company`, `occupation`, `address`, `zipcode`, `site`, `graduateschool`, `education`, `avatar`, `idcardtype`, `idcard`, `status`, `created`, `create_source`, `logged`, `activated`, `member_token`) VALUES
-(1, 'yjt', 'testttestss', NULL, '68f2741f481f237fe0d60b3d7faaa20f4807898cf1dfbdd756431b4f62146a27', '7acbd2b84e93e9ef4', '6215714@qq.com', NULL, '18968596872', NULL, NULL, '0.00', NULL, 'administrator', 'perm-edit', 'xxx', 1, 0, '6215714', NULL, 'while1', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '/attachment/20170615/4b04908922884382b3f2362948ea54f4.jpg', NULL, NULL, 'activited', '2017-06-06 23:14:30', NULL, '2017-07-17 23:00:48', NULL, ''),
-(2, 'admin', 'admin1-nick', NULL, '5a7612c7e12f83d58f1f185a6c32bae01c37cfb385f26129408ad9bcc6693b32', '7b68edf4fd70f076160', 'admin@yjt.com', NULL, '123456789', NULL, NULL, '0.00', NULL, 'visitor', 'user-edit', 'none', 1, 0, '6215714', NULL, 'aaa', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'activited', '2017-06-20 23:33:04', NULL, '2017-06-20 23:33:05', NULL, ''),
-(3, 'test01', 'test01nick', '张三', '123456', 'abcd', '11@qq.com', 'y', '13811111111', 'y', '01011111111', '0.00', '1', 'visitor', 'contract-list', '哥是个传说', 0, 0, '1111111', 'wechat_111', NULL, NULL, NULL, '2000-11-01 00:00:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'activited', NULL, NULL, NULL, NULL, ''),
-(4, 'test02', 'test02nick', '李四', '123456', 'abcd', '22@qq.com', 'y', '13822222222', 'y', '01022222222', '0.00', '2', 'visitor', '', '姐是个传说', 0, 0, '22222222', 'wechat_111', NULL, NULL, NULL, '2000-11-02 00:00:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'activited', NULL, NULL, NULL, NULL, '');
+INSERT INTO `jpress_user` (`id`, `username`, `nickname`, `realname`, `password`, `salt`, `email`, `email_status`, `mobile`, `mobile_status`, `telephone`, `amount`, `gender`, `role`, `perm`, `signature`, `content_count`, `comment_count`, `qq`, `wechat`, `weibo`, `facebook`, `linkedin`, `birthday`, `company`, `occupation`, `address`, `zipcode`, `site`, `graduateschool`, `education`, `avatar`, `idcardtype`, `idcard`, `status`, `created`, `create_source`, `logged`, `activated`, `member_token`, `score`, `debits`, `credits`) VALUES
+(1, 'yjt', 'testttestss', '林忠仁', '68f2741f481f237fe0d60b3d7faaa20f4807898cf1dfbdd756431b4f62146a27', '7acbd2b84e93e9ef4', '6215714@qq.com', NULL, '18968596872', NULL, NULL, '0.00', '1', 'administrator', 'perm-edit', 'xxx', 1, 0, '6215714', NULL, 'while1', NULL, NULL, '2000-07-11 00:00:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '/attachment/20170615/4b04908922884382b3f2362948ea54f4.jpg', NULL, NULL, 'activited', '2017-06-06 23:14:30', NULL, '2017-07-17 23:00:48', NULL, 'ddc52f54c343d3df8f15609be04f2a4b', 0, '10.00', '0.33'),
+(2, 'admin', 'admin1-nick', NULL, '5a7612c7e12f83d58f1f185a6c32bae01c37cfb385f26129408ad9bcc6693b32', '7b68edf4fd70f076160', 'admin@yjt.com', NULL, '123456789', NULL, NULL, '0.00', NULL, 'visitor', 'user-edit', 'none', 1, 0, '6215714', NULL, 'aaa', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'activited', '2017-06-20 23:33:04', NULL, '2017-06-20 23:33:05', NULL, '', 0, '0.00', '0.00'),
+(3, 'test01', 'test01nick', '张三', '123456', 'abcd', '11@qq.com', 'y', '13811111111', 'y', '01011111111', '0.00', '1', 'visitor', 'contract-list', '哥是个传说', 0, 0, '1111111', 'wechat_111', NULL, NULL, NULL, '2000-11-01 00:00:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'activited', NULL, NULL, NULL, NULL, '', 0, '0.00', '0.00'),
+(4, 'test02', 'test02nick', '李四', '123456', 'abcd', '22@qq.com', 'y', '13822222222', 'y', '01022222222', '0.00', '2', 'visitor', '', '姐是个传说', 0, 0, '22222222', 'wechat_111', NULL, NULL, NULL, '2000-11-02 00:00:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'activited', NULL, NULL, NULL, NULL, '', 0, '0.00', '0.00');
 
 --
 -- Indexes for dumped tables
