@@ -21,6 +21,11 @@ public class ApiBaseController extends BaseFrontController{
 		this.renderJson(art);
 	}
 	
+	protected void memberTokenFail(){
+		ApiReturnType art = getReturnJson(Code.TIMEOUT, "memberToken失效", EMPTY_OBJECT);
+		this.renderJson(art);
+	}
+	
 	
 	protected ApiReturnType getReturnJson(Code errno, Object data){
 		return getReturnJson(errno, EMPTY_STRING, data);
