@@ -16,6 +16,12 @@ public class ApiBaseController extends BaseFrontController{
 		return art;
 	}
 	
+	protected void accessTokenFail(){
+		ApiReturnType art = getReturnJson(Code.ERROR, "accessToken失效", EMPTY_OBJECT);
+		this.renderJson(art);
+	}
+	
+	
 	protected ApiReturnType getReturnJson(Code errno, Object data){
 		return getReturnJson(errno, EMPTY_STRING, data);
 	}
@@ -53,7 +59,7 @@ public class ApiBaseController extends BaseFrontController{
 	
 	//json返回成功与否的success标志位
 	protected static enum Code{
-		OK("成功",1), ERROR("失败",1), TIMEOUT("登陆失效",-1);
+		OK("成功",1), ERROR("失败",0), TIMEOUT("登陆失效",-1);
 		private String name;
 		private int index;
 	    private Code(String name, int index) {  
