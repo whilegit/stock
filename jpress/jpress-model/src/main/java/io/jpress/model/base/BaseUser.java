@@ -443,5 +443,37 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	public java.util.Date getActivated() {
 		return get("activated");
 	}
+	
+	public void setMemberToken(String memberToken){
+		set("member_token", memberToken);
+	}
+	public String getMemberToken(){
+		return get("member_token");
+	}
+	
+	public void setScore(java.lang.Integer score){
+		set("score", score);
+	}
+	
+	public java.lang.Integer getScore(){
+		return get("score");
+	}
+	
+	public void setCredits(java.math.BigDecimal credits){
+		set("credits", credits);
+	}
+	
+	public java.math.BigDecimal getCredits(){
+		return get("credits");
+	}
+	
+	public void setDebits(java.math.BigDecimal debits){
+		set("debits", debits);
+	}
+	
+	public java.math.BigDecimal getDebits(){
+		return get("debits");
+	}
+	
 
 }
