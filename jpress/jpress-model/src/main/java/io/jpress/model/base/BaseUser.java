@@ -458,22 +458,4 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	public java.lang.Integer getScore(){
 		return get("score");
 	}
-	
-	public void setCredits(java.math.BigDecimal credits){
-		set("credits", credits);
-	}
-	
-	public java.math.BigDecimal getCredits(){
-		return get("credits");
-	}
-	
-	public void setDebits(java.math.BigDecimal debits){
-		set("debits", debits);
-	}
-	
-	public java.math.BigDecimal getDebits(){
-		return get("debits");
-	}
-	
-
 }
