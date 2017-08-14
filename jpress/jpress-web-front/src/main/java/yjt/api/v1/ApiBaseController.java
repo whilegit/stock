@@ -1,5 +1,7 @@
 package yjt.api.v1;
 
+import java.util.Random;
+
 import io.jpress.core.BaseFrontController;
 
 public class ApiBaseController extends BaseFrontController{
@@ -26,6 +28,16 @@ public class ApiBaseController extends BaseFrontController{
 		this.renderJson(art);
 	}
 	
+    protected static String getRandomString(int length) { //length表示生成字符串的长度  
+        String base = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";     
+        Random random = new Random();     
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < length; i++) {
+            int number = random.nextInt(base.length());
+            sb.append(base.charAt(number));
+        }
+        return sb.toString();     
+     }     
 	
 	protected ApiReturnType getReturnJson(Code errno, Object data){
 		return getReturnJson(errno, EMPTY_STRING, data);

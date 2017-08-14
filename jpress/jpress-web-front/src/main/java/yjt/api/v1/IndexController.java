@@ -49,8 +49,11 @@ public class IndexController extends ApiBaseController {
 			profile.put("score", ""+user.getScore());
 			profile.put("income", ""+income);
 			profile.put("outcome", ""+outcome);
-			profile.put("memberToken", user.getMemberToken());
-					
+			
+			String memberToken = getRandomString(32);
+		    user.setMemberToken(memberToken);
+		    user.update();
+		    profile.put("memberToken", memberToken);
 			renderJson(getReturnJson(Code.OK, "", profile));
 		}else{
 			renderJson(getReturnJson(Code.ERROR, "手机号码或密码错误", EMPTY_OBJECT));
