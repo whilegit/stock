@@ -12,7 +12,9 @@ import io.jpress.model.query.UserQuery;
 import io.jpress.router.RouterMapping;
 import io.jpress.utils.EncryptUtils;
 import io.jpress.utils.StringUtils;
+import yjt.model.Follow;
 import yjt.model.query.ContractQuery;
+import yjt.model.query.FollowQuery;
 
 @RouterMapping(url="/v1")
 @Before(AccessTokenInterceptor.class)
@@ -95,4 +97,60 @@ public class IndexController extends ApiBaseController {
 		
 		renderJson(getReturnJson(Code.OK, "", profile));
 	}
+	
+	@Before(MemberTokenInterceptor.class)
+	public void followUser(){
+		BigInteger memberID = getParaToBigInteger("memberID");
+		BigInteger userID = getParaToBigInteger("userID");
+		User user = UserQuery.me().findByIdNoCache(userID);
+		if(user == null){
+			renderJson(getReturnJson(Code.ERROR, "用户不存在", EMPTY_OBJECT));
+			return;
+		}
+		boolean flag = false;
+		Follow follow = FollowQuery.me().getFollow(userID, memberID);
+		if(follow == null){
+			//新建一条关注
+			follow = getModel(Follow.class);
+			follow.setFollowedId(userID);
+			follow.setFollowerId(memberID);
+			follow.setStatus(Follow.Status.FOLLOWED.getIndex());
+			follow.setChangeTime(new Date());
+			boolean f = follow.save();
+			if(f == false) {
+				renderJson(getReturnJson(Code.ERROR, "新建关注失败", EMPTY_OBJECT));
+				return;
+			}
+			flag = true;
+		}else if(follow.getStatus() == Follow.Status.UNFOLLOWED.getIndex()){
+			//现在关注对方
+			follow.setStatus(Follow.Status.FOLLOWED.getIndex());
+			follow.setChangeTime(new Date());
+			boolean f =follow.update();
+			if(f == false) {
+				renderJson(getReturnJson(Code.ERROR, "重新关注失败", EMPTY_OBJECT));
+				return;
+			}
+			flag = true;
+		}else{
+			//现在取消关注
+			follow.setStatus(Follow.Status.UNFOLLOWED.getIndex());
+			follow.setChangeTime(new Date());
+			boolean f =follow.update();
+			if(f == false) {
+				renderJson(getReturnJson(Code.ERROR, "取消关注失败", EMPTY_OBJECT));
+				return;
+			}
+			flag = false;
+		}
+		HashMap<String, Object> profile = new HashMap<String, Object>();
+		profile.put("userID", userID.toString());
+		profile.put("userName", user.getRealname());
+		profile.put("userAvatar", user.getAvatar());
+		profile.put("userMobile", user.getMobile());
+		profile.put("isFollowed", flag ? "1" : "0");
+
+		renderJson(getReturnJson(Code.OK, "", profile));
+	}
+	
 }
