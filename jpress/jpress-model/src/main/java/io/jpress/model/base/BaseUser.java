@@ -145,7 +145,8 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	}
 
 	public java.lang.String getUsername() {
-		return get("username");
+		String username = get("username");
+		return username != null ? username : "";
 	}
 
 	public void setNickname(java.lang.String nickname) {
@@ -161,7 +162,8 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	}
 
 	public java.lang.String getRealname() {
-		return get("realname");
+		String realname = get("realname");
+		return realname != null ? realname : "";
 	}
 
 	public void setPassword(java.lang.String password) {
@@ -385,7 +387,8 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	}
 
 	public java.lang.String getAvatar() {
-		return get("avatar");
+		String avatar = get("avatar");
+		return avatar != null ? avatar : "";
 	}
 
 	public void setIdcardtype(java.lang.String idcardtype) {
