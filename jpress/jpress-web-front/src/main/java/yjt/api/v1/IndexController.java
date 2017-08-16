@@ -1,11 +1,13 @@
 package yjt.api.v1;
 
 import java.math.BigInteger;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 
 import com.jfinal.aop.Before;
+import com.jfinal.kit.StrKit;
 
 import io.jpress.model.User;
 import io.jpress.model.query.UserQuery;
@@ -35,23 +37,7 @@ public class IndexController extends ApiBaseController {
 			return;
 		}
 		if(EncryptUtils.verlifyUser(user.getPassword(), user.getSalt(), password)){
-			double income = ContractQuery.me().queryDebits(user.getId());
-			double outcome = ContractQuery.me().queryCredits(user.getId());
-			Date birthday = user.getBirthday();
-			String birthdayStr = (birthday != null) ? sdfYmd.format(birthday) : "";
-			
-			HashMap<String, Object> profile = new HashMap<String, Object>();
-			profile.put("memberID", user.getId().toString());
-			profile.put("avatar", user.getAvatar());
-			profile.put("mobile", user.getMobile());
-			profile.put("nickname", user.getNickname());
-			profile.put("name", user.getRealname());
-			profile.put("gender", user.getGender());
-			profile.put("birthday", birthdayStr);
-			profile.put("score", ""+user.getScore());
-			profile.put("income", ""+income);
-			profile.put("outcome", ""+outcome);
-			
+			HashMap<String, Object> profile = user.getProfile();
 			String memberToken = getRandomString(32);
 		    user.setMemberToken(memberToken);
 		    user.update();
@@ -153,4 +139,44 @@ public class IndexController extends ApiBaseController {
 		renderJson(getReturnJson(Code.OK, "", profile));
 	}
 	
+	@Before(MemberTokenInterceptor.class)
+	public void updateUser(){
+		BigInteger memberID = getParaToBigInteger("memberID");
+		String avatar = getPara("avatar");
+		String nickname = getPara("nickname");
+		String name = getPara("name");
+		String gender = getPara("gender");
+		String birthday = getPara("birthday");
+		
+		User user = UserQuery.me().findByIdNoCache(memberID);
+		if(StrKit.notBlank(avatar))	user.setAvatar(avatar);
+		if(StrKit.notBlank(nickname)) user.setNickname(nickname);
+		if(StrKit.notBlank(name)) user.setRealname(name);
+		if(StrKit.notBlank(gender))	{
+			int gendexInt = Integer.parseInt(gender);
+			if(gendexInt < 0 || gendexInt >2){
+				renderJson(getReturnJson(Code.ERROR, "性别设置错误", EMPTY_OBJECT));
+				return;
+			}
+			user.setGender(gender);
+		}
+		if(StrKit.notBlank(birthday)){
+			Date birthdayDate = null;
+			try {
+				birthdayDate = sdfYmd.parse(birthday);
+				user.setBirthday(birthdayDate);
+			} catch (ParseException e) {
+				renderJson(getReturnJson(Code.ERROR, "出生年月格式错误", EMPTY_OBJECT));
+				return;
+			}
+		}
+		boolean flag = user.update();
+		if(flag){
+			HashMap<String, Object> profile = user.getProfile();
+			renderJson(getReturnJson(Code.OK, "", profile));
+		}else{
+			renderJson(getReturnJson(Code.ERROR, "更新失败", EMPTY_OBJECT));
+			return;
+		}
+	}
 }

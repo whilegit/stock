@@ -15,10 +15,14 @@
  */
 package io.jpress.model;
 
+import java.math.BigInteger;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 
 import io.jpress.model.base.BaseUser;
 import io.jpress.model.core.Table;
+import yjt.model.query.ContractQuery;
 
 @Table(tableName = "user", primaryKey = "id")
 public class User extends BaseUser<User> {
@@ -28,6 +32,8 @@ public class User extends BaseUser<User> {
 	public static final String STATUS_NORMAL = "normal";
 	public static final String STATUS_FROZEN = "frozen";
 
+	protected static final SimpleDateFormat sdfYmd = new SimpleDateFormat("yyyy-MM-dd");
+	
 	public boolean isAdministrator() {
 		return ROLE_ADMINISTRATOR.equals(getRole());
 	}
@@ -64,6 +70,29 @@ public class User extends BaseUser<User> {
 
 	public String getUrl() {
 		return "/user/" + getId();
+	}
+	
+	public HashMap<String, Object> getProfile(){
+		HashMap<String, Object> profile = new HashMap<String, Object>();
+		BigInteger id = getId();
+		double income = ContractQuery.me().queryDebits(id);
+		double outcome = ContractQuery.me().queryCredits(id);
+		Date birthday = getBirthday();
+		String birthdayStr = (birthday != null) ? sdfYmd.format(birthday) : "";
+		
+		
+		profile.put("memberID", id.toString());
+		profile.put("avatar", getAvatar());
+		profile.put("mobile", getMobile());
+		profile.put("nickname", getNickname());
+		profile.put("name", getRealname());
+		profile.put("gender", getGender());
+		profile.put("birthday", birthdayStr);
+		profile.put("score", ""+getScore());
+		profile.put("income", ""+income);
+		profile.put("outcome", ""+outcome);
+		
+		return profile;
 	}
 
 }
