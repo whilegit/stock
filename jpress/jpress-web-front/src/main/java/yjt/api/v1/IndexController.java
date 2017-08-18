@@ -5,6 +5,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import com.jfinal.aop.Before;
 import com.jfinal.kit.StrKit;
@@ -37,7 +38,7 @@ public class IndexController extends ApiBaseController {
 			return;
 		}
 		if(EncryptUtils.verlifyUser(user.getPassword(), user.getSalt(), password)){
-			HashMap<String, Object> profile = user.getProfile();
+			HashMap<String, Object> profile = user.getMemberProfile();
 			String memberToken = getRandomString(32);
 		    user.setMemberToken(memberToken);
 		    user.update();
@@ -135,7 +136,6 @@ public class IndexController extends ApiBaseController {
 		profile.put("userAvatar", user.getAvatar());
 		profile.put("userMobile", user.getMobile());
 		profile.put("isFollowed", flag ? "1" : "0");
-
 		renderJson(getReturnJson(Code.OK, "", profile));
 	}
 	
@@ -172,11 +172,113 @@ public class IndexController extends ApiBaseController {
 		}
 		boolean flag = user.update();
 		if(flag){
-			HashMap<String, Object> profile = user.getProfile();
+			HashMap<String, Object> profile = user.getMemberProfile();
 			renderJson(getReturnJson(Code.OK, "", profile));
 		}else{
 			renderJson(getReturnJson(Code.ERROR, "更新失败", EMPTY_OBJECT));
 			return;
 		}
+	}
+	
+	/**
+	 * eachFollowed  0:关注自己的（粉丝）  1:相互关注    2:自己关注的
+	 */
+	@Before(MemberTokenInterceptor.class)
+	public void searchUser(){
+		BigInteger memberID = getParaToBigInteger("memberID");
+		if(memberID == null){
+			renderJson(getReturnJson(Code.ERROR, "参数错误", EMPTY_OBJECT));
+			return;
+		}
+		User member = UserQuery.me().findByIdNoCache(memberID);
+		if(member == null){
+			renderJson(getReturnJson(Code.ERROR, "登陆用户不存在", EMPTY_OBJECT));
+			return;
+		}
+		String mobile = getPara("mobile");
+		Integer eachFollowed = this.getParaToInt("eachFollowed");
+		
+		if(eachFollowed != null){
+			if(eachFollowed != 0 || eachFollowed != 1 || eachFollowed != 2){
+				renderJson(getReturnJson(Code.ERROR, "关注参数错误", EMPTY_OBJECT));
+				return;
+			}
+			//以下需要包装成 {'result':[{'userID':'xxx'...},{'userID':'xxx'...}]}
+			HashMap<String, Object> data = new HashMap<String, Object>();
+			
+			BigInteger[] ids = null;
+			BigInteger[] fans = FollowQuery.me().getFollowerList(memberID);
+			BigInteger[] tops = FollowQuery.me().getFollowedList(memberID);
+			BigInteger[] each = FollowQuery.me().getEachFollowList(fans, tops);
+			
+			if(eachFollowed == 1){           //相互关注
+				ids = each;
+			} else if(eachFollowed == 0)  {  //关注自己的（粉丝）
+				ids = fans;
+			} else {                         //自己关注的
+				ids = tops;
+			}
+			List<User> list = UserQuery.me().findList(ids);
+			if(list == null || (list != null && list.size() == 0)){
+				data.put("result", EMPTY_ARRAY);
+				renderJson(getReturnJson(Code.OK, "", data));
+				return;
+			}else{
+				int num = list.size();
+				@SuppressWarnings("rawtypes")
+				HashMap[] profiles = new HashMap[num];
+				for(int i = 0; i<num; i++){
+					User u = list.get(i);
+					HashMap<String, Object> profile = u.getUserProfile(false);
+					if(eachFollowed == 1 || eachFollowed == 2)
+						profile.put("isFollowed", "1");
+					else{
+						//自己的粉丝不一定关注自己, 要进一步查看
+						boolean flag = false;
+						BigInteger uid = u.getId();
+						for(BigInteger bi : each){
+							if(uid.equals(bi)){
+								flag = true;
+								break;
+							}
+						}
+						profile.put("isFollowed", flag? "1" : "0");
+					}
+					profiles[i] = profile;
+				}
+				data.put("result", profiles);
+				renderJson(getReturnJson(Code.OK, "", data));
+				return;
+			}
+		} else if(StrKit.notBlank(mobile)){
+			if(isMobile(mobile)){
+				HashMap<String, Object> data = new HashMap<String, Object>();
+				//以下需要包装成 {'result':[{'userID':'xxx'...},{'userID':'xxx'...}]}
+				User user = UserQuery.me().findUserByMobile(mobile);
+				if(user == null){
+					data.put("result", EMPTY_ARRAY);
+					renderJson(getReturnJson(Code.OK, "用户不存在", data));
+					return;
+				}
+				HashMap<String, Object> profile = user.getUserProfile(false);
+				//是否已关注刚被搜索出来的对方
+				Follow follow = FollowQuery.me().getFollow(user.getId(), member.getId());
+				String flw = (follow != null && follow.getStatus() == Follow.Status.UNFOLLOWED.getIndex()) ? "1" : "0";
+				profile.put("isFollowed", flw);
+				@SuppressWarnings("rawtypes")
+				HashMap[] profiles = new HashMap[1];
+				profiles[0] = profile;
+				data.put("result", profiles);
+				renderJson(getReturnJson(Code.OK, "", data));
+				return;
+			}else{
+				renderJson(getReturnJson(Code.ERROR, "手机号码错误", EMPTY_OBJECT));
+				return;
+			}
+		} else {
+			renderJson(getReturnJson(Code.ERROR, "无参数错误", EMPTY_OBJECT));
+			return;
+		}
+		
 	}
 }

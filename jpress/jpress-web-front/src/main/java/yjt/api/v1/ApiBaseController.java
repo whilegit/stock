@@ -1,6 +1,10 @@
 package yjt.api.v1;
 
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.jfinal.kit.StrKit;
 
 import io.jpress.core.BaseFrontController;
 
@@ -41,6 +45,16 @@ public class ApiBaseController extends BaseFrontController{
 	
 	protected ApiReturnType getReturnJson(Code errno, Object data){
 		return getReturnJson(errno, EMPTY_STRING, data);
+	}
+	
+	protected static Pattern MOBILE_PATTERN = Pattern.compile("/^1[345789][0-9]{9}$/");
+	protected static boolean isMobile(String mobile){
+		boolean ret = false;
+		if(StrKit.notBlank(mobile)){
+			Matcher m = MOBILE_PATTERN.matcher(mobile);
+			ret = m.matches();
+		}
+		return ret;
 	}
 	
 	public class ApiReturnType{

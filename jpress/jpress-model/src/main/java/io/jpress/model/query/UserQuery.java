@@ -57,6 +57,18 @@ public class UserQuery extends JBaseQuery {
 		}
 
 	}
+	
+	public List<User> findList(BigInteger[] ids){
+		if(ids == null) return null;
+		if(ids.length == 0) return null;
+		StringBuilder bd = new StringBuilder();
+		for(int i = 0; i<ids.length; i++){
+			if(i != 0) bd.append(",");
+			bd.append(ids[i].toString());
+		}
+		StringBuilder sqlBuilder = new StringBuilder("select u.* from user u Where u.id in ("+bd.toString()+")");
+		return DAO.find(sqlBuilder.toString());
+	}
 
 	public User findFirstFromMetadata(String key, Object value) {
 //		return DAO.findFirstFromMetadata(key, value);
