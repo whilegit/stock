@@ -41,6 +41,7 @@ public class FollowQuery extends JBaseQuery{
 		StringBuilder sqlBuilder = new StringBuilder("select * from follow f ");
 		LinkedList<Object> params = new LinkedList<Object>();
 		appendIfNotEmpty(sqlBuilder, "f.followed_id", toId.toString(), params, true);
+		appendIfNotEmpty(sqlBuilder, "f.status", "1", params, false);
 		return DAO.find(sqlBuilder.toString(), params.toArray());
 	}
 	
@@ -67,6 +68,7 @@ public class FollowQuery extends JBaseQuery{
 		StringBuilder sqlBuilder = new StringBuilder("select * from follow f ");
 		LinkedList<Object> params = new LinkedList<Object>();
 		appendIfNotEmpty(sqlBuilder, "f.follower_id", fromId.toString(), params, true);
+		appendIfNotEmpty(sqlBuilder, "f.status", "1", params, false);
 		return DAO.find(sqlBuilder.toString(), params.toArray());
 	}
 	
