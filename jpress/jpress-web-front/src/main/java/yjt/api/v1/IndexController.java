@@ -199,7 +199,7 @@ public class IndexController extends ApiBaseController {
 		Integer eachFollowed = this.getParaToInt("eachFollowed");
 		
 		if(eachFollowed != null){
-			if(eachFollowed != 0 || eachFollowed != 1 || eachFollowed != 2){
+			if(eachFollowed != 0 && eachFollowed != 1 && eachFollowed != 2){
 				renderJson(getReturnJson(Code.ERROR, "关注参数错误", EMPTY_OBJECT));
 				return;
 			}
@@ -213,10 +213,10 @@ public class IndexController extends ApiBaseController {
 			
 			if(eachFollowed == 1){           //相互关注
 				ids = each;
-			} else if(eachFollowed == 0)  {  //关注自己的（粉丝）
-				ids = fans;
-			} else {                         //自己关注的
+			} else if(eachFollowed == 0)  {  //自己关注的
 				ids = tops;
+			} else {                         //关注自己的（粉丝）
+				ids = fans;
 			}
 			List<User> list = UserQuery.me().findList(ids);
 			if(list == null || (list != null && list.size() == 0)){
@@ -230,7 +230,7 @@ public class IndexController extends ApiBaseController {
 				for(int i = 0; i<num; i++){
 					User u = list.get(i);
 					HashMap<String, Object> profile = u.getUserProfile(false);
-					if(eachFollowed == 1 || eachFollowed == 2)
+					if(eachFollowed == 0 || eachFollowed == 1)
 						profile.put("isFollowed", "1");
 					else{
 						//自己的粉丝不一定关注自己, 要进一步查看

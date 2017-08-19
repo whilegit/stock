@@ -47,7 +47,7 @@ public class ApiBaseController extends BaseFrontController{
 		return getReturnJson(errno, EMPTY_STRING, data);
 	}
 	
-	protected static Pattern MOBILE_PATTERN = Pattern.compile("/^1[345789][0-9]{9}$/");
+	protected static Pattern MOBILE_PATTERN = Pattern.compile("^1[345789][0-9]{9}$");
 	protected static boolean isMobile(String mobile){
 		boolean ret = false;
 		if(StrKit.notBlank(mobile)){

@@ -50,12 +50,12 @@ public class FollowQuery extends JBaseQuery{
 	 * @return
 	 */
 	public BigInteger[] getFollowerList(BigInteger toId){
-		ArrayList<BigInteger> ary = new ArrayList<BigInteger>();
-		List<Follow> fans = getFollowedFrom(toId);
-		for(Follow f : fans ){
-			ary.add(f.getFollowerId());
+		List<Follow> fans = getFollowerTo(toId);
+		BigInteger[] ret = new BigInteger[fans.size()];
+		for(int i = 0; i<fans.size(); i++ ){
+			ret[i] = fans.get(i).getFollowerId();
 		}
-		return (BigInteger[]) ary.toArray();
+		return ret;
 	}
 	
 	/**
@@ -76,12 +76,12 @@ public class FollowQuery extends JBaseQuery{
 	 * @return
 	 */
 	public BigInteger[] getFollowedList(BigInteger fromId){
-		ArrayList<BigInteger> ary = new ArrayList<BigInteger>();
 		List<Follow> tops = getFollowedFrom(fromId);
-		for(Follow t : tops ){
-			ary.add(t.getFollowedId());
+		BigInteger[] ret = new BigInteger[tops.size()];
+		for(int i = 0; i<tops.size(); i++ ){
+			ret[i] = tops.get(i).getFollowedId();
 		}
-		return (BigInteger[]) ary.toArray();
+		return ret;
 	}
 	
 	/** 
@@ -108,7 +108,8 @@ public class FollowQuery extends JBaseQuery{
 				}
 			}
 		}
-		return (BigInteger[]) ary.toArray();
+		BigInteger[] ret = new BigInteger[ary.size()];
+		return ary.toArray(ret);
 	}
 	
 	/**
@@ -128,6 +129,7 @@ public class FollowQuery extends JBaseQuery{
 				}
 			}
 		}
-		return (BigInteger[]) ary.toArray();
+		BigInteger[] ret = new BigInteger[ary.size()];
+		return ary.toArray(ret);
 	}
 }
