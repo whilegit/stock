@@ -147,6 +147,10 @@ public class IndexController extends ApiBaseController {
 		String name = getPara("name");
 		String gender = getPara("gender");
 		String birthday = getPara("birthday");
+		Integer sysPush = getParaToInt("sysPush");
+		Integer salePush = getParaToInt("salePush");
+		Integer inPush = getParaToInt("inPush");
+		Integer outPush = getParaToInt("outPush");
 		
 		User user = UserQuery.me().findByIdNoCache(memberID);
 		if(StrKit.notBlank(avatar))	user.setAvatar(avatar);
@@ -170,6 +174,11 @@ public class IndexController extends ApiBaseController {
 				return;
 			}
 		}
+		if(sysPush != null && (sysPush == 0 || sysPush == 1))  user.setSysPush(sysPush);
+		if(salePush != null && (salePush == 0 || salePush == 1))  user.setSalePush(salePush);
+		if(inPush != null && (inPush == 0 || inPush == 1))  user.setInPush(inPush);
+		if(outPush != null && (outPush == 0 || outPush == 1))  user.setOutPush(outPush);
+
 		boolean flag = user.update();
 		if(flag){
 			HashMap<String, Object> profile = user.getMemberProfile();
@@ -279,6 +288,5 @@ public class IndexController extends ApiBaseController {
 			renderJson(getReturnJson(Code.ERROR, "无参数错误", EMPTY_OBJECT));
 			return;
 		}
-		
 	}
 }

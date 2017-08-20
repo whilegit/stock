@@ -461,4 +461,44 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	public java.lang.Integer getScore(){
 		return get("score");
 	}
+	
+	public void setCanBorrowMoney(java.lang.Integer canBorrowMoney){
+		set("canBorrowMoney", canBorrowMoney);
+	}
+	
+	public java.lang.Integer getCanBorrowMoney(){
+		return get("canBorrowMoney");
+	}
+	
+	public void setSysPush(java.lang.Integer sysPush){
+		set("sysPush", sysPush);
+	}
+	
+	public java.lang.Integer getSysPush(){
+		return get("sysPush");
+	}
+	
+	public void setSalePush(java.lang.Integer salePush){
+		set("salePush", salePush);
+	}
+	
+	public java.lang.Integer getSalePush(){
+		return get("salePush");
+	}
+	
+	public void setInPush(java.lang.Integer inPush){
+		set("inPush", inPush);
+	}
+	
+	public java.lang.Integer getInPush(){
+		return get("inPush");
+	}
+	
+	public void setOutPush(java.lang.Integer outPush){
+		set("outPush", outPush);
+	}
+	
+	public java.lang.Integer getOutPush(){
+		return get("outPush");
+	}
 }

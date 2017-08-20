@@ -80,7 +80,6 @@ public class User extends BaseUser<User> {
 		Date birthday = getBirthday();
 		String birthdayStr = (birthday != null) ? sdfYmd.format(birthday) : "";
 		
-		
 		profile.put("memberID", id.toString());
 		profile.put("avatar", getAvatar());
 		profile.put("mobile", getMobile());
@@ -91,6 +90,11 @@ public class User extends BaseUser<User> {
 		profile.put("score", ""+getScore());
 		profile.put("income", ""+income);
 		profile.put("outcome", ""+outcome);
+		profile.put("canBorrowMoney", ""+getCanBorrowMoney());
+		profile.put("sysPush", ""+getSysPush());
+		profile.put("salePush", ""+getSalePush());
+		profile.put("inPush", ""+getInPush());
+		profile.put("outPush", ""+getOutPush());
 		
 		return profile;
 	}
