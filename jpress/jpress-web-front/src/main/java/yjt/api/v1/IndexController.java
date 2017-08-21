@@ -289,4 +289,16 @@ public class IndexController extends ApiBaseController {
 			return;
 		}
 	}
+
+	
+	public void validMobile(){
+		String mobile = getPara("mobile");
+		if(StrKit.isBlank(mobile)){
+			renderJson(getReturnJson(Code.ERROR, "手机号格式错误", EMPTY_OBJECT));
+			return;
+		}
+		Code code = isMobile(mobile) ? Code.OK : Code.ERROR;
+		renderJson(getReturnJson(code, "", EMPTY_OBJECT));
+		return;
+	}
 }
