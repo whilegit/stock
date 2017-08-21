@@ -313,4 +313,38 @@ public class IndexController extends ApiBaseController {
 		return;
 	}
 	
+	@Before(MemberTokenInterceptor.class)
+	public void updatePwd(){
+		BigInteger memberID = getParaToBigInteger("memberID");
+		String oldPwd = getPara("oldPwd");
+		String newPwd = getPara("newPwd");
+		if(!StrKit.notBlank(oldPwd, newPwd)){
+			renderJson(getReturnJson(Code.ERROR, "参数不能为空", EMPTY_OBJECT));
+			return;
+		}
+		
+		newPwd = newPwd.trim();
+		if(newPwd.length() < 6){
+			renderJson(getReturnJson(Code.ERROR, "新密码不少于6位", EMPTY_OBJECT));
+			return;
+		}
+		
+		oldPwd = oldPwd.trim();
+		User member = UserQuery.me().findByIdNoCache(memberID);
+		if(!EncryptUtils.verlifyUser(member.getPassword(), member.getSalt(), oldPwd)){
+			renderJson(getReturnJson(Code.ERROR, "原密码错误", EMPTY_OBJECT));
+			return;
+		}
+		HashMap<String, Object> profile = member.getMemberProfile();
+		
+		String salt = EncryptUtils.salt();
+		member.setPassword(EncryptUtils.encryptPassword(newPwd, salt));
+		member.setSalt(salt);
+		String newMemberToken = getRandomString(32);
+		member.setMemberToken(newMemberToken);
+		member.update();
+		renderJson(getReturnJson(Code.OK, "", profile));
+		return;
+	}
+	
 }
