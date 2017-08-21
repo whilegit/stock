@@ -289,7 +289,6 @@ public class IndexController extends ApiBaseController {
 			return;
 		}
 	}
-
 	
 	public void validMobile(){
 		String mobile = getPara("mobile");
@@ -301,4 +300,17 @@ public class IndexController extends ApiBaseController {
 		renderJson(getReturnJson(code, "", EMPTY_OBJECT));
 		return;
 	}
+	
+	public void existsMobile(){
+		String mobile = getPara("mobile");
+		if(StrKit.isBlank(mobile)){
+			renderJson(getReturnJson(Code.ERROR, "手机号格式错误", EMPTY_OBJECT));
+			return;
+		}
+		User user = UserQuery.me().findUserByMobile(mobile);
+		Code code = (user != null) ? Code.OK : Code.ERROR;
+		renderJson(getReturnJson(code, "", EMPTY_OBJECT));
+		return;
+	}
+	
 }
