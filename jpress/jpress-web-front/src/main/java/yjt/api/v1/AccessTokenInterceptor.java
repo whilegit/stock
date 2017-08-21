@@ -5,10 +5,13 @@ import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.alibaba.fastjson.JSONObject;
 import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.Invocation;
 import com.jfinal.kit.StrKit;
+import com.jfinal.upload.MultipartRequest;
 
 public class AccessTokenInterceptor implements Interceptor{
 
@@ -18,7 +21,7 @@ public class AccessTokenInterceptor implements Interceptor{
 		// TODO Auto-generated method stub
 		boolean pass = false;
 
-		String accessToken = inv.getController().getPara("accessToken");
+		String accessToken = ((ApiBaseController)(inv.getController())).getPara("accessToken");
 		if(StrKit.notBlank(accessToken)){
 			SimpleDateFormat sdf=new SimpleDateFormat("yyyy/MM/dd");
 			String today = sdf.format(new Date());
@@ -30,7 +33,7 @@ public class AccessTokenInterceptor implements Interceptor{
 		if(pass) inv.invoke();
 		else {
 			ApiBaseController bc = (ApiBaseController) inv.getController();
-			bc.accessTokenFail();
+			bc.accessTokenFail(accessToken);
 		}
 	}
 	

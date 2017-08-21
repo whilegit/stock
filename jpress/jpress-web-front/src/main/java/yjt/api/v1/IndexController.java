@@ -7,20 +7,25 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import com.alibaba.fastjson.JSONObject;
 import com.jfinal.aop.Before;
 import com.jfinal.kit.StrKit;
+import com.jfinal.upload.UploadFile;
 
+import io.jpress.model.Attachment;
 import io.jpress.model.User;
 import io.jpress.model.query.UserQuery;
 import io.jpress.router.RouterMapping;
+import io.jpress.utils.AttachmentUtils;
 import io.jpress.utils.EncryptUtils;
+import io.jpress.utils.FileUtils;
 import io.jpress.utils.StringUtils;
 import yjt.model.Follow;
 import yjt.model.query.ContractQuery;
 import yjt.model.query.FollowQuery;
 
 @RouterMapping(url="/v1")
-@Before(AccessTokenInterceptor.class)
+//@Before(AccessTokenInterceptor.class)
 public class IndexController extends ApiBaseController {
 	
 	protected static final SimpleDateFormat sdfYmd = new SimpleDateFormat("yyyy-MM-dd");
@@ -347,4 +352,45 @@ public class IndexController extends ApiBaseController {
 		return;
 	}
 	
+	//@Before(MemberTokenInterceptor.class)
+	public void uploadFile(){
+
+		UploadFile uploadFile = getFile();
+		if (null != uploadFile) {
+			String newPath = AttachmentUtils.moveFile(uploadFile);
+			BigInteger memberID = getParaToBigInteger("memberID");
+
+			Attachment attachment = new Attachment();
+			attachment.setUserId(memberID);
+			attachment.setCreated(new Date());
+			attachment.setTitle(uploadFile.getOriginalFileName());
+			attachment.setPath(newPath.replace("\\", "/"));
+			attachment.setSuffix(FileUtils.getSuffix(uploadFile.getFileName()));
+			attachment.setMimeType(uploadFile.getContentType());
+			attachment.save();
+
+			//processImage(newPath);
+
+			JSONObject json = new JSONObject();
+			json.put("src", getRequest().getContextPath() + attachment.getPath());
+
+			renderJson(getReturnJson(Code.OK, "请提供文件", json));
+		} else {
+			renderJson(getReturnJson(Code.ERROR, "请提供文件", EMPTY_OBJECT));
+			return;
+		}
+	}
+	
+
+	public void uploadFileTest(){
+		this.renderHtml("<html><head></head><body>"+
+							"<form action='/jpress-web/v1/uploadFile' method='post' enctype='multipart/form-dataa'>"+
+				                 "<input type='text' name='accessToken' value='219300ecdd7010fa5f823ed0e9dc16e3'>" +
+							     "<input type='text' name='memberToken' value='a1BGxAZgYlhyz8n1V2y76MjEbgeLZivI'>" +
+							     "<input type='text' name='memberID' value='1'>" +
+				                 "<input type='file' name='file'>" +
+							     "<input type='submit' value='submit'>"+
+				            "</form>"
+				          +"</body></html>");
+	}
 }
