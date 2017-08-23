@@ -356,36 +356,37 @@ public class IndexController extends ApiBaseController {
 	public void uploadFile(){
 
 		UploadFile uploadFile = getFile();
-		if (null != uploadFile) {
-			String newPath = AttachmentUtils.moveFile(uploadFile);
-			BigInteger memberID = getParaToBigInteger("memberID");
-
-			Attachment attachment = new Attachment();
-			attachment.setUserId(memberID);
-			attachment.setCreated(new Date());
-			attachment.setTitle(uploadFile.getOriginalFileName());
-			attachment.setPath(newPath.replace("\\", "/"));
-			attachment.setSuffix(FileUtils.getSuffix(uploadFile.getFileName()));
-			attachment.setMimeType(uploadFile.getContentType());
-			attachment.save();
-
-			//processImage(newPath);
-
-			JSONObject json = new JSONObject();
-			json.put("src", getRequest().getContextPath() + attachment.getPath());
-
-			renderJson(getReturnJson(Code.OK, "请提供文件", json));
-		} else {
+		if(uploadFile == null){
 			renderJson(getReturnJson(Code.ERROR, "请提供文件", EMPTY_OBJECT));
 			return;
 		}
+
+		String newPath = AttachmentUtils.moveFile(uploadFile);
+		BigInteger memberID = getParaToBigInteger("memberID");
+
+		Attachment attachment = new Attachment();
+		attachment.setUserId(memberID);
+		attachment.setCreated(new Date());
+		attachment.setTitle(uploadFile.getOriginalFileName());
+		attachment.setPath(newPath.replace("\\", "/"));
+		attachment.setSuffix(FileUtils.getSuffix(uploadFile.getFileName()));
+		attachment.setMimeType(uploadFile.getContentType());
+		attachment.save();
+
+		//processImage(newPath);
+
+		JSONObject json = new JSONObject();
+		json.put("src", getRequest().getContextPath() + attachment.getPath());
+
+		renderJson(getReturnJson(Code.OK, "", json));
+
 	}
 	
 
 	public void uploadFileTest(){
 		this.renderHtml("<html><head></head><body>"+
-							"<form action='/jpress-web/v1/uploadFile' method='post' enctype='multipart/form-dataa'>"+
-				                 "<input type='text' name='accessToken' value='219300ecdd7010fa5f823ed0e9dc16e3'>" +
+							"<form action='/jpress-web/v1/uploadFile' method='post' enctype='multipart/form-data'>"+
+				                 "<input type='text' name='accessToken' value='36632c33f07b84f1dad0c6cd77bb80a1'>" +
 							     "<input type='text' name='memberToken' value='a1BGxAZgYlhyz8n1V2y76MjEbgeLZivI'>" +
 							     "<input type='text' name='memberID' value='1'>" +
 				                 "<input type='file' name='file'>" +

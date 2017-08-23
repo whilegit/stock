@@ -4,23 +4,35 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.Part;
 
+import org.apache.commons.fileupload.DiskFileUpload;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
 
 import com.jfinal.kit.PathKit;
 import com.jfinal.kit.StrKit;
 import com.jfinal.log.Log;
 import com.jfinal.upload.MultipartRequest;
+import com.jfinal.upload.UploadFile;
 
 import io.jpress.core.BaseFrontController;
 import io.jpress.model.query.OptionQuery;
@@ -39,7 +51,7 @@ public class ApiBaseController extends BaseFrontController{
 	public final static EmptyClass EMPTY_OBJECT = new EmptyClass();
 	public final static Object[]   EMPTY_ARRAY = new Object[0];
 	public final static String     EMPTY_STRING = "";
-	
+	protected static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
 	protected ApiReturnType getReturnJson(Code errno, String msg, Object data){
 		ApiReturnType art = new ApiReturnType(errno, msg, data); 
@@ -133,141 +145,116 @@ public class ApiBaseController extends BaseFrontController{
 		}
 	}
 	
+	
 	@Override
 	public String getPara(String field){
 		String value = super.getPara(field);
+		if(value != null) return value;
+		if(!isMultipartRequest()) return null;
+		if(true) return null;
+		//检查request的attribute列表里有没有此域的数据，如果之前有遍历过multipart的话相应表单项已放入attribute中
+		HttpServletRequest request = getRequest();
+		value = (String) request.getAttribute(field);
+		if(value != null) return value;
+		//该请求是Multipart请求，再检查一下请求body里有没有表单项
+		if(request instanceof MultipartRequest == true) return null;
+		Boolean multiflag = (Boolean) request.getAttribute("multiflag");
+		//如果请求body里的表单项已经检查过了，则不再重新检查，确定
+		if(multiflag != null && multiflag == true ) return null;
 		
-		if(value == null){
-			
-			if(isMultipartRequest()){
-				try {
-					HttpServletRequest request = getRequest();
-					if (request instanceof MultipartRequest == false){
-						MultipartRequest mrequest = new MultipartRequest(getRequest());
-						value = mrequest.getParameter(field);
-					}
-						
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+		//以下代码每个请求只执行一次
+		//标记已经编历了MultipartRequest的post域
+		request.setAttribute("multiflag", true);
+		try {
+			MultipartRequest mrequest = new MultipartRequest(getRequest());
+			@SuppressWarnings("rawtypes")
+			Enumeration enum1 = mrequest.getParameterNames();   
+			while (enum1.hasMoreElements()) {
+				String f = (String)enum1.nextElement();  
+				String[] str= mrequest.getParameterValues(f);   
+				for (int i=0;i<str.length;i++){   
+					//只取最后一个参数
+					request.setAttribute(f, str[i]);
+				} 
 			}
+			value = (String) request.getAttribute(field);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return value;
 	}
 	
-	public void handleRequest(HttpServletRequest request) throws ServletException  
-	{  
-  
-	     // DiskFileItem工厂,主要用来设定上传文件的参数  
-	     DiskFileItemFactory fileItemFactory = new DiskFileItemFactory();  
-	  
-	     // 上传文件所用到的缓冲区大小,超过此缓冲区的部分将被写入到磁盘  
-	     fileItemFactory.setSizeThreshold(1024*1024);  
-	  
-	     // 上传文件用到的临时文件存放位置  
-	     fileItemFactory.setRepository(this.getRepository(ac));  
-	  
-	     // 使用fileItemFactory为参数实例化一个ServletFileUpload对象  
-	     // 注意:该对象为commons-fileupload-1.2新增的类.  
-	     // 对于1.2以下的commons-fileupload版本并不存在此类.  
-	     ServletFileUpload upload = new ServletFileUpload(fileItemFactory);  
-	  
-	     // 从session中读取对本次上传文件的最大值的限制  
-	     String maxUploadSize = (String)request.getSession().  
-	getAttribute(BasicConstants.maxUploadSize);  
-	  
-	     // 获取struts-config文件中controller标签的maxFileSize属性来确定默认上传的限制  
-	     // 如果struts-config文件中controller标签的maxFileSize属性没设置则使用默认的上传限制250M.  
-	     long defaultOrConfigedMaxUploadSize = this.getSizeMax(ac);  
-	     if (maxUploadSize != null && maxUploadSize != "")  
-	     {  
-	          // 如果maxUploadSize设定不正确则上传限制为defaultOrConfigedMaxUploadSize的值  
-	  
-	          // 正确则为maxUploadSize转换成的字节数  
-	          upload.setSizeMax((long) this.convertSizeToBytes(  
-	maxUploadSize, defaultOrConfigedMaxUploadSize));  
-	        
-	      }  
-	      else  
-	      {  
-	          // 如果maxUploadSize没设置则使用默认的上传限制   
-	          upload.setSizeMax(defaultOrConfigedMaxUploadSize);  
-	      }   
-	  
-	      // 从session中清空maxUploadSize  
-	      request.getSession().removeAttribute("maxUploadSize");   
-	  
-	      // Create the hash tables to be populated.  
-	      elementsText = new Hashtable();  
-	      elementsFile = new Hashtable();  
-	      elementsAll = new Hashtable();   
-	  
-	      // Parse the request into file items.  
-	      List items = null;  
-	      // ServletFileUpload类来处理表单请求  
-	      // 抛出的异常为FileUploadException的子异常  
-	      // 如果捕获这些异常就将捕获的异常放到session中返回.  
-	  
-	      try  
-	      {  
-	            items = upload.parseRequest(request);  
-	  
-	      }  
-	      catch (FileUploadBase.SizeLimitExceededException e)  
-	      {  
-	  
-	            // 请求数据的size超出了规定的大小.  
-	            request.getSession().setAttribute(  
-	                BasicConstants.baseSizeLimitExceededException, e);  
-	            return;  
-	      }  
-	      catch (FileUploadBase.FileSizeLimitExceededException e)  
-	      {  
-	            // 请求文件的size超出了规定的大小.  
-	            request.getSession().setAttribute(  
-	                BasicConstants.baseFileSizeLimitExceededException, e);  
-	            return;  
-	      }  
-	      catch (FileUploadBase.IOFileUploadException e)  
-	      {  
-	            // 文件传输出现错误,例如磁盘空间不足等.  
-	            request.getSession().setAttribute(  
-	                BasicConstants.baseIOFileUploadException, e);  
-	            return;  
-	      }  
-	      catch (FileUploadBase.InvalidContentTypeException e)  
-	      {  
-	            // 无效的请求类型,即请求类型enctype != "multipart/form-data"  
-	            request.getSession().setAttribute(  
-	                BasicConstants.baseInvalidContentTypeException, e);  
-	            return;  
-	      }  
-	      catch (FileUploadException e)  
-	      {  
-	           // 如果都不是以上子异常,则抛出此总的异常,出现此异常原因无法说明.  
-	           request.getSession().setAttribute(  
-	                BasicConstants.FileUploadException, e);  
-	           return;  
-	      }  
-	  
-	      // Partition the items into form fields and files.  
-	      Iterator iter = items.iterator();  
-	        
-	      while (iter.hasNext())  
-	      {  
-	            FileItem item = (FileItem) iter.next();  
-	  
-	            if (item.isFormField())  
-	            {  
-	                   addTextParameter(request, item);  
-	            }  
-	            else  
-	            {  
-	                   addFileParameter(item);  
-	            }  
-	      }  
-	} 
+	
+	@Override
+	public List<UploadFile> getFiles() {
+		System.out.println("List<UploadFile> getFiles()");
+		ArrayList<UploadFile> ret = new ArrayList<UploadFile>();
+		HttpServletRequest request = getRequest();
+		boolean isMultipart = ServletFileUpload.isMultipartContent(request);
+		if(!isMultipart) {
+			System.out.println(!isMultipart);
+			return ret;
+		}
+		// Create a factory for disk-based file items
+		DiskFileItemFactory factory = new DiskFileItemFactory();
+
+		// Configure a repository (to ensure a secure temp location is used)
+		ServletContext servletContext = request.getServletContext();
+		File repository = (File) servletContext.getAttribute("javax.servlet.context.tempdir");
+		factory.setRepository(repository);
+
+		// Create a new file upload handler
+		ServletFileUpload upload = new ServletFileUpload(factory);
+
+		// Parse the request
+		try {
+			@SuppressWarnings("rawtypes")
+			List items = upload.parseRequest(request);
+			System.out.println(items.size());
+			if(items != null && items.size() > 0){
+				String webRoot = PathKit.getWebRootPath();
+				StringBuilder uploadDir = new StringBuilder(webRoot).append(File.separator).append("attachment").append(File.separator).append("api").
+						append(File.separator).append(dateFormat.format(new Date()));
+				
+				System.out.println(items.size());
+				for(Object item_o : items){
+					FileItem item = (FileItem) item_o;
+					if(!item.isFormField()){
+						//UploadFile(String parameterName, String uploadPath, String filesystemName, String originalFileName, String contentType)
+						String parameterName = item.getFieldName();
+						String contentType = item.getContentType();
+					    String originalFileName = item.getName();
+					    
+					    long sizeInBytes = item.getSize();
+					    if(sizeInBytes > 1024 * 1024){
+					    	item.delete();
+					    	continue;
+					    }
+					    String suffix = FileUtils.getSuffix(originalFileName);
+					    String uuid = UUID.randomUUID().toString().replace("-", "");
+					    File uploadFile = new File(uploadDir.toString() + File.separator + uuid + suffix);
+					    if (!uploadFile.getParentFile().exists()) {
+					    	uploadFile.getParentFile().mkdirs();
+						}
+					    try {
+							item.write(uploadFile);
+							ret.add(new UploadFile(parameterName, uploadDir.toString(), uploadFile.getAbsolutePath(), originalFileName, contentType));
+
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					    item.delete();
+					}
+				}
+			}
+		} catch (FileUploadException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return ret;
+	}
 	
 	private void processThumbnail(String newPath) {
 		List<Thumbnail> tbs = TemplateManager.me().currentTemplate().getThumbnails();
