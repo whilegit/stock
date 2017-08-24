@@ -2,6 +2,8 @@ package yjt.api.v1;
 
 import java.math.BigInteger;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.Invocation;
 import com.jfinal.kit.StrKit;
@@ -15,6 +17,8 @@ public class MemberTokenInterceptor implements Interceptor{
 	public void intercept(Invocation inv) {
 		// TODO Auto-generated method stub
 		boolean pass = false;
+		HttpServletRequest request = inv.getController().getRequest();
+		request.setAttribute("invocation", inv);
 		String memberIDStr = inv.getController().getPara("memberID"); 
 		String memberToken = inv.getController().getPara("memberToken");
 		if(StrKit.notBlank(memberIDStr) && StrKit.notBlank(memberToken)){

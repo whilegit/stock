@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,6 +29,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
 
+import com.jfinal.aop.Invocation;
 import com.jfinal.kit.PathKit;
 import com.jfinal.kit.StrKit;
 import com.jfinal.log.Log;
@@ -122,83 +124,45 @@ public class ApiBaseController extends BaseFrontController{
 		}
 	}
 	
-	protected void processImage(String newPath) {
-		if (!AttachmentUtils.isImage(newPath))
-			return;
-
-		if (".gif".equalsIgnoreCase(FileUtils.getSuffix(newPath))) {
-			// 过滤 .gif 图片
-			return;
+	@Override
+	public boolean isMultipartRequest(){
+		boolean flag = false;
+		if(super.isMultipartRequest()){
+			HttpServletRequest request = this.getRequest();
+			Invocation inv = (Invocation) request.getAttribute("invocation");
+			if(inv != null){
+				Method method = inv.getMethod();
+				if(method != null){
+					UploadAnnotation anno = method.getAnnotation(UploadAnnotation.class);
+					flag = (anno != null);
+				}
+			}
 		}
-
-		try {
-			// 由于内存不够等原因可能会出未知问题
-			processThumbnail(newPath);
-		} catch (Throwable e) {
-			log.error("processThumbnail error", e);
-		}
-		try {
-			// 由于内存不够等原因可能会出未知问题
-			processWatermark(newPath);
-		} catch (Throwable e) {
-			log.error("processWatermark error", e);
-		}
+		return flag;
 	}
-	
 	
 	@Override
 	public String getPara(String field){
 		String value = super.getPara(field);
 		if(value != null) return value;
 		if(!isMultipartRequest()) return null;
-		if(true) return null;
-		//检查request的attribute列表里有没有此域的数据，如果之前有遍历过multipart的话相应表单项已放入attribute中
+
 		HttpServletRequest request = getRequest();
-		value = (String) request.getAttribute(field);
-		if(value != null) return value;
-		//该请求是Multipart请求，再检查一下请求body里有没有表单项
-		if(request instanceof MultipartRequest == true) return null;
-		Boolean multiflag = (Boolean) request.getAttribute("multiflag");
-		//如果请求body里的表单项已经检查过了，则不再重新检查，确定
-		if(multiflag != null && multiflag == true ) return null;
-		
-		//以下代码每个请求只执行一次
-		//标记已经编历了MultipartRequest的post域
-		request.setAttribute("multiflag", true);
-		try {
-			MultipartRequest mrequest = new MultipartRequest(getRequest());
-			@SuppressWarnings("rawtypes")
-			Enumeration enum1 = mrequest.getParameterNames();   
-			while (enum1.hasMoreElements()) {
-				String f = (String)enum1.nextElement();  
-				String[] str= mrequest.getParameterValues(f);   
-				for (int i=0;i<str.length;i++){   
-					//只取最后一个参数
-					request.setAttribute(f, str[i]);
-				} 
-			}
-			value = (String) request.getAttribute(field);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return value;
+		if(request.getAttribute("MUTLIPART_CHECK") == null) parseMultipartRequest();
+		@SuppressWarnings("unchecked")
+		HashMap<String, String> formFields = (HashMap<String, String>) request.getAttribute("MUTLIPART_FORM_FIELDS");
+		return formFields.get(field);
 	}
 	
-	
-	@Override
-	public List<UploadFile> getFiles() {
-		System.out.println("List<UploadFile> getFiles()");
-		ArrayList<UploadFile> ret = new ArrayList<UploadFile>();
+	protected void parseMultipartRequest(){
+		System.out.println("parseMultipartRequest");
 		HttpServletRequest request = getRequest();
-		boolean isMultipart = ServletFileUpload.isMultipartContent(request);
-		if(!isMultipart) {
-			System.out.println(!isMultipart);
-			return ret;
-		}
+		request.setAttribute("MUTLIPART_CHECK", true);
+		HashMap<String, String> formFields = new HashMap<String, String>();
+		ArrayList<UploadFile> uploadFiles = new ArrayList<UploadFile>();
+		
 		// Create a factory for disk-based file items
 		DiskFileItemFactory factory = new DiskFileItemFactory();
-
 		// Configure a repository (to ensure a secure temp location is used)
 		ServletContext servletContext = request.getServletContext();
 		File repository = (File) servletContext.getAttribute("javax.servlet.context.tempdir");
@@ -209,93 +173,70 @@ public class ApiBaseController extends BaseFrontController{
 
 		// Parse the request
 		try {
-			@SuppressWarnings("rawtypes")
-			List items = upload.parseRequest(request);
+			List<FileItem> items = upload.parseRequest(request);
 			System.out.println(items.size());
 			if(items != null && items.size() > 0){
 				String webRoot = PathKit.getWebRootPath();
 				StringBuilder uploadDir = new StringBuilder(webRoot).append(File.separator).append("attachment").append(File.separator).append("api").
 						append(File.separator).append(dateFormat.format(new Date()));
-				
+						
 				System.out.println(items.size());
-				for(Object item_o : items){
-					FileItem item = (FileItem) item_o;
+				for(FileItem item : items){
 					if(!item.isFormField()){
-						//UploadFile(String parameterName, String uploadPath, String filesystemName, String originalFileName, String contentType)
 						String parameterName = item.getFieldName();
 						String contentType = item.getContentType();
-					    String originalFileName = item.getName();
-					    
-					    long sizeInBytes = item.getSize();
-					    if(sizeInBytes > 1024 * 1024){
-					    	item.delete();
-					    	continue;
-					    }
-					    String suffix = FileUtils.getSuffix(originalFileName);
-					    String uuid = UUID.randomUUID().toString().replace("-", "");
-					    File uploadFile = new File(uploadDir.toString() + File.separator + uuid + suffix);
-					    if (!uploadFile.getParentFile().exists()) {
-					    	uploadFile.getParentFile().mkdirs();
+						String originalFileName = item.getName();
+							    
+						long sizeInBytes = item.getSize();
+						if(sizeInBytes > 1024 * 1024){
+							 item.delete();
+							 continue;
 						}
-					    try {
+						String suffix = FileUtils.getSuffix(originalFileName);
+						String uuid = UUID.randomUUID().toString().replace("-", "");
+						File uploadFile = new File(uploadDir.toString() + File.separator + uuid + suffix);
+						if (!uploadFile.getParentFile().exists()) {
+							 uploadFile.getParentFile().mkdirs();
+						}
+						try {
 							item.write(uploadFile);
-							ret.add(new UploadFile(parameterName, uploadDir.toString(), uploadFile.getAbsolutePath(), originalFileName, contentType));
+							uploadFiles.add(new UploadFile(parameterName, uploadDir.toString(), uploadFile.getName(), originalFileName, contentType));
 
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-					    item.delete();
+					} else {
+						String key = item.getFieldName();
+					    String val = item.getString();
+					    System.out.println(key + "=>" + val);
+					    if(StrKit.notBlank(key, val)){
+					    	formFields.put(key, val);
+					    }
 					}
+					item.delete();
 				}
 			}
 		} catch (FileUploadException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return ret;
+		request.setAttribute("MUTLIPART_FORM_FIELDS", formFields);
+		request.setAttribute("MUTLIPART_UPLOAD_FILES", uploadFiles);
 	}
 	
-	private void processThumbnail(String newPath) {
-		List<Thumbnail> tbs = TemplateManager.me().currentTemplate().getThumbnails();
-		if (tbs != null && tbs.size() > 0) {
-			for (Thumbnail tb : tbs) {
-				try {
-					String newSrc = ImageUtils.scale(PathKit.getWebRootPath() + newPath, tb.getWidth(), tb.getHeight());
-					processWatermark(FileUtils.removeRootPath(newSrc));
-				} catch (IOException e) {
-					log.error("processWatermark error", e);
-				}
-			}
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<UploadFile> getFiles() {
+
+		if(!isMultipartRequest()){
+			return new ArrayList<UploadFile>();
+		} else {
+			HttpServletRequest request = getRequest();
+			return (List<UploadFile>) request.getAttribute("MUTLIPART_UPLOAD_FILES");
 		}
 	}
 	
-	public void processWatermark(String newPath) {
-		Boolean watermark_enable = OptionQuery.me().findValueAsBool("watermark_enable");
-		if (watermark_enable != null && watermark_enable) {
-
-			int position = OptionQuery.me().findValueAsInteger("watermark_position");
-			String watermarkImg = OptionQuery.me().findValue("watermark_image");
-			String srcImageFile = newPath;
-
-			Float transparency = OptionQuery.me().findValueAsFloat("watermark_transparency");
-			if (transparency == null || transparency < 0 || transparency > 1) {
-				transparency = 1f;
-			}
-
-			srcImageFile = PathKit.getWebRootPath() + srcImageFile;
-
-			File watermarkFile = new File(PathKit.getWebRootPath(), watermarkImg);
-			if (!watermarkFile.exists()) {
-				return;
-			}
-
-			ImageUtils.pressImage(watermarkFile.getAbsolutePath(), srcImageFile, srcImageFile, position, transparency);
-		}
-	}
-
-	
-	//json返回成功与否的success标志位
 	protected static enum Code{
 		OK("成功",1), ERROR("失败",0), TIMEOUT("登陆失效",-1);
 		private String name;

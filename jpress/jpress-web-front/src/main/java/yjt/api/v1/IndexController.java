@@ -1,5 +1,6 @@
 package yjt.api.v1;
 
+import java.io.File;
 import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -9,9 +10,12 @@ import java.util.List;
 
 import com.alibaba.fastjson.JSONObject;
 import com.jfinal.aop.Before;
+import com.jfinal.aop.Clear;
+import com.jfinal.kit.PathKit;
 import com.jfinal.kit.StrKit;
 import com.jfinal.upload.UploadFile;
 
+import io.jpress.core.interceptor.JI18nInterceptor;
 import io.jpress.model.Attachment;
 import io.jpress.model.User;
 import io.jpress.model.query.UserQuery;
@@ -25,7 +29,8 @@ import yjt.model.query.ContractQuery;
 import yjt.model.query.FollowQuery;
 
 @RouterMapping(url="/v1")
-//@Before(AccessTokenInterceptor.class)
+@Before(AccessTokenInterceptor.class)
+@Clear(JI18nInterceptor.class)
 public class IndexController extends ApiBaseController {
 	
 	protected static final SimpleDateFormat sdfYmd = new SimpleDateFormat("yyyy-MM-dd");
@@ -352,7 +357,8 @@ public class IndexController extends ApiBaseController {
 		return;
 	}
 	
-	//@Before(MemberTokenInterceptor.class)
+	@Before(MemberTokenInterceptor.class)
+	@UploadAnnotation
 	public void uploadFile(){
 
 		UploadFile uploadFile = getFile();
@@ -360,26 +366,22 @@ public class IndexController extends ApiBaseController {
 			renderJson(getReturnJson(Code.ERROR, "请提供文件", EMPTY_OBJECT));
 			return;
 		}
-
-		String newPath = AttachmentUtils.moveFile(uploadFile);
+		String webRoot = PathKit.getWebRootPath();
+		String path = uploadFile.getUploadPath().substring(webRoot.length()) + File.separator + uploadFile.getFileName();
+		
 		BigInteger memberID = getParaToBigInteger("memberID");
-
 		Attachment attachment = new Attachment();
 		attachment.setUserId(memberID);
 		attachment.setCreated(new Date());
 		attachment.setTitle(uploadFile.getOriginalFileName());
-		attachment.setPath(newPath.replace("\\", "/"));
+		attachment.setPath(path);
 		attachment.setSuffix(FileUtils.getSuffix(uploadFile.getFileName()));
 		attachment.setMimeType(uploadFile.getContentType());
 		attachment.save();
 
-		//processImage(newPath);
-
 		JSONObject json = new JSONObject();
-		json.put("src", getRequest().getContextPath() + attachment.getPath());
-
+		json.put("src", path);
 		renderJson(getReturnJson(Code.OK, "", json));
-
 	}
 	
 

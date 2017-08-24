@@ -20,7 +20,8 @@ public class AccessTokenInterceptor implements Interceptor{
 	public void intercept(Invocation inv) {
 		// TODO Auto-generated method stub
 		boolean pass = false;
-
+		HttpServletRequest request = inv.getController().getRequest();
+		request.setAttribute("invocation", inv);
 		String accessToken = ((ApiBaseController)(inv.getController())).getPara("accessToken");
 		if(StrKit.notBlank(accessToken)){
 			SimpleDateFormat sdf=new SimpleDateFormat("yyyy/MM/dd");
@@ -30,7 +31,9 @@ public class AccessTokenInterceptor implements Interceptor{
 			pass = accessToken.equals(token);
 		}
 
-		if(pass) inv.invoke();
+		if(pass){
+			inv.invoke();
+		}
 		else {
 			ApiBaseController bc = (ApiBaseController) inv.getController();
 			bc.accessTokenFail(accessToken);
