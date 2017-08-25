@@ -24,11 +24,7 @@ public class AccessTokenInterceptor implements Interceptor{
 		request.setAttribute("invocation", inv);
 		String accessToken = ((ApiBaseController)(inv.getController())).getPara("accessToken");
 		if(StrKit.notBlank(accessToken)){
-			SimpleDateFormat sdf=new SimpleDateFormat("yyyy/MM/dd");
-			String today = sdf.format(new Date());
-			String token = getMD5(ACCESSTOKEN_SALT + today);
-			System.out.println(token);
-			pass = accessToken.equals(token);
+			pass = accessToken.equals(getCurrentAccessToken());
 		}
 
 		if(pass){
@@ -38,6 +34,13 @@ public class AccessTokenInterceptor implements Interceptor{
 			ApiBaseController bc = (ApiBaseController) inv.getController();
 			bc.accessTokenFail(accessToken);
 		}
+	}
+	
+	public static String getCurrentAccessToken(){
+		SimpleDateFormat sdf=new SimpleDateFormat("yyyy/MM/dd");
+		String today = sdf.format(new Date());
+		String token = getMD5(ACCESSTOKEN_SALT + today);
+		return token;
 	}
 	
 	public static String getMD5(String str) {

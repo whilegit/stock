@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.alibaba.fastjson.JSONObject;
+import com.aliyuncs.exceptions.ClientException;
 import com.jfinal.aop.Before;
 import com.jfinal.aop.Clear;
 import com.jfinal.kit.PathKit;
@@ -24,6 +25,7 @@ import io.jpress.utils.AttachmentUtils;
 import io.jpress.utils.EncryptUtils;
 import io.jpress.utils.FileUtils;
 import io.jpress.utils.StringUtils;
+import yjt.model.Captcha;
 import yjt.model.Follow;
 import yjt.model.query.ContractQuery;
 import yjt.model.query.FollowQuery;
@@ -385,11 +387,43 @@ public class IndexController extends ApiBaseController {
 	}
 	
 
+	public void sendCaptcha(){
+		String mobile = getPara("mobile");
+		if(StrKit.isBlank(mobile)){
+			renderJson(getReturnJson(Code.ERROR, "请提供手机号", EMPTY_OBJECT));
+			return;
+		}
+		if(!isMobile(mobile)){
+			renderJson(getReturnJson(Code.ERROR, "手机号格式错误", EMPTY_OBJECT));
+			return;
+		}
+		
+		String  code = (int) (Math.random() * 1000000) + "";
+		JSONObject json = new JSONObject();
+		json.put("code", code);
+		try {
+			sendSms(mobile, "SMS_86610162", json);
+			Captcha captcha = getModel(Captcha.class);
+			captcha.setCode(code);
+			captcha.setMobile(mobile);
+			captcha.setIp(this.getIPAddress());
+			captcha.setCreateTime(new Date());
+			captcha.save();
+			renderJson(getReturnJson(Code.OK, "", EMPTY_OBJECT));
+		} catch (ClientException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			renderJson(getReturnJson(Code.ERROR, "短信发送失败", EMPTY_OBJECT));
+		}
+	}
+	
+	@Clear(AccessTokenInterceptor.class)
 	public void uploadFileTest(){
+		User member = UserQuery.me().findById(BigInteger.ONE);
 		this.renderHtml("<html><head></head><body>"+
 							"<form action='/jpress-web/v1/uploadFile' method='post' enctype='multipart/form-data'>"+
-				                 "<input type='text' name='accessToken' value='36632c33f07b84f1dad0c6cd77bb80a1'>" +
-							     "<input type='text' name='memberToken' value='a1BGxAZgYlhyz8n1V2y76MjEbgeLZivI'>" +
+				                 "<input type='text' name='accessToken' value='"+AccessTokenInterceptor.getCurrentAccessToken()+"'>" +
+							     "<input type='text' name='memberToken' value='"+member.getMemberToken()+"'>" +
 							     "<input type='text' name='memberID' value='1'>" +
 				                 "<input type='file' name='file'>" +
 							     "<input type='submit' value='submit'>"+

@@ -11,16 +11,16 @@ import io.jpress.model.Metadata;
 import io.jpress.model.core.JModel;
 import io.jpress.model.query.MetaDataQuery;
 
-public class BaseFollow<M extends BaseFollow<M>> extends JModel<M> implements IBean {
+public class BaseCaptcha<M extends BaseCaptcha<M>> extends JModel<M> implements IBean {
 
 	private static final long serialVersionUID = 1L;
 	
-	public static final String CACHE_NAME = "follow";
-	public static final String METADATA_TYPE = "follow";
+	public static final String CACHE_NAME = "captcha";
+	public static final String METADATA_TYPE = "captcha";
 
-	public static final String ACTION_ADD = "follow:add";
-	public static final String ACTION_DELETE = "follow:delete";
-	public static final String ACTION_UPDATE = "follow:update";
+	public static final String ACTION_ADD = "captcha:add";
+	public static final String ACTION_DELETE = "captcha:delete";
+	public static final String ACTION_UPDATE = "captcha:update";
 	
 	public void removeCache(Object key){
 		if(key == null) return;
@@ -76,9 +76,9 @@ public class BaseFollow<M extends BaseFollow<M>> extends JModel<M> implements IB
 	@Override
 	public boolean equals(Object o) {
 		if(o == null){ return false; }
-		if(!(o instanceof BaseFollow<?>)){return false;}
+		if(!(o instanceof BaseCaptcha<?>)){return false;}
 
-		BaseFollow<?> m = (BaseFollow<?>) o;
+		BaseCaptcha<?> m = (BaseCaptcha<?>) o;
 		if(m.getId() == null){return false;}
 
 		return m.getId().compareTo(this.getId()) == 0;
@@ -124,42 +124,33 @@ public class BaseFollow<M extends BaseFollow<M>> extends JModel<M> implements IB
 		return id instanceof BigInteger ? (BigInteger)id : new BigInteger(id.toString());
 	}
 	
-	public void setFollowedId(java.math.BigInteger followed_id) {
-		set("followed_id", followed_id);
+	public void setMobile(String mobile){
+		set("mobile", mobile);
 	}
-
-	public java.math.BigInteger getFollowedId() {
-		Object followed_id = get("followed_id");
-		if (followed_id == null)
-			return null;
-
-		return followed_id instanceof BigInteger ? (BigInteger)followed_id : new BigInteger(followed_id.toString());
+	public int getMobile(){
+		return get("mobile");
 	}
 	
-	public void setFollowerId(java.math.BigInteger follower_id) {
-		set("follower_id", follower_id);
+	public void setCode(String code){
+		set("code", code);
 	}
-
-	public java.math.BigInteger getFollowerId() {
-		Object follower_id = get("follower_id");
-		if (follower_id == null)
-			return null;
-
-		return follower_id instanceof BigInteger ? (BigInteger)follower_id : new BigInteger(follower_id.toString());
+	public int getCode(){
+		return get("code");
 	}
 	
-	public void setStatus(int status){
-		set("status", status);
+	public void setIp(String ip){
+		set("ip", ip);
 	}
-	public int getStatus(){
-		return get("status");
+	public int getIp(){
+		return get("ip");
 	}
 	
-	public void setChangeTime(java.util.Date changeTime ){
-		set("change_time", changeTime);
+	
+	public void setCreateTime(java.util.Date createTime ){
+		set("create_time", createTime);
 	}
-	public java.util.Date getChangeTime(){
-		return get("change_time");
+	public java.util.Date getCreateTime(){
+		return get("create_time");
 	}
 
 }
