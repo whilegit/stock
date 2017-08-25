@@ -21,7 +21,6 @@ import io.jpress.model.Attachment;
 import io.jpress.model.User;
 import io.jpress.model.query.UserQuery;
 import io.jpress.router.RouterMapping;
-import io.jpress.utils.AttachmentUtils;
 import io.jpress.utils.EncryptUtils;
 import io.jpress.utils.FileUtils;
 import io.jpress.utils.StringUtils;
@@ -36,6 +35,7 @@ import yjt.model.query.FollowQuery;
 @Clear(JI18nInterceptor.class)
 public class IndexController extends ApiBaseController {
 	
+	private static final boolean DEBUG = true;
 	protected static final SimpleDateFormat sdfYmd = new SimpleDateFormat("yyyy-MM-dd");
 	
 	public void login(){
@@ -530,9 +530,36 @@ public class IndexController extends ApiBaseController {
 		return;
 	}
 	
+	@SuppressWarnings("unused")
 	@Clear(AccessTokenInterceptor.class)
 	public void getAccessToken(){
+		if(DEBUG == false) return;
 		renderJson(getReturnJson(Code.OK, AccessTokenInterceptor.getCurrentAccessToken(), EMPTY_OBJECT));
+		return;
+	}
+	
+	@SuppressWarnings("unused")
+	@Clear(AccessTokenInterceptor.class)
+	public void resetMemberToken(){
+		if(DEBUG == false) return;
+		String mobile = getPara("mobile");
+		if(StrKit.isBlank(mobile)){
+			renderJson(getReturnJson(Code.ERROR, "请提供手机号", EMPTY_OBJECT));
+			return;
+		}
+		if(!isMobile(mobile)){
+			renderJson(getReturnJson(Code.ERROR, "手机号格式错误", EMPTY_OBJECT));
+			return;
+		}
+		User member = UserQuery.me().findUserByMobile(mobile);
+		if(member == null) {
+			renderJson(getReturnJson(Code.ERROR, "用户不存在", EMPTY_OBJECT));
+			return;
+		}
+		String memberToken = getRandomString(32);
+		member.setMemberToken(memberToken);
+		member.update();
+		renderJson(getReturnJson(Code.OK, memberToken, EMPTY_OBJECT));
 		return;
 	}
 	
