@@ -127,14 +127,14 @@ public class BaseCaptcha<M extends BaseCaptcha<M>> extends JModel<M> implements 
 	public void setMobile(String mobile){
 		set("mobile", mobile);
 	}
-	public int getMobile(){
+	public String getMobile(){
 		return get("mobile");
 	}
 	
 	public void setCode(String code){
 		set("code", code);
 	}
-	public int getCode(){
+	public String getCode(){
 		return get("code");
 	}
 	

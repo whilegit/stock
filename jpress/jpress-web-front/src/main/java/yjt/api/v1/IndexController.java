@@ -27,6 +27,7 @@ import io.jpress.utils.FileUtils;
 import io.jpress.utils.StringUtils;
 import yjt.model.Captcha;
 import yjt.model.Follow;
+import yjt.model.query.CaptchaQuery;
 import yjt.model.query.ContractQuery;
 import yjt.model.query.FollowQuery;
 
@@ -415,6 +416,49 @@ public class IndexController extends ApiBaseController {
 			//e.printStackTrace();
 			renderJson(getReturnJson(Code.ERROR, "短信发送失败", EMPTY_OBJECT));
 		}
+	}
+	
+	public void validCaptcha(){
+		String mobile = getPara("mobile");
+		if(StrKit.isBlank(mobile)){
+			renderJson(getReturnJson(Code.ERROR, "请提供手机号", EMPTY_OBJECT));
+			return;
+		}
+		if(!isMobile(mobile)){
+			renderJson(getReturnJson(Code.ERROR, "手机号格式错误", EMPTY_OBJECT));
+			return;
+		}
+		
+		String captchaStr = getPara("captcha");
+		if(StrKit.isBlank(captchaStr)){
+			renderJson(getReturnJson(Code.ERROR, "请提供验证码", EMPTY_OBJECT));
+			return;
+		}
+		
+		Captcha captcha = CaptchaQuery.me().getCaptcha(mobile);
+		if(captcha == null){
+			renderJson(getReturnJson(Code.ERROR, "验证码不存在", EMPTY_OBJECT));
+			return;
+		}
+
+		if(captchaStr.equals(captcha.getCode()) == false){
+			renderJson(getReturnJson(Code.ERROR, "验证码错误", EMPTY_OBJECT));
+			return;
+		}
+		
+		long sendTime = captcha.getCreateTime().getTime();
+		if(sendTime + 30 * 60 * 1000 < System.currentTimeMillis()){
+			renderJson(getReturnJson(Code.ERROR, "验证码超时，请重新获取", EMPTY_OBJECT));
+			return;
+		}
+		renderJson(getReturnJson(Code.OK, "", EMPTY_OBJECT));
+		return;
+	}
+	
+	@Clear(AccessTokenInterceptor.class)
+	public void getAccessToken(){
+		renderJson(getReturnJson(Code.OK, AccessTokenInterceptor.getCurrentAccessToken(), EMPTY_OBJECT));
+		return;
 	}
 	
 	@Clear(AccessTokenInterceptor.class)
