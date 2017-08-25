@@ -63,6 +63,81 @@ public class IndexController extends ApiBaseController {
 		
 	}
 	
+	@Clear()
+	public void register(){
+		String mobile = getPara("mobile");
+		if(StrKit.isBlank(mobile)){
+			renderJson(getReturnJson(Code.ERROR, "请提供手机号", EMPTY_OBJECT));
+			return;
+		}
+		if(!isMobile(mobile)){
+			renderJson(getReturnJson(Code.ERROR, "手机号格式错误", EMPTY_OBJECT));
+			return;
+		}
+		
+		String captchaStr = getPara("captcha");
+		if(StrKit.isBlank(captchaStr)){
+			renderJson(getReturnJson(Code.ERROR, "请提供验证码", EMPTY_OBJECT));
+			return;
+		}
+		
+		Captcha captcha = CaptchaQuery.me().getCaptcha(mobile);
+		if(captcha == null){
+			renderJson(getReturnJson(Code.ERROR, "验证码不存在", EMPTY_OBJECT));
+			return;
+		}
+
+		if(captchaStr.equals(captcha.getCode()) == false){
+			renderJson(getReturnJson(Code.ERROR, "验证码错误", EMPTY_OBJECT));
+			return;
+		}
+		
+		long sendTime = captcha.getCreateTime().getTime();
+		if(sendTime + 30 * 60 * 1000 < System.currentTimeMillis()){
+			renderJson(getReturnJson(Code.ERROR, "验证码超时，请重新获取", EMPTY_OBJECT));
+			return;
+		}
+		
+		User user = UserQuery.me().findUserByMobile(mobile);
+		if(user != null){
+			renderJson(getReturnJson(Code.ERROR, "用户已存在", EMPTY_OBJECT));
+			return;
+		}
+		
+		String password = getPara("password");
+		if(StrKit.isBlank(password)){
+			renderJson(getReturnJson(Code.ERROR, "请设置密码", EMPTY_OBJECT));
+			return;
+		}
+		password = password.trim();
+		if(password.length() < 6){
+			renderJson(getReturnJson(Code.ERROR, "密码不少于6位", EMPTY_OBJECT));
+			return;
+		}
+		
+		String avatar = getPara("avatar");
+		if(avatar == null) avatar = "";
+		String salt = EncryptUtils.salt();
+		String memberToken = getRandomString(32);
+		
+		user = getModel(User.class);
+		user.setMobile(mobile);
+		user.setAvatar(avatar);
+		user.setPassword(EncryptUtils.encryptPassword(password, salt));
+		user.setSalt(salt);
+		user.setMemberToken(memberToken);
+		user.save();
+		
+		user = UserQuery.me().findById(user.getId());
+		if(user == null){
+			renderJson(getReturnJson(Code.ERROR, "创建用户失败", EMPTY_OBJECT));
+			return;
+		}
+		HashMap<String, Object> profile = user.getMemberProfile();
+		profile.put("memberToken", memberToken);
+		renderJson(getReturnJson(Code.OK, "", profile));
+	}
+	
 	@Before(MemberTokenInterceptor.class)
 	public void index(){
 		renderJson(getReturnJson(Code.OK, "Hello Index", EMPTY_OBJECT));
