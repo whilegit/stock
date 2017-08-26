@@ -4,6 +4,9 @@ import java.io.File;
 import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -24,6 +27,7 @@ import io.jpress.router.RouterMapping;
 import io.jpress.utils.EncryptUtils;
 import io.jpress.utils.FileUtils;
 import io.jpress.utils.StringUtils;
+import yjt.model.Apply;
 import yjt.model.Captcha;
 import yjt.model.Follow;
 import yjt.model.query.CaptchaQuery;
@@ -462,7 +466,91 @@ public class IndexController extends ApiBaseController {
 		renderJson(getReturnJson(Code.OK, "", json));
 	}
 	
-
+	@Before(MemberTokenInterceptor.class)
+	public void memberBorrow(){
+		BigInteger memberID = getParaToBigInteger("memberID");
+		String moneyStr = getPara("money");
+		String endDateStr = getPara("endDate");
+		String rate = getPara("rate");
+		String forUseType = getPara("forUseType");
+		String toFriendsStr = getPara("toFriends");
+		String video = getPara("video");
+		if(video == null) video = "";
+		if(!StrKit.notBlank(moneyStr, endDateStr, rate, forUseType, toFriendsStr)){
+			renderJson(getReturnJson(Code.ERROR, "缺少参数", EMPTY_OBJECT));
+			return;
+		}
+		
+		double amount = Double.parseDouble(moneyStr);
+		if(amount >= 3000.0 && StrKit.isBlank(video)){
+			renderJson(getReturnJson(Code.ERROR, "请提供视频", EMPTY_OBJECT));
+			return;
+		}
+		Date maturity_date = null;
+		try {
+			maturity_date = sdfYmd.parse(endDateStr);
+		} catch (ParseException e) {
+			renderJson(getReturnJson(Code.ERROR, "还款日期格式错误", EMPTY_OBJECT));
+			return;
+		}
+		if(Utils.getTodayStartTime() + 86400 * 1000 > maturity_date.getTime()){
+			renderJson(getReturnJson(Code.ERROR, "还款日太近", EMPTY_OBJECT));
+			return;
+		}
+		double annual_rate = Double.parseDouble(rate);
+		if(annual_rate > 24){
+			renderJson(getReturnJson(Code.ERROR, "年化利率不得高于24%", EMPTY_OBJECT));
+			return;
+		}
+		Apply.Purpose purpose = Apply.Purpose.getEnum(forUseType);
+		if(purpose == null){
+			renderJson(getReturnJson(Code.ERROR, "不能识别的借款用途", EMPTY_OBJECT));
+			return;
+		}
+		
+		ArrayList<BigInteger> toFriends = Utils.splitToBigInteger(toFriendsStr, ",", true);
+		if(toFriends.size() == 0){
+			renderJson(getReturnJson(Code.ERROR, "没有借款人", EMPTY_OBJECT));
+			return;
+		}
+		List<User> u = UserQuery.me().findList(toFriends);
+		if(u.size() != toFriends.size()){
+			renderJson(getReturnJson(Code.ERROR, "有部分发布对象不存在", EMPTY_OBJECT));
+			return;
+		}
+		
+		//获取当前关注列表，以检查是否向非好友发布了借款信息
+		BigInteger[] followedArray = FollowQuery.me().getFollowedList(memberID);
+		List<BigInteger> followedList = Arrays.asList(followedArray);
+		ArrayList<String> nonFriends = new ArrayList<String>();
+		for(BigInteger bi : toFriends){
+			if(followedList.contains(bi) == false){
+				nonFriends.add(bi.toString());
+			}
+		}
+		if(nonFriends.size() > 0){
+			renderJson(getReturnJson(Code.ERROR, "不可向非好友发布借款信息", nonFriends));
+			return;
+		}
+		
+		Apply apply = getModel(Apply.class);
+		apply.setAmount(amount);
+		apply.setAnnualRate(annual_rate);
+		apply.setApplyUid(memberID);
+		apply.setCreateTime(new Date());
+		apply.setDescription("");
+		apply.setMaturityDate(maturity_date);
+		apply.setPurpose(purpose.getIndex());
+		apply.setStatus(Apply.Status.VALID.getIndex());
+		apply.setToFriends(toFriends);
+		apply.setVideo(video);
+		apply.save();
+		JSONObject json = new JSONObject();
+		json.put("id", apply.getId().toString());
+		renderJson(getReturnJson(Code.OK, "", json));
+		return;
+	}
+	
 	public void sendCaptcha(){
 		String mobile = getPara("mobile");
 		if(StrKit.isBlank(mobile)){
