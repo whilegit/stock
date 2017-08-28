@@ -5,12 +5,15 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.jfinal.kit.StrKit;
 
 public class Utils {
 	protected static final SimpleDateFormat sdfYmd = new SimpleDateFormat("yyyy-MM-dd");
 	protected static final SimpleDateFormat sdfYmdHms = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	protected static final Pattern MOBILE_PATTERN = Pattern.compile("^1[345789][0-9]{9}$");
 	
 	public static long getTodayStartTime(){
 		Date d = new Date();
@@ -22,6 +25,16 @@ public class Utils {
 			e.printStackTrace();
 		}
 		return d.getTime();
+	}
+	
+	public static Date getYmd(String s){
+		Date d = null;
+		try{
+			d = sdfYmd.parse(s);
+		} catch (Exception e){
+			//
+		}
+		return d;
 	}
 	
 	/**
@@ -49,4 +62,16 @@ public class Utils {
 		}
 		return ret;
 	}
+	
+	
+	public static boolean isMobile(String mobile){
+		boolean ret = false;
+		if(StrKit.notBlank(mobile)){
+			Matcher m = MOBILE_PATTERN.matcher(mobile);
+			ret = m.matches();
+		}
+		return ret;
+	}
+	
+	
 }

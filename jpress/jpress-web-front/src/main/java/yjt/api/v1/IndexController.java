@@ -2,11 +2,9 @@ package yjt.api.v1;
 
 import java.io.File;
 import java.math.BigInteger;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -26,13 +24,16 @@ import io.jpress.model.query.UserQuery;
 import io.jpress.router.RouterMapping;
 import io.jpress.utils.EncryptUtils;
 import io.jpress.utils.FileUtils;
-import io.jpress.utils.StringUtils;
 import yjt.model.Apply;
 import yjt.model.Captcha;
 import yjt.model.Follow;
 import yjt.model.query.CaptchaQuery;
 import yjt.model.query.ContractQuery;
 import yjt.model.query.FollowQuery;
+
+import yjt.api.v1.Interceptor.*;
+import yjt.api.v1.Annotation.*;
+
 
 @RouterMapping(url="/v1")
 @Before(AccessTokenInterceptor.class)
@@ -42,13 +43,13 @@ public class IndexController extends ApiBaseController {
 	private static final boolean DEBUG = true;
 	protected static final SimpleDateFormat sdfYmd = new SimpleDateFormat("yyyy-MM-dd");
 	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
+	@ParamAnnotation(name = "password",  must = true, type = ParamInterceptor.Type.STRING, chs = "密码")
 	public void login(){
 		String mobile = getPara("mobile");
 		String password = getPara("password");
-		if(!StringUtils.areNotBlank(mobile, password)){
-			renderJson(getReturnJson(Code.ERROR, "手机号码或密码不能为空", EMPTY_OBJECT));
-			return;
-		}
+
 		User user = UserQuery.me().findUserByMobile(mobile);
 		if(user == null){
 			renderJson(getReturnJson(Code.ERROR, "手机号码或密码错误", EMPTY_OBJECT));
@@ -67,24 +68,15 @@ public class IndexController extends ApiBaseController {
 		
 	}
 	
-	@Clear()
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
+	@ParamAnnotation(name = "captcha", must = true, type = ParamInterceptor.Type.STRING, chs = "验证码")
+	@ParamAnnotation(name = "password",must = true, type = ParamInterceptor.Type.STRING, chs = "密码", minlen=6)
+	@ParamAnnotation(name = "avatar",  must = false, type = ParamInterceptor.Type.STRING, chs = "头像", def="")
 	public void register(){
 		String mobile = getPara("mobile");
-		if(StrKit.isBlank(mobile)){
-			renderJson(getReturnJson(Code.ERROR, "请提供手机号", EMPTY_OBJECT));
-			return;
-		}
-		if(!isMobile(mobile)){
-			renderJson(getReturnJson(Code.ERROR, "手机号格式错误", EMPTY_OBJECT));
-			return;
-		}
-		
 		String captchaStr = getPara("captcha");
-		if(StrKit.isBlank(captchaStr)){
-			renderJson(getReturnJson(Code.ERROR, "请提供验证码", EMPTY_OBJECT));
-			return;
-		}
-		
+
 		Captcha captcha = CaptchaQuery.me().getCaptcha(mobile);
 		if(captcha == null){
 			renderJson(getReturnJson(Code.ERROR, "验证码不存在", EMPTY_OBJECT));
@@ -109,16 +101,6 @@ public class IndexController extends ApiBaseController {
 		}
 		
 		String password = getPara("password");
-		if(StrKit.isBlank(password)){
-			renderJson(getReturnJson(Code.ERROR, "请设置密码", EMPTY_OBJECT));
-			return;
-		}
-		password = password.trim();
-		if(password.length() < 6){
-			renderJson(getReturnJson(Code.ERROR, "密码不少于6位", EMPTY_OBJECT));
-			return;
-		}
-		
 		String avatar = getPara("avatar");
 		if(avatar == null) avatar = "";
 		String salt = EncryptUtils.salt();
@@ -142,42 +124,41 @@ public class IndexController extends ApiBaseController {
 		renderJson(getReturnJson(Code.OK, "", profile));
 	}
 	
-	@Before(MemberTokenInterceptor.class)
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
 	public void index(){
 		renderJson(getReturnJson(Code.OK, "Hello Index", EMPTY_OBJECT));
 	}
 	
-	@Before(MemberTokenInterceptor.class)
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
 	public void userInfo(){
-		BigInteger userID = getParaToBigInteger("memberID");
-		User user = UserQuery.me().findByIdNoCache(userID);
-		if(user == null){
-			renderJson(getReturnJson(Code.ERROR, "用户不存在", EMPTY_OBJECT));
-			return;
-		}
+		BigInteger memberID = getParaToBigInteger("memberID");
+		User member = UserQuery.me().findByIdNoCache(memberID);
 		
-		Date birthday = user.getBirthday();
+		Date birthday = member.getBirthday();
 		String birthdayStr = (birthday != null) ? sdfYmd.format(birthday) : "";
-
 		//仅查询正在还款期、展期的总金额，损失类的金额已核销在此不统计
-		double income = ContractQuery.me().queryDebits(user.getId());
-		double outcome = ContractQuery.me().queryCredits(user.getId());
+		double income = ContractQuery.me().queryDebits(member.getId());
+		double outcome = ContractQuery.me().queryCredits(member.getId());
 		HashMap<String, Object> profile = new HashMap<String, Object>();
-		profile.put("memberID", user.getId().toString());
-		profile.put("avatar", user.getAvatar());
-		profile.put("mobile", user.getMobile());
-		profile.put("nickname", user.getNickname());
-		profile.put("name", user.getRealname());
-		profile.put("gender", user.getGender());
+		profile.put("memberID", member.getId().toString());
+		profile.put("avatar", member.getAvatar());
+		profile.put("mobile", member.getMobile());
+		profile.put("nickname", member.getNickname());
+		profile.put("name", member.getRealname());
+		profile.put("gender", member.getGender());
 		profile.put("birthday", birthdayStr);
-		profile.put("score", ""+user.getScore());
+		profile.put("score", ""+member.getScore());
 		profile.put("income", ""+income);
 		profile.put("outcome", ""+outcome);
 		
 		renderJson(getReturnJson(Code.OK, "", profile));
 	}
 	
-	@Before(MemberTokenInterceptor.class)
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "userID",  must = true, type = ParamInterceptor.Type.INT, chs = "关注对象")
 	public void followUser(){
 		BigInteger memberID = getParaToBigInteger("memberID");
 		BigInteger userID = getParaToBigInteger("userID");
@@ -231,7 +212,14 @@ public class IndexController extends ApiBaseController {
 		renderJson(getReturnJson(Code.OK, "", profile));
 	}
 	
-	@Before(MemberTokenInterceptor.class)
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "gender",  must = false, type = ParamInterceptor.Type.INT, min=0, max=2, chs = "性别")
+	@ParamAnnotation(name = "birthday",  must = false, type = ParamInterceptor.Type.DATE, min=0, max=2, chs = "出生年月")
+	@ParamAnnotation(name = "sysPush",  must = false, type = ParamInterceptor.Type.INT, min=0, max=1, chs = "系统消息提醒")
+	@ParamAnnotation(name = "salePush",  must = false, type = ParamInterceptor.Type.INT, min=0, max=1, chs = "交易消息提醒")
+	@ParamAnnotation(name = "inPush",  must = false, type = ParamInterceptor.Type.INT, min=0, max=1, chs = "催收消息提醒")
+	@ParamAnnotation(name = "outPush",  must = false, type = ParamInterceptor.Type.INT, min=0, max=1, chs = "借款订阅消息")
 	public void updateUser(){
 		BigInteger memberID = getParaToBigInteger("memberID");
 		String avatar = getPara("avatar");
@@ -248,28 +236,12 @@ public class IndexController extends ApiBaseController {
 		if(StrKit.notBlank(avatar))	user.setAvatar(avatar);
 		if(StrKit.notBlank(nickname)) user.setNickname(nickname);
 		if(StrKit.notBlank(name)) user.setRealname(name);
-		if(StrKit.notBlank(gender))	{
-			int gendexInt = Integer.parseInt(gender);
-			if(gendexInt < 0 || gendexInt >2){
-				renderJson(getReturnJson(Code.ERROR, "性别设置错误", EMPTY_OBJECT));
-				return;
-			}
-			user.setGender(gender);
-		}
-		if(StrKit.notBlank(birthday)){
-			Date birthdayDate = null;
-			try {
-				birthdayDate = sdfYmd.parse(birthday);
-				user.setBirthday(birthdayDate);
-			} catch (ParseException e) {
-				renderJson(getReturnJson(Code.ERROR, "出生年月格式错误", EMPTY_OBJECT));
-				return;
-			}
-		}
-		if(sysPush != null && (sysPush == 0 || sysPush == 1))  user.setSysPush(sysPush);
-		if(salePush != null && (salePush == 0 || salePush == 1))  user.setSalePush(salePush);
-		if(inPush != null && (inPush == 0 || inPush == 1))  user.setInPush(inPush);
-		if(outPush != null && (outPush == 0 || outPush == 1))  user.setOutPush(outPush);
+		if(StrKit.notBlank(gender))	user.setGender(gender);
+		if(StrKit.notBlank(birthday)) user.setBirthday(Utils.getYmd(birthday));
+		if(sysPush != null)  user.setSysPush(sysPush);
+		if(salePush != null)  user.setSalePush(salePush);
+		if(inPush != null)  user.setInPush(inPush);
+		if(outPush != null)  user.setOutPush(outPush);
 
 		boolean flag = user.update();
 		if(flag){
@@ -284,26 +256,18 @@ public class IndexController extends ApiBaseController {
 	/**
 	 * eachFollowed  0:关注自己的（粉丝）  1:相互关注    2:自己关注的
 	 */
-	@Before(MemberTokenInterceptor.class)
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "mobile",  must = false, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
+	@ParamAnnotation(name = "eachFollowed",  must = false, type = ParamInterceptor.Type.INT, min=0, max=2, chs = "关注参数")
 	public void searchUser(){
 		BigInteger memberID = getParaToBigInteger("memberID");
-		if(memberID == null){
-			renderJson(getReturnJson(Code.ERROR, "参数错误", EMPTY_OBJECT));
-			return;
-		}
 		User member = UserQuery.me().findByIdNoCache(memberID);
-		if(member == null){
-			renderJson(getReturnJson(Code.ERROR, "登陆用户不存在", EMPTY_OBJECT));
-			return;
-		}
+
 		String mobile = getPara("mobile");
 		Integer eachFollowed = this.getParaToInt("eachFollowed");
 		
 		if(eachFollowed != null){
-			if(eachFollowed != 0 && eachFollowed != 1 && eachFollowed != 2){
-				renderJson(getReturnJson(Code.ERROR, "关注参数错误", EMPTY_OBJECT));
-				return;
-			}
 			//以下需要包装成 {'result':[{'userID':'xxx'...},{'userID':'xxx'...}]}
 			HashMap<String, Object> data = new HashMap<String, Object>();
 			
@@ -352,76 +316,56 @@ public class IndexController extends ApiBaseController {
 				return;
 			}
 		} else if(StrKit.notBlank(mobile)){
-			if(isMobile(mobile)){
-				HashMap<String, Object> data = new HashMap<String, Object>();
-				//以下需要包装成 {'result':[{'userID':'xxx'...},{'userID':'xxx'...}]}
-				User user = UserQuery.me().findUserByMobile(mobile);
-				if(user == null){
-					data.put("result", EMPTY_ARRAY);
-					renderJson(getReturnJson(Code.OK, "用户不存在", data));
-					return;
-				}
-				HashMap<String, Object> profile = user.getUserProfile(false);
-				//是否已关注刚被搜索出来的对方
-				Follow follow = FollowQuery.me().getFollow(user.getId(), member.getId());
-				String flw = (follow != null && follow.getStatus() == Follow.Status.UNFOLLOWED.getIndex()) ? "1" : "0";
-				profile.put("isFollowed", flw);
-				@SuppressWarnings("rawtypes")
-				HashMap[] profiles = new HashMap[1];
-				profiles[0] = profile;
-				data.put("result", profiles);
-				renderJson(getReturnJson(Code.OK, "", data));
-				return;
-			}else{
-				renderJson(getReturnJson(Code.ERROR, "手机号码错误", EMPTY_OBJECT));
+			HashMap<String, Object> data = new HashMap<String, Object>();
+			//以下需要包装成 {'result':[{'userID':'xxx'...},{'userID':'xxx'...}]}
+			User user = UserQuery.me().findUserByMobile(mobile);
+			if(user == null){
+				data.put("result", EMPTY_ARRAY);
+				renderJson(getReturnJson(Code.OK, "用户不存在", data));
 				return;
 			}
+			HashMap<String, Object> profile = user.getUserProfile(false);
+			//是否已关注刚被搜索出来的对方
+			Follow follow = FollowQuery.me().getFollow(user.getId(), member.getId());
+			String flw = (follow != null && follow.getStatus() == Follow.Status.UNFOLLOWED.getIndex()) ? "1" : "0";
+			profile.put("isFollowed", flw);
+			@SuppressWarnings("rawtypes")
+			HashMap[] profiles = new HashMap[1];
+			profiles[0] = profile;
+			data.put("result", profiles);
+			renderJson(getReturnJson(Code.OK, "", data));
+			return;
 		} else {
 			renderJson(getReturnJson(Code.ERROR, "无参数错误", EMPTY_OBJECT));
 			return;
 		}
 	}
 	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
 	public void validMobile(){
-		String mobile = getPara("mobile");
-		if(StrKit.isBlank(mobile)){
-			renderJson(getReturnJson(Code.ERROR, "手机号格式错误", EMPTY_OBJECT));
-			return;
-		}
-		Code code = isMobile(mobile) ? Code.OK : Code.ERROR;
-		renderJson(getReturnJson(code, "", EMPTY_OBJECT));
+		renderJson(getReturnJson(Code.OK, "", EMPTY_OBJECT));
 		return;
 	}
 	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
 	public void existsMobile(){
 		String mobile = getPara("mobile");
-		if(StrKit.isBlank(mobile)){
-			renderJson(getReturnJson(Code.ERROR, "手机号格式错误", EMPTY_OBJECT));
-			return;
-		}
 		User user = UserQuery.me().findUserByMobile(mobile);
 		Code code = (user != null) ? Code.OK : Code.ERROR;
 		renderJson(getReturnJson(code, "", EMPTY_OBJECT));
 		return;
 	}
 	
-	@Before(MemberTokenInterceptor.class)
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "oldPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=1,  chs = "旧密码")
+	@ParamAnnotation(name = "newPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=6,  chs = "新密码")
 	public void updatePwd(){
 		BigInteger memberID = getParaToBigInteger("memberID");
-		String oldPwd = getPara("oldPwd");
-		String newPwd = getPara("newPwd");
-		if(!StrKit.notBlank(oldPwd, newPwd)){
-			renderJson(getReturnJson(Code.ERROR, "参数不能为空", EMPTY_OBJECT));
-			return;
-		}
-		
-		newPwd = newPwd.trim();
-		if(newPwd.length() < 6){
-			renderJson(getReturnJson(Code.ERROR, "新密码不少于6位", EMPTY_OBJECT));
-			return;
-		}
-		
-		oldPwd = oldPwd.trim();
+		String oldPwd = getPara("oldPwd").trim();
+		String newPwd = getPara("newPwd").trim();
 		User member = UserQuery.me().findByIdNoCache(memberID);
 		if(!EncryptUtils.verlifyUser(member.getPassword(), member.getSalt(), oldPwd)){
 			renderJson(getReturnJson(Code.ERROR, "原密码错误", EMPTY_OBJECT));
@@ -439,10 +383,10 @@ public class IndexController extends ApiBaseController {
 		return;
 	}
 	
-	@Before(MemberTokenInterceptor.class)
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
 	@UploadAnnotation
 	public void uploadFile(){
-
 		UploadFile uploadFile = getFile();
 		if(uploadFile == null){
 			renderJson(getReturnJson(Code.ERROR, "请提供文件", EMPTY_OBJECT));
@@ -466,7 +410,14 @@ public class IndexController extends ApiBaseController {
 		renderJson(getReturnJson(Code.OK, "", json));
 	}
 	
-	@Before(MemberTokenInterceptor.class)
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "money",  must = true, type = ParamInterceptor.Type.DOUBLE, min=1, max=100000000,chs = "借款金额")
+	@ParamAnnotation(name = "endDate",  must = true, type = ParamInterceptor.Type.DATE, chs = "还款日期")
+	@ParamAnnotation(name = "rate",  must = true, type = ParamInterceptor.Type.DOUBLE, min=1, max=24,chs = "年化利率")
+	@ParamAnnotation(name = "forUseType",  must = true, type = ParamInterceptor.Type.STRING, minlen=1,chs = "借款用途")
+	@ParamAnnotation(name = "toFriends",  must = true, type = ParamInterceptor.Type.STRING, minlen=1,chs = "借款人")
+	@ParamAnnotation(name = "video",  must = false, type = ParamInterceptor.Type.STRING, minlen=1,chs = "视频")
 	public void memberBorrow(){
 		BigInteger memberID = getParaToBigInteger("memberID");
 		String moneyStr = getPara("money");
@@ -476,32 +427,18 @@ public class IndexController extends ApiBaseController {
 		String toFriendsStr = getPara("toFriends");
 		String video = getPara("video");
 		if(video == null) video = "";
-		if(!StrKit.notBlank(moneyStr, endDateStr, rate, forUseType, toFriendsStr)){
-			renderJson(getReturnJson(Code.ERROR, "缺少参数", EMPTY_OBJECT));
-			return;
-		}
 		
 		double amount = Double.parseDouble(moneyStr);
 		if(amount >= 3000.0 && StrKit.isBlank(video)){
 			renderJson(getReturnJson(Code.ERROR, "请提供视频", EMPTY_OBJECT));
 			return;
 		}
-		Date maturity_date = null;
-		try {
-			maturity_date = sdfYmd.parse(endDateStr);
-		} catch (ParseException e) {
-			renderJson(getReturnJson(Code.ERROR, "还款日期格式错误", EMPTY_OBJECT));
-			return;
-		}
+		Date maturity_date =Utils.getYmd(endDateStr);
 		if(Utils.getTodayStartTime() + 86400 * 1000 > maturity_date.getTime()){
 			renderJson(getReturnJson(Code.ERROR, "还款日太近", EMPTY_OBJECT));
 			return;
 		}
 		double annual_rate = Double.parseDouble(rate);
-		if(annual_rate > 24){
-			renderJson(getReturnJson(Code.ERROR, "年化利率不得高于24%", EMPTY_OBJECT));
-			return;
-		}
 		Apply.Purpose purpose = Apply.Purpose.getEnum(forUseType);
 		if(purpose == null){
 			renderJson(getReturnJson(Code.ERROR, "不能识别的借款用途", EMPTY_OBJECT));
@@ -551,17 +488,10 @@ public class IndexController extends ApiBaseController {
 		return;
 	}
 	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
 	public void sendCaptcha(){
 		String mobile = getPara("mobile");
-		if(StrKit.isBlank(mobile)){
-			renderJson(getReturnJson(Code.ERROR, "请提供手机号", EMPTY_OBJECT));
-			return;
-		}
-		if(!isMobile(mobile)){
-			renderJson(getReturnJson(Code.ERROR, "手机号格式错误", EMPTY_OBJECT));
-			return;
-		}
-		
 		String  code = (int) (Math.random() * 1000000) + "";
 		JSONObject json = new JSONObject();
 		json.put("code", code);
@@ -575,28 +505,16 @@ public class IndexController extends ApiBaseController {
 			captcha.save();
 			renderJson(getReturnJson(Code.OK, "", EMPTY_OBJECT));
 		} catch (ClientException e) {
-			// TODO Auto-generated catch block
-			//e.printStackTrace();
 			renderJson(getReturnJson(Code.ERROR, "短信发送失败", EMPTY_OBJECT));
 		}
 	}
 	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
+	@ParamAnnotation(name = "captcha",  must = true, type = ParamInterceptor.Type.STRING, minlen=4, chs = "验证码")
 	public void validCaptcha(){
 		String mobile = getPara("mobile");
-		if(StrKit.isBlank(mobile)){
-			renderJson(getReturnJson(Code.ERROR, "请提供手机号", EMPTY_OBJECT));
-			return;
-		}
-		if(!isMobile(mobile)){
-			renderJson(getReturnJson(Code.ERROR, "手机号格式错误", EMPTY_OBJECT));
-			return;
-		}
-		
 		String captchaStr = getPara("captcha");
-		if(StrKit.isBlank(captchaStr)){
-			renderJson(getReturnJson(Code.ERROR, "请提供验证码", EMPTY_OBJECT));
-			return;
-		}
 		
 		Captcha captcha = CaptchaQuery.me().getCaptcha(mobile);
 		if(captcha == null){
@@ -628,17 +546,11 @@ public class IndexController extends ApiBaseController {
 	
 	@SuppressWarnings("unused")
 	@Clear(AccessTokenInterceptor.class)
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
 	public void resetMemberToken(){
 		if(DEBUG == false) return;
 		String mobile = getPara("mobile");
-		if(StrKit.isBlank(mobile)){
-			renderJson(getReturnJson(Code.ERROR, "请提供手机号", EMPTY_OBJECT));
-			return;
-		}
-		if(!isMobile(mobile)){
-			renderJson(getReturnJson(Code.ERROR, "手机号格式错误", EMPTY_OBJECT));
-			return;
-		}
 		User member = UserQuery.me().findUserByMobile(mobile);
 		if(member == null) {
 			renderJson(getReturnJson(Code.ERROR, "用户不存在", EMPTY_OBJECT));

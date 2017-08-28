@@ -1,4 +1,4 @@
-package yjt.api.v1;
+package yjt.api.v1.Interceptor;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -13,6 +13,7 @@ import com.jfinal.aop.Invocation;
 import com.jfinal.kit.StrKit;
 import com.jfinal.upload.MultipartRequest;
 
+import yjt.api.v1.ApiBaseController;;
 public class AccessTokenInterceptor implements Interceptor{
 
 	private static String ACCESSTOKEN_SALT = "yjt./*?";

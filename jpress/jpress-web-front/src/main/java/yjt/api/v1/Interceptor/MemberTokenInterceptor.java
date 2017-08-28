@@ -1,4 +1,4 @@
-package yjt.api.v1;
+package yjt.api.v1.Interceptor;
 
 import java.math.BigInteger;
 
@@ -10,6 +10,7 @@ import com.jfinal.kit.StrKit;
 
 import io.jpress.model.User;
 import io.jpress.model.query.UserQuery;
+import yjt.api.v1.ApiBaseController;
 
 public class MemberTokenInterceptor implements Interceptor{
 

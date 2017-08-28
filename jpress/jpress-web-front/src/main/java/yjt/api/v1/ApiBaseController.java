@@ -53,6 +53,7 @@ import io.jpress.template.Thumbnail;
 import io.jpress.utils.AttachmentUtils;
 import io.jpress.utils.FileUtils;
 import io.jpress.utils.ImageUtils;
+import yjt.api.v1.Annotation.UploadAnnotation;
 
 public class ApiBaseController extends BaseFrontController{
 
@@ -70,12 +71,24 @@ public class ApiBaseController extends BaseFrontController{
 		return art;
 	}
 	
-	protected void accessTokenFail(String accessToken){
+	public void accessTokenFail(String accessToken){
 		ApiReturnType art = getReturnJson(Code.ERROR, StrKit.isBlank(accessToken) ? "缺少accessToken" : "accessToken失效", EMPTY_OBJECT);
 		this.renderJson(art);
 	}
 	
-	protected void memberTokenFail(){
+	public void paramError(String err){
+		ApiReturnType art = getReturnJson(Code.ERROR, err, EMPTY_OBJECT);
+		this.renderJson(art);
+	}
+	
+	public void paramError(String err, Code code){
+		ApiReturnType art = getReturnJson(code, err, EMPTY_OBJECT);
+		this.renderJson(art);
+	}
+	
+	
+	
+	public void memberTokenFail(){
 		ApiReturnType art = getReturnJson(Code.TIMEOUT, "memberToken失效", EMPTY_OBJECT);
 		this.renderJson(art);
 	}
@@ -95,15 +108,7 @@ public class ApiBaseController extends BaseFrontController{
 		return getReturnJson(errno, EMPTY_STRING, data);
 	}
 	
-	protected static Pattern MOBILE_PATTERN = Pattern.compile("^1[345789][0-9]{9}$");
-	protected static boolean isMobile(String mobile){
-		boolean ret = false;
-		if(StrKit.notBlank(mobile)){
-			Matcher m = MOBILE_PATTERN.matcher(mobile);
-			ret = m.matches();
-		}
-		return ret;
-	}
+
 	
 	public class ApiReturnType{
 		int success;
@@ -290,7 +295,7 @@ public class ApiBaseController extends BaseFrontController{
 		}
 	}
 	
-	protected static enum Code{
+	public static enum Code{
 		OK("成功",1), ERROR("失败",0), TIMEOUT("登陆失效",-1);
 		private String name;
 		private int index;
