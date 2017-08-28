@@ -27,6 +27,7 @@ import io.jpress.utils.FileUtils;
 import yjt.model.Apply;
 import yjt.model.Captcha;
 import yjt.model.Follow;
+import yjt.model.query.ApplyQuery;
 import yjt.model.query.CaptchaQuery;
 import yjt.model.query.ContractQuery;
 import yjt.model.query.FollowQuery;
@@ -484,6 +485,36 @@ public class IndexController extends ApiBaseController {
 		apply.save();
 		JSONObject json = new JSONObject();
 		json.put("id", apply.getId().toString());
+		renderJson(getReturnJson(Code.OK, "", json));
+		return;
+	}
+	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "applyID",  must = true, type = ParamInterceptor.Type.INT, min=1,chs = "申请号")
+	public void applyDetail(){
+		BigInteger applyID = getParaToBigInteger("applyID");
+		Apply apply = ApplyQuery.me().findById(applyID);
+		if(apply == null){
+			renderJson(getReturnJson(Code.ERROR, "申请不存在", EMPTY_OBJECT));
+			return;
+		}
+		User user = apply.getUser();
+		JSONObject json = new JSONObject();
+		json.put("id", applyID.toString());
+		json.put("userID", user.getId().toString());
+		json.put("userName", user.getRealname());
+		json.put("userAvatar", user.getAvatar());
+		json.put("userOverdue", "0");  //是否逾期暂时略过
+		long day = (apply.getMaturityDate().getTime() - System.currentTimeMillis()) / (86400 * 1000);
+		json.put("day", day>0 ? day+"" : "");  //因为申请时没有固定借款日，此处只能计算未来到今日的天数了
+		json.put("money", Utils.bigDecimalRound2(apply.getAmount()));
+		json.put("rate", Utils.bigDecimalRound2(apply.getAnnualRate()) + "%");
+		json.put("endDate", sdfYmd.format(apply.getMaturityDate()));
+		json.put("retType", "" + apply.getRepaymentMethod());
+		json.put("forUse", Apply.Purpose.getEnum(apply.getPurpose()).getName());
+		json.put("video",apply.getVideo());
+		
 		renderJson(getReturnJson(Code.OK, "", json));
 		return;
 	}

@@ -1,6 +1,8 @@
 package yjt.api.v1;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -71,6 +73,11 @@ public class Utils {
 			ret = m.matches();
 		}
 		return ret;
+	}
+	
+	protected static final DecimalFormat DF0_00   =new DecimalFormat("#.00");
+	public static String bigDecimalRound2(BigDecimal bd){
+		return DF0_00.format(bd);
 	}
 	
 	

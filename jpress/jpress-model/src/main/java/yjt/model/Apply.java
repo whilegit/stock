@@ -1,12 +1,21 @@
 package yjt.model;
 
+import java.math.BigInteger;
+
+import io.jpress.model.User;
 import io.jpress.model.core.Table;
+import io.jpress.model.query.UserQuery;
 import yjt.model.base.BaseApply;
 
 @Table(tableName = "apply", primaryKey = "id")
 public class Apply extends BaseApply<Apply>{
 
 	private static final long serialVersionUID = 1L;
+	
+	public User getUser(){
+		BigInteger userId = this.getApplyUid();
+		return UserQuery.me().findById(userId);
+	}
 	
 	public static enum Status{
 		INVALID("无效", 0), VALID("有效", 1);
