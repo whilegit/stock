@@ -27,11 +27,12 @@ import io.jpress.utils.FileUtils;
 import yjt.model.Apply;
 import yjt.model.Captcha;
 import yjt.model.Follow;
+import yjt.model.Message;
 import yjt.model.query.ApplyQuery;
 import yjt.model.query.CaptchaQuery;
 import yjt.model.query.ContractQuery;
 import yjt.model.query.FollowQuery;
-
+import yjt.model.query.MessageQuery;
 import yjt.api.v1.Interceptor.*;
 import yjt.api.v1.Annotation.*;
 
@@ -66,7 +67,6 @@ public class IndexController extends ApiBaseController {
 		}else{
 			renderJson(getReturnJson(Code.ERROR, "手机号码或密码错误", EMPTY_OBJECT));
 		}
-		
 	}
 	
 	@Before(ParamInterceptor.class)
@@ -254,9 +254,6 @@ public class IndexController extends ApiBaseController {
 		}
 	}
 	
-	/**
-	 * eachFollowed  0:关注自己的（粉丝）  1:相互关注    2:自己关注的
-	 */
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
 	@ParamAnnotation(name = "mobile",  must = false, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
@@ -413,6 +410,48 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "page",  must = true, type = ParamInterceptor.Type.INT, min=1,chs = "起始页")
+	@ParamAnnotation(name = "pageSize",  must = true, type = ParamInterceptor.Type.INT, min=1,chs = "每页数")
+	public void userMsgList(){
+		BigInteger memberID = getParaToBigInteger("memberID");
+		int page = getParaToInt("page");
+		int pageSize = getParaToInt("pageSize");
+		long totalItems = MessageQuery.me().findCount(null, memberID, null);
+		List<Message> msgList = MessageQuery.me().findList(page, pageSize, null, memberID, null);
+		
+		JSONObject ret = new JSONObject();
+		ret.put("page", ""+page);
+		ret.put("pageSize", ""+pageSize);
+		ret.put("totalItems", ""+totalItems);
+		ArrayList<JSONObject> result = new ArrayList<JSONObject>();
+		ret.put("result", result);
+		for(Message msg : msgList){
+			JSONObject json = new JSONObject();
+			json.put("id", msg.getId().toString());
+			json.put("content", msg.getContent());
+			Date createTime = msg.getCreateTime();
+			json.put("createTime", createTime != null ? Utils.sdfYmdHms.format(msg.getCreateTime()) : "");
+			json.put("type", ""+msg.getType());
+			json.put("isRead", "" + msg.getIsRead());
+			json.put("isAction", "" + msg.getIsAction());
+			
+			JSONObject action = new JSONObject();
+			action.put("act", msg.getAct());
+			BigInteger contractId =  msg.getContractId();
+			action.put("contractID", contractId != null ? contractId.toString() : "");
+			BigInteger applyId = msg.getApplyId();
+			action.put("applyID", applyId != null ? applyId.toString() : "");
+			action.put("url", msg.getUrl());
+			json.put("action", action);
+			
+			result.add(json);
+		}
+		renderJson(getReturnJson(Code.OK, "", ret));
+		return;
+	}
+	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
 	@ParamAnnotation(name = "money",  must = true, type = ParamInterceptor.Type.DOUBLE, min=1, max=100000000,chs = "借款金额")
 	@ParamAnnotation(name = "endDate",  must = true, type = ParamInterceptor.Type.DATE, chs = "还款日期")
 	@ParamAnnotation(name = "rate",  must = true, type = ParamInterceptor.Type.DOUBLE, min=1, max=24,chs = "年化利率")
@@ -507,7 +546,7 @@ public class IndexController extends ApiBaseController {
 		json.put("userAvatar", user.getAvatar());
 		json.put("userOverdue", "0");  //是否逾期暂时略过
 		long day = (apply.getMaturityDate().getTime() - System.currentTimeMillis()) / (86400 * 1000);
-		json.put("day", day>0 ? day+"" : "");  //因为申请时没有固定借款日，此处只能计算未来到今日的天数了
+		json.put("day", day>0 ? day+"" : "0");  //因为申请时没有固定借款日，此处只能计算未来到今日的天数了
 		json.put("money", Utils.bigDecimalRound2(apply.getAmount()));
 		json.put("rate", Utils.bigDecimalRound2(apply.getAnnualRate()) + "%");
 		json.put("endDate", sdfYmd.format(apply.getMaturityDate()));
