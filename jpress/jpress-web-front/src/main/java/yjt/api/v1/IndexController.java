@@ -628,6 +628,17 @@ public class IndexController extends ApiBaseController {
 		return;
 	}
 	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	public void userClearMsg() {
+		BigInteger memberID = getParaToBigInteger("memberID");
+		int count = MessageQuery.me().deleteAll(memberID);
+		JSONObject json = new JSONObject();
+		json.put("count", count);
+		renderJson(getReturnJson(Code.OK, "", json));
+		return;
+	}
+	
 	@SuppressWarnings("unused")
 	@Clear(AccessTokenInterceptor.class)
 	public void getAccessToken(){

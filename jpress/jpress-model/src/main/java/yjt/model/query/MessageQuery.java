@@ -4,6 +4,8 @@ import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.jfinal.plugin.activerecord.Db;
+
 import io.jpress.model.query.JBaseQuery;
 import yjt.model.Message;
 
@@ -30,6 +32,7 @@ public class MessageQuery extends JBaseQuery{
 		if(isRead != null){
 			needWhere = appendIfNotEmpty(sqlBuilder, "c.is_read", isRead?"1":"0", params, needWhere);
 		}
+		needWhere = appendIfNotEmpty(sqlBuilder, "c.deleted", "0", params, needWhere);
 		
 		sqlBuilder.append(" Order By c.id Desc Limit ?, ?");
 		params.add((page -1)*pageSize);
@@ -54,6 +57,7 @@ public class MessageQuery extends JBaseQuery{
 		if(isRead != null){
 			appendAndIfNotEmpty(sqlBuilder, "is_read", isRead?"1":"0", params);
 		}
+		appendAndIfNotEmpty(sqlBuilder, "deleted", "0", params);
 		
 		if(params.isEmpty()){
 			return DAO.doFindCount(sqlBuilder.toString());
@@ -64,5 +68,19 @@ public class MessageQuery extends JBaseQuery{
 	
 	public Message findById(final BigInteger id) {
 		return DAO.findById(id);
+	}
+	
+	/**
+	 * 删除用户名下的所有消息(软删除)
+	 * @param toUserID
+	 * @return
+	 */
+	public int deleteAll(BigInteger toUserID) {
+		if(toUserID == null) return 0;
+		StringBuilder sqlBuilder = new StringBuilder("Update "+ DAO.getTableName() + " Set deleted=1");
+		LinkedList<Object> params = new LinkedList<Object>();
+		appendIfNotEmpty(sqlBuilder, "to_userid", toUserID.toString(), params, true);
+		appendIfNotEmpty(sqlBuilder, "deleted", "0", params, false);
+		return Db.update(sqlBuilder.toString(), params.toArray());
 	}
 }
