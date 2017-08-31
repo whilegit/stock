@@ -28,6 +28,7 @@ import yjt.model.Apply;
 import yjt.model.Captcha;
 import yjt.model.Follow;
 import yjt.model.Message;
+import yjt.model.Report;
 import yjt.model.query.ApplyQuery;
 import yjt.model.query.CaptchaQuery;
 import yjt.model.query.ContractQuery;
@@ -664,6 +665,46 @@ public class IndexController extends ApiBaseController {
 		json.put("msg", ""+msg);
 		renderJson(getReturnJson(Code.OK, "", json));
 		return;
+	}
+	
+	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "content",  must = true, type = ParamInterceptor.Type.STRING, minlen=3, chs = "举报内容")
+	@ParamAnnotation(name = "imgs",  must = false, type = ParamInterceptor.Type.STRING, chs = "举报图片")
+	@ParamAnnotation(name = "toUserID",  must = false, type = ParamInterceptor.Type.INT, min=1, chs = "被举报人")
+	public void report() {
+		BigInteger memberID = getParaToBigInteger("memberID");
+		String content = getPara("content");
+		String imgs = getPara("imgs");
+		imgs = StrKit.notBlank(imgs) ? imgs : "";
+		
+		String toUserIDStr = getPara("toUserID");
+		BigInteger toUserID = StrKit.notBlank(toUserIDStr) ? BigInteger.valueOf(Long.valueOf(toUserIDStr)) : BigInteger.ZERO;
+		if(toUserID.equals(BigInteger.ZERO) == false) {
+			User user = UserQuery.me().findById(toUserID);
+			if(user == null) {
+				renderJson(getReturnJson(Code.ERROR, "被举报人不存在", EMPTY_OBJECT));
+				return;
+			}
+		}
+		
+		Report report = getModel(Report.class);
+		report.setFromUserId(memberID);
+		report.setToUserId(toUserID);
+		report.setImgs(imgs);
+		report.setContent(content);
+		report.setCreateTime(new Date());
+		boolean flag = report.save();
+		if(flag) {
+			JSONObject json = new JSONObject();
+			json.put("reportID", report.getId().toString());
+			renderJson(getReturnJson(Code.OK, "", json));
+			return;
+		} else {
+			renderJson(getReturnJson(Code.ERROR, "新增举报失败", EMPTY_OBJECT));
+			return;
+		}
 	}
 	
 	@SuppressWarnings("unused")
