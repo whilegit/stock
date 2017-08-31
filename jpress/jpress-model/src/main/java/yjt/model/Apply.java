@@ -18,7 +18,7 @@ public class Apply extends BaseApply<Apply>{
 	}
 	
 	public static enum Status{
-		INVALID("无效", 0), VALID("有效", 1);
+		INVALID("无效", 0), VALID("有效", 1), DEALED("已达成交易", 2);
 		private String name;
 		private int index;
 	    private Status(String name, int index) {  
