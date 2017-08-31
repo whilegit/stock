@@ -26,6 +26,7 @@ import io.jpress.utils.EncryptUtils;
 import io.jpress.utils.FileUtils;
 import yjt.model.Apply;
 import yjt.model.Captcha;
+import yjt.model.Feedback;
 import yjt.model.Follow;
 import yjt.model.Message;
 import yjt.model.Report;
@@ -667,6 +668,40 @@ public class IndexController extends ApiBaseController {
 		return;
 	}
 	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = false, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "name",  must = false, type = ParamInterceptor.Type.STRING, minlen=1, chs = "联系人")
+	@ParamAnnotation(name = "tel",  must = false, type = ParamInterceptor.Type.STRING, minlen=1, chs = "联系电话")
+	@ParamAnnotation(name = "content",  must = true, type = ParamInterceptor.Type.STRING, minlen=1, chs = "反馈内容")
+	public void feedback() {
+		BigInteger memberID = getParaToBigInteger("memberID", BigInteger.ZERO);
+		//如果带有memberID的参数，则必须要提供此用户的令牌
+		if(StrKit.isBlank(getPara("memberToken")) && !memberID.equals(BigInteger.ZERO)) {
+			renderJson(getReturnJson(Code.ERROR, "请提供用户令牌", EMPTY_OBJECT));
+			return;
+		}
+		String name = getPara("name", "");
+		String tel = getPara("tel", "");
+		String content = getPara("content");
+		
+		Feedback feedback = getModel(Feedback.class);
+		feedback.setUserid(memberID);
+		feedback.setName(name);
+		feedback.setTel(tel);
+		feedback.setContent(content);
+		feedback.setCreateTime(new Date());
+		boolean flag = feedback.save();
+		if(flag) {
+			JSONObject json = new JSONObject();
+			json.put("feedbackID", feedback.getId().toString());
+			renderJson(getReturnJson(Code.OK, "", json));
+			return;
+		} else {
+			renderJson(getReturnJson(Code.ERROR, "新增反馈失败", EMPTY_OBJECT));
+			return;
+		}
+		
+	}
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
