@@ -634,11 +634,21 @@ public class IndexController extends ApiBaseController {
 		BigInteger memberID = getParaToBigInteger("memberID");
 		int count = MessageQuery.me().deleteAll(memberID);
 		JSONObject json = new JSONObject();
-		json.put("count", count);
+		json.put("count", ""+count);
 		renderJson(getReturnJson(Code.OK, "", json));
 		return;
 	}
 	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	public void badge() {
+		BigInteger memberID = getParaToBigInteger("memberID");
+		long msg = MessageQuery.me().findCount(null, memberID, false);
+		JSONObject json = new JSONObject();
+		json.put("msg", ""+msg);
+		renderJson(getReturnJson(Code.OK, "", json));
+		return;
+	}
 	@SuppressWarnings("unused")
 	@Clear(AccessTokenInterceptor.class)
 	public void getAccessToken(){
