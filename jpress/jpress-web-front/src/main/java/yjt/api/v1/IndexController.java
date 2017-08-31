@@ -616,6 +616,11 @@ public class IndexController extends ApiBaseController {
 			renderJson(getReturnJson(Code.ERROR, "消息不存在", EMPTY_OBJECT));
 			return;
 		}
+		BigInteger memberID = getParaToBigInteger("memberID");
+		if(message.getToUserId().equals(memberID) == false) {
+			renderJson(getReturnJson(Code.ERROR, "无权回执", EMPTY_OBJECT));
+			return;
+		}
 		message.setIsRead(1);
 		message.setReadTime(new Date());
 		message.update();
