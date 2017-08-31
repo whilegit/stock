@@ -1,6 +1,8 @@
 package yjt.model.query;
 
 import java.math.BigInteger;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,6 +12,7 @@ import io.jpress.model.query.JBaseQuery;
 import yjt.model.Message;
 
 public class MessageQuery extends JBaseQuery{
+	protected static final SimpleDateFormat sdfYmdHms = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	protected static final Message DAO = new Message();
 	private static final MessageQuery QUERY = new MessageQuery();
 	
@@ -80,6 +83,21 @@ public class MessageQuery extends JBaseQuery{
 		StringBuilder sqlBuilder = new StringBuilder("Update "+ DAO.getTableName() + " Set deleted=1");
 		LinkedList<Object> params = new LinkedList<Object>();
 		appendIfNotEmpty(sqlBuilder, "to_userid", toUserID.toString(), params, true);
+		appendIfNotEmpty(sqlBuilder, "deleted", "0", params, false);
+		return Db.update(sqlBuilder.toString(), params.toArray());
+	}
+	
+	/**
+	 * 设置用户名下的消息为已读状态
+	 * @param toUserID
+	 * @return
+	 */
+	public int readAll(BigInteger toUserID) {
+		if(toUserID == null) return 0;
+		StringBuilder sqlBuilder = new StringBuilder("Update "+ DAO.getTableName() + " Set is_read=1,read_time='"+sdfYmdHms.format(new Date())+"'");
+		LinkedList<Object> params = new LinkedList<Object>();
+		appendIfNotEmpty(sqlBuilder, "to_userid", toUserID.toString(), params, true);
+		appendIfNotEmpty(sqlBuilder, "is_read", "0", params, false);
 		appendIfNotEmpty(sqlBuilder, "deleted", "0", params, false);
 		return Db.update(sqlBuilder.toString(), params.toArray());
 	}

@@ -649,6 +649,23 @@ public class IndexController extends ApiBaseController {
 		renderJson(getReturnJson(Code.OK, "", json));
 		return;
 	}
+
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "type",  must = true, type = ParamInterceptor.Type.STRING, minlen=1, chs = "消息类型")
+	public void clearBadge() {
+		BigInteger memberID = getParaToBigInteger("memberID");
+		int msg = 0;
+		String type = getPara("type");
+		if(type.equals("msg")) {
+			msg = MessageQuery.me().readAll(memberID);
+		}
+		JSONObject json = new JSONObject();
+		json.put("msg", ""+msg);
+		renderJson(getReturnJson(Code.OK, "", json));
+		return;
+	}
+	
 	@SuppressWarnings("unused")
 	@Clear(AccessTokenInterceptor.class)
 	public void getAccessToken(){
