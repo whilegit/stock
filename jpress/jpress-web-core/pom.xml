@@ -43,7 +43,7 @@
 		<dependency>
 			<groupId>com.jfinal</groupId>
 			<artifactId>jfinal</artifactId>
-		</dependency>
+			</dependency>
 
 		<dependency>
 			<groupId>com.jfinal</groupId>
@@ -154,17 +154,15 @@
 		</dependency>
 		
 		<dependency>
-		    <groupId>org.eclipse.jetty</groupId>
+		    <groupId>com.jfinal</groupId>
 		    <artifactId>jetty-server</artifactId>
-		    <version>9.4.6.v20170531</version>
+		    <version>8.1.8</version>
 		</dependency>
-		
 		<dependency>
-		    <groupId>org.eclipse.jetty</groupId>
-		    <artifactId>jetty-webapp</artifactId>
-		    <version>9.4.6.v20170531</version>
+		    <groupId>com.jfinal</groupId>
+		    <artifactId>cos</artifactId>
+		    <version>26Dec2008</version>
 		</dependency>
-
 	</dependencies>
 
 	<build>
