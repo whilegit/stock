@@ -553,9 +553,10 @@ public class IndexController extends ApiBaseController {
 		json.put("rate", Utils.bigDecimalRound2(apply.getAnnualRate()) + "%");
 		json.put("endDate", sdfYmd.format(apply.getMaturityDate()));
 		json.put("retType", "" + apply.getRepaymentMethod());
+		json.put("fromUserCount", apply.getToFriends().size());
 		json.put("forUse", Apply.Purpose.getEnum(apply.getPurpose()).getName());
 		json.put("video",apply.getVideo());
-		
+		json.put("status", Apply.Status.getEnum(apply.getStatus()).getName());
 		renderJson(getReturnJson(Code.OK, "", json));
 		return;
 	}
