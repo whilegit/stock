@@ -606,6 +606,23 @@ public class IndexController extends ApiBaseController {
 		return;
 	}
 	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "messageID",  must = true, type = ParamInterceptor.Type.INT, min=1,chs = "消息")
+	public void userMsgRead() {
+		BigInteger messageID = getParaToBigInteger("messageID");
+		Message message = MessageQuery.me().findById(messageID);
+		if(message == null){
+			renderJson(getReturnJson(Code.ERROR, "消息不存在", EMPTY_OBJECT));
+			return;
+		}
+		message.setIsRead(1);
+		message.setReadTime(new Date());
+		message.update();
+		renderJson(getReturnJson(Code.OK, "", EMPTY_OBJECT));
+		return;
+	}
+	
 	@SuppressWarnings("unused")
 	@Clear(AccessTokenInterceptor.class)
 	public void getAccessToken(){

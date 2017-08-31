@@ -61,4 +61,8 @@ public class MessageQuery extends JBaseQuery{
 			return DAO.doFindCount(sqlBuilder.toString(), params.toArray());
 		}
 	}
+	
+	public Message findById(final BigInteger id) {
+		return DAO.findById(id);
+	}
 }
