@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Aug 14, 2017 at 01:54 PM
+-- Generation Time: Aug 25, 2017 at 03:51 PM
 -- Server version: 5.7.18
 -- PHP Version: 5.4.16
 
@@ -39,6 +39,11 @@ CREATE TABLE IF NOT EXISTS `jpress_user` (
   `mobile_status` varchar(32) DEFAULT NULL COMMENT '手机状态（是否认证等）',
   `telephone` varchar(32) DEFAULT NULL COMMENT '固定电话',
   `amount` decimal(10,2) unsigned DEFAULT '0.00' COMMENT '金额（余额）',
+  `can_borrow_money` int(10) NOT NULL DEFAULT '0' COMMENT '信用额度',
+  `sys_push` tinyint(3) NOT NULL DEFAULT '1' COMMENT '系统消息提醒。0,1',
+  `sale_push` tinyint(3) NOT NULL DEFAULT '1' COMMENT '交易消息提醒。0,1',
+  `in_push` tinyint(3) NOT NULL DEFAULT '1' COMMENT '催收消息提醒。0,1',
+  `out_push` tinyint(3) NOT NULL DEFAULT '1' COMMENT '借款订阅消息。0,1',
   `gender` varchar(16) DEFAULT NULL COMMENT '性别',
   `role` varchar(32) DEFAULT 'visitor' COMMENT '权限',
   `perm` varchar(1024) NOT NULL DEFAULT '' COMMENT '【新增】权限',
@@ -68,17 +73,17 @@ CREATE TABLE IF NOT EXISTS `jpress_user` (
   `activated` datetime DEFAULT NULL COMMENT '激活时间',
   `member_token` varchar(32) DEFAULT NULL COMMENT '【新增】用户令牌，由app使用',
   `score` int(11) NOT NULL DEFAULT '0' COMMENT '积分'
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COMMENT='用户信息表，保存用户信息。';
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COMMENT='用户信息表，保存用户信息。';
 
 --
 -- Dumping data for table `jpress_user`
 --
 
-INSERT INTO `jpress_user` (`id`, `username`, `nickname`, `realname`, `password`, `salt`, `email`, `email_status`, `mobile`, `mobile_status`, `telephone`, `amount`, `gender`, `role`, `perm`, `signature`, `content_count`, `comment_count`, `qq`, `wechat`, `weibo`, `facebook`, `linkedin`, `birthday`, `company`, `occupation`, `address`, `zipcode`, `site`, `graduateschool`, `education`, `avatar`, `idcardtype`, `idcard`, `status`, `created`, `create_source`, `logged`, `activated`, `member_token`, `score`) VALUES
-(1, 'yjt', 'testttestss', '林忠仁', '68f2741f481f237fe0d60b3d7faaa20f4807898cf1dfbdd756431b4f62146a27', '7acbd2b84e93e9ef4', '6215714@qq.com', NULL, '18968596872', NULL, NULL, '0.00', '1', 'administrator', 'perm-edit', 'xxx', 1, 0, '6215714', NULL, 'while1', NULL, NULL, '2000-07-11 00:00:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '/attachment/20170615/4b04908922884382b3f2362948ea54f4.jpg', NULL, NULL, 'activited', '2017-06-06 23:14:30', NULL, '2017-07-17 23:00:48', NULL, 'oa6UaYhgo8JPQNjG4srwMUvZdEo8C8sh', 0),
-(2, 'admin', 'admin1-nick', NULL, '5a7612c7e12f83d58f1f185a6c32bae01c37cfb385f26129408ad9bcc6693b32', '7b68edf4fd70f076160', 'admin@yjt.com', NULL, '123456789', NULL, NULL, '0.00', NULL, 'visitor', 'user-edit', 'none', 1, 0, '6215714', NULL, 'aaa', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'activited', '2017-06-20 23:33:04', NULL, '2017-06-20 23:33:05', NULL, '', 0),
-(3, 'test01', 'test01nick', '张三', '123456', 'abcd', '11@qq.com', 'y', '13811111111', 'y', '01011111111', '0.00', '1', 'visitor', 'contract-list', '哥是个传说', 0, 0, '1111111', 'wechat_111', NULL, NULL, NULL, '2000-11-01 00:00:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'activited', NULL, NULL, NULL, NULL, '', 0),
-(4, 'test02', 'test02nick', '李四', '123456', 'abcd', '22@qq.com', 'y', '13822222222', 'y', '01022222222', '0.00', '2', 'visitor', '', '姐是个传说', 0, 0, '22222222', 'wechat_111', NULL, NULL, NULL, '2000-11-02 00:00:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'activited', NULL, NULL, NULL, NULL, '', 0);
+INSERT INTO `jpress_user` (`id`, `username`, `nickname`, `realname`, `password`, `salt`, `email`, `email_status`, `mobile`, `mobile_status`, `telephone`, `amount`, `can_borrow_money`, `sys_push`, `sale_push`, `in_push`, `out_push`, `gender`, `role`, `perm`, `signature`, `content_count`, `comment_count`, `qq`, `wechat`, `weibo`, `facebook`, `linkedin`, `birthday`, `company`, `occupation`, `address`, `zipcode`, `site`, `graduateschool`, `education`, `avatar`, `idcardtype`, `idcard`, `status`, `created`, `create_source`, `logged`, `activated`, `member_token`, `score`) VALUES
+(1, 'yjt', 'testttestss', '林忠仁', '70f73a53980c9d07b7925d0d07ade8b516ddf632feee29992d066503f41150d5', '448bda287017a3fbc2fac', '6215714@qq.com', NULL, '18968596872', NULL, NULL, '0.00', 0, 1, 1, 1, 1, '1', 'administrator', 'perm-edit', 'xxx', 1, 0, '6215714', NULL, 'while1', NULL, NULL, '1984-07-23 00:00:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '/attachment/20170615/4b04908922884382b3f2362948ea54f4.jpg', NULL, NULL, 'activited', '2017-06-06 23:14:30', NULL, '2017-08-21 23:00:39', NULL, 'a1BGxAZgYlhyz8n1V2y76MjEbgeLZivI', 0),
+(2, 'admin', 'admin1-nick', NULL, '5a7612c7e12f83d58f1f185a6c32bae01c37cfb385f26129408ad9bcc6693b32', '7b68edf4fd70f076160', 'admin@yjt.com', NULL, '13012345678', NULL, NULL, '0.00', 0, 1, 1, 1, 1, NULL, 'visitor', 'user-edit', 'none', 1, 0, '6215714', NULL, 'aaa', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'activited', '2017-06-20 23:33:04', NULL, '2017-06-20 23:33:05', NULL, 'geZHCthskHSTgt8aeqg5LijepDeJ8F9j', 0),
+(3, 'test01', 'test01nick', '张三', '123456', 'abcd', '11@qq.com', 'y', '13811111111', 'y', '01011111111', '0.00', 0, 1, 1, 1, 1, '1', 'visitor', 'contract-list', '哥是个传说', 0, 0, '1111111', 'wechat_111', NULL, NULL, NULL, '2000-11-01 00:00:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'activited', NULL, NULL, NULL, NULL, '', 0),
+(4, 'test02', 'test02nick', '李四', '123456', 'abcd', '22@qq.com', 'y', '13822222222', 'y', '01022222222', '0.00', 0, 1, 1, 1, 1, '2', 'visitor', '', '姐是个传说', 0, 0, '22222222', 'wechat_111', NULL, NULL, NULL, '2000-11-02 00:00:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'activited', NULL, NULL, NULL, NULL, '', 0);
 
 --
 -- Indexes for dumped tables
@@ -105,7 +110,7 @@ ALTER TABLE `jpress_user`
 -- AUTO_INCREMENT for table `jpress_user`
 --
 ALTER TABLE `jpress_user`
-  MODIFY `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT '主键ID',AUTO_INCREMENT=13;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

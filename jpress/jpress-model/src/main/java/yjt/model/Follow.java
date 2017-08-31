@@ -19,11 +19,6 @@ public class Follow extends BaseFollow<Follow>{
 	private User followed;  //被关注人
 	private User follower; 	//关注人
 	
-	public boolean add(BigInteger followedId, BigInteger followerId){
-		boolean flag = false;
-		
-		return flag;
-	}
 	public static enum Status{
 		UNFOLLOWED("未关注", 0), FOLLOWED("已关注", 1);
 		private String name;

@@ -16,9 +16,11 @@
 package io.jpress.model.query;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.ehcache.IDataLoader;
 
@@ -56,6 +58,27 @@ public class UserQuery extends JBaseQuery {
 			return DAO.find(sqlBuilder.toString(), params.toArray());
 		}
 
+	}
+	
+	public List<User> findList(BigInteger[] ids){
+		if(ids == null) return null;
+		if(ids.length == 0) return null;
+		StringBuilder bd = new StringBuilder();
+		for(int i = 0; i<ids.length; i++){
+			if(i != 0) bd.append(",");
+			if(ids[i] == null) continue;
+			bd.append(ids[i].toString());
+		}
+		StringBuilder sqlBuilder = new StringBuilder("select u.* from user u Where u.id in ("+bd.toString()+")");
+		return DAO.find(sqlBuilder.toString());
+	}
+	
+	public List<User> findList(List<BigInteger> ids){
+		if(ids == null) return new ArrayList<User>();
+		int count = ids.size();
+		if(count == 0) return new ArrayList<User>();
+		BigInteger[] tmp = new BigInteger[count];
+		return findList(ids.toArray(tmp));
 	}
 
 	public User findFirstFromMetadata(String key, Object value) {

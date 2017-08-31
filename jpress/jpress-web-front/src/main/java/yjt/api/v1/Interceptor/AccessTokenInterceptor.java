@@ -1,15 +1,19 @@
-package yjt.api.v1;
+package yjt.api.v1.Interceptor;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.alibaba.fastjson.JSONObject;
 import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.Invocation;
 import com.jfinal.kit.StrKit;
+import com.jfinal.upload.MultipartRequest;
 
+import yjt.api.v1.ApiBaseController;;
 public class AccessTokenInterceptor implements Interceptor{
 
 	private static String ACCESSTOKEN_SALT = "yjt./*?";
@@ -17,21 +21,27 @@ public class AccessTokenInterceptor implements Interceptor{
 	public void intercept(Invocation inv) {
 		// TODO Auto-generated method stub
 		boolean pass = false;
-
-		String accessToken = inv.getController().getPara("accessToken");
+		HttpServletRequest request = inv.getController().getRequest();
+		request.setAttribute("invocation", inv);
+		String accessToken = ((ApiBaseController)(inv.getController())).getPara("accessToken");
 		if(StrKit.notBlank(accessToken)){
-			SimpleDateFormat sdf=new SimpleDateFormat("yyyy/MM/dd");
-			String today = sdf.format(new Date());
-			String token = getMD5(ACCESSTOKEN_SALT + today);
-			System.out.println(token);
-			pass = accessToken.equals(token);
+			pass = accessToken.equals(getCurrentAccessToken());
 		}
 
-		if(pass) inv.invoke();
+		if(pass){
+			inv.invoke();
+		}
 		else {
 			ApiBaseController bc = (ApiBaseController) inv.getController();
-			bc.accessTokenFail();
+			bc.accessTokenFail(accessToken);
 		}
+	}
+	
+	public static String getCurrentAccessToken(){
+		SimpleDateFormat sdf=new SimpleDateFormat("yyyy/MM/dd");
+		String today = sdf.format(new Date());
+		String token = getMD5(ACCESSTOKEN_SALT + today);
+		return token;
 	}
 	
 	public static String getMD5(String str) {

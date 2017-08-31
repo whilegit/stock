@@ -72,14 +72,13 @@ public class User extends BaseUser<User> {
 		return "/user/" + getId();
 	}
 	
-	public HashMap<String, Object> getProfile(){
+	public HashMap<String, Object> getMemberProfile(){
 		HashMap<String, Object> profile = new HashMap<String, Object>();
 		BigInteger id = getId();
 		double income = ContractQuery.me().queryDebits(id);
 		double outcome = ContractQuery.me().queryCredits(id);
 		Date birthday = getBirthday();
 		String birthdayStr = (birthday != null) ? sdfYmd.format(birthday) : "";
-		
 		
 		profile.put("memberID", id.toString());
 		profile.put("avatar", getAvatar());
@@ -91,6 +90,36 @@ public class User extends BaseUser<User> {
 		profile.put("score", ""+getScore());
 		profile.put("income", ""+income);
 		profile.put("outcome", ""+outcome);
+		profile.put("canBorrowMoney", ""+getCanBorrowMoney());
+		profile.put("sysPush", ""+getSysPush());
+		profile.put("salePush", ""+getSalePush());
+		profile.put("inPush", ""+getInPush());
+		profile.put("outPush", ""+getOutPush());
+		
+		return profile;
+	}
+	
+	public HashMap<String, Object> getUserProfile(boolean detail){
+		HashMap<String, Object> profile = new HashMap<String, Object>();
+		BigInteger id = getId();
+		
+		profile.put("userID", id.toString());
+		profile.put("userAvatar", getAvatar());
+		profile.put("userMobile", getMobile());
+		profile.put("userName", getRealname());
+		
+		if(detail == true){
+			profile.put("userGender", getGender());
+			profile.put("userNickname", getNickname());
+			double income = ContractQuery.me().queryDebits(id);
+			double outcome = ContractQuery.me().queryCredits(id);
+			Date birthday = getBirthday();
+			String birthdayStr = (birthday != null) ? sdfYmd.format(birthday) : "";
+			profile.put("birthday", birthdayStr);
+			profile.put("score", ""+getScore());
+			profile.put("income", ""+income);
+			profile.put("outcome", ""+outcome);
+		}
 		
 		return profile;
 	}

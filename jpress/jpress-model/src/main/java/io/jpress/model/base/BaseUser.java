@@ -154,7 +154,8 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	}
 
 	public java.lang.String getNickname() {
-		return get("nickname");
+		String nickname = get("nickname");
+		return nickname != null ? nickname : "";
 	}
 
 	public void setRealname(java.lang.String realname) {
@@ -235,7 +236,8 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	}
 
 	public java.lang.String getGender() {
-		return get("gender");
+		String gender = get("gender");
+		return gender != null ? gender : "";
 	}
 
 	public void setRole(java.lang.String role) {
@@ -460,5 +462,46 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	
 	public java.lang.Integer getScore(){
 		return get("score");
+	}
+	
+	public void setCanBorrowMoney(java.lang.Integer canBorrowMoney){
+		set("can_borrow_money", canBorrowMoney);
+	}
+	
+	public java.lang.Integer getCanBorrowMoney(){
+		return get("can_borrow_money");
+	}
+	
+	public void setSysPush(java.lang.Integer sysPush){
+		set("sys_push", sysPush);
+	}
+	
+	public java.lang.Integer getSysPush(){
+		Integer sysPush = get("sys_push");
+		return sysPush != null ? sysPush : Integer.valueOf(0);
+	}
+	
+	public void setSalePush(java.lang.Integer salePush){
+		set("sale_push", salePush);
+	}
+	
+	public java.lang.Integer getSalePush(){
+		return get("sale_push");
+	}
+	
+	public void setInPush(java.lang.Integer inPush){
+		set("in_push", inPush);
+	}
+	
+	public java.lang.Integer getInPush(){
+		return get("in_push");
+	}
+	
+	public void setOutPush(java.lang.Integer outPush){
+		set("out_push", outPush);
+	}
+	
+	public java.lang.Integer getOutPush(){
+		return get("out_push");
 	}
 }
