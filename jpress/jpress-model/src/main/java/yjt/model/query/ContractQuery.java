@@ -56,6 +56,7 @@ public class ContractQuery extends JBaseQuery{
 		
 		if(cs != null && cs != Contract.Status.ALL)
 			appendAndIfNotEmpty(sqlBuilder, "status", String.valueOf(cs.getIndex()), params);
+		
 		if(StrKit.notBlank(contractNumber))
 			appendAndIfNotEmpty(sqlBuilder, "contract_number", contractNumber, params);
 		
@@ -70,6 +71,11 @@ public class ContractQuery extends JBaseQuery{
 		}else{
 			return DAO.doFindCount(sqlBuilder.toString(), params.toArray());
 		}
+	}
+	
+	public boolean isContractNumberExists(String contractNumber) {
+		long count = findCount(null, contractNumber, null, null);
+		return count > 0;
 	}
 	
 	/**

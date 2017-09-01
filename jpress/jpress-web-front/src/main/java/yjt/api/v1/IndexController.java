@@ -26,6 +26,7 @@ import io.jpress.utils.EncryptUtils;
 import io.jpress.utils.FileUtils;
 import yjt.model.Apply;
 import yjt.model.Captcha;
+import yjt.model.Contract;
 import yjt.model.Feedback;
 import yjt.model.Follow;
 import yjt.model.Message;
@@ -523,24 +524,59 @@ public class IndexController extends ApiBaseController {
 			renderJson(getReturnJson(Code.ERROR, "申请不存在", EMPTY_OBJECT));
 			return;
 		}
-		User user = apply.getUser();
-		JSONObject json = new JSONObject();
-		json.put("id", applyID.toString());
-		json.put("userID", user.getId().toString());
-		json.put("userName", user.getRealname());
-		json.put("userAvatar", user.getAvatar());
-		json.put("userOverdue", "0");  //是否逾期暂时略过
-		long day = (apply.getMaturityDate().getTime() - System.currentTimeMillis()) / (86400 * 1000);
-		json.put("day", day>0 ? day+"" : "0");  //因为申请时没有固定借款日，此处只能计算未来到今日的天数了
-		json.put("money", Utils.bigDecimalRound2(apply.getAmount()));
-		json.put("rate", Utils.bigDecimalRound2(apply.getAnnualRate()) + "%");
-		json.put("endDate", sdfYmd.format(apply.getMaturityDate()));
-		json.put("retType", "" + apply.getRepaymentMethod());
-		json.put("fromUserCount", apply.getToFriends().size());
-		json.put("forUse", Apply.Purpose.getEnum(apply.getPurpose()).getName());
-		json.put("video",apply.getVideo());
-		json.put("status", Apply.Status.getEnum(apply.getStatus()).getName());
-		renderJson(getReturnJson(Code.OK, "", json));
+		renderJson(getReturnJson(Code.OK, "", apply.getProfile()));
+		return;
+	}
+	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "applyID",  must = true, type = ParamInterceptor.Type.INT, min=1,chs = "申请号")
+	@ParamAnnotation(name = "repaymentMethod",  must = false, type = ParamInterceptor.Type.INT, min=1, max=3,chs = "还款方式")
+	public void payApply() {
+		BigInteger memberID = getParaToBigInteger("memberID");
+		User member = UserQuery.me().findByIdNoCache(memberID);
+		BigInteger applyID = getParaToBigInteger("applyID");
+		Apply apply = ApplyQuery.me().findById(applyID);
+		if(apply == null){
+			renderJson(getReturnJson(Code.ERROR, "申请不存在", EMPTY_OBJECT));
+			return;
+		}
+		User debitor = UserQuery.me().findByIdNoCache(apply.getApplyUid());
+		if(debitor == null) {
+			renderJson(getReturnJson(Code.ERROR, "借款方不存在", EMPTY_OBJECT));
+			return;
+		}
+		
+		//该申请的状态是否可交易
+		String canDeal = apply.canDeal();
+		if(StrKit.notBlank(canDeal)) {
+			renderJson(getReturnJson(Code.ERROR, canDeal, EMPTY_OBJECT));
+			return;
+		}
+		
+		if(member.getAmount().compareTo(apply.getAmount()) < 0) {
+			renderJson(getReturnJson(Code.ERROR, "余额不足", EMPTY_OBJECT));
+			return;
+		}
+		
+		BigInteger userID = apply.getApplyUid();
+		if(userID.equals(memberID)) {
+			renderJson(getReturnJson(Code.ERROR, "不能向自己出借", EMPTY_OBJECT));
+			return;
+		}
+		
+		if(apply.isInFriendList(memberID) == false) {
+			renderJson(getReturnJson(Code.ERROR, "您不是该申请的发布对象", EMPTY_OBJECT));
+			return;
+		}
+		
+		int repaymentMethod = getParaToInt("repaymentMethod", Contract.getDefaultReportMethod().getIndex());
+		JSONObject result = Contract.createContract(apply, member, debitor, Contract.RepaymentMethod.getEnum(repaymentMethod));
+		if(StrKit.notBlank(result.getString("err"))) {
+			renderJson(getReturnJson(Code.ERROR, result.getString("err"), EMPTY_OBJECT));
+			return;
+		}
+		renderJson(getReturnJson(Code.OK, "", ((Contract)result.get("contract")).getProfile())); 
 		return;
 	}
 	

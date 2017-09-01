@@ -15,6 +15,7 @@ import com.jfinal.kit.StrKit;
 public class Utils {
 	protected static final SimpleDateFormat sdfYmd = new SimpleDateFormat("yyyy-MM-dd");
 	protected static final SimpleDateFormat sdfYmdHms = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	protected static final SimpleDateFormat sdfNumber = new SimpleDateFormat("yyyyMMddHHmmss");
 	protected static final Pattern MOBILE_PATTERN = Pattern.compile("^1[345789][0-9]{9}$");
 	
 	public static long getTodayStartTime(){
@@ -23,8 +24,15 @@ public class Utils {
 		try {
 			d = sdfYmdHms.parse(t);
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		}
+		return d.getTime();
+	}
+	
+	public static long getDayStartTime(Date d) {
+		String t = sdfYmd.format(d) + " 00:00:00";
+		try {
+			d = sdfYmdHms.parse(t);
+		} catch (ParseException e) {
 		}
 		return d.getTime();
 	}
@@ -88,4 +96,16 @@ public class Utils {
 		return sdfYmdHms.format(d);
 	}
 	
+	public static String getDayNumber(Date d) {
+		return sdfNumber.format(d);
+	}
+	
+	public static int random(int min, int max) {
+		return (int) (Math.random() * (max -min) + min);
+	}
+	
+	public static int days(Date fromDate, Date toDate) {
+		long internal = (getDayStartTime(toDate) - getDayStartTime(fromDate)) / 1000;
+		return (int) (internal / 86400);
+	}
 }

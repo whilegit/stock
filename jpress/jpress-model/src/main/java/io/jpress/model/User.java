@@ -15,10 +15,13 @@
  */
 package io.jpress.model;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+
+import com.jfinal.log.Log;
 
 import io.jpress.model.base.BaseUser;
 import io.jpress.model.core.Table;
@@ -26,6 +29,7 @@ import yjt.model.query.ContractQuery;
 
 @Table(tableName = "user", primaryKey = "id")
 public class User extends BaseUser<User> {
+	protected static final Log log = Log.getLog(User.class);
 	private static final long serialVersionUID = 1L;
 
 	public static final String ROLE_ADMINISTRATOR = "administrator";
@@ -135,5 +139,16 @@ public class User extends BaseUser<User> {
 		
 		return profile;
 	}
-
+	
+	public boolean changeBalance(double change, String reason) {
+		double amount = getAmount().doubleValue();
+		setAmount(BigDecimal.valueOf(amount + change));
+		boolean ret = update();
+		if(ret) {
+			log.info("用户 " + getRealname() + "(编号"+getId().toString()+") 变动金额成功，变动额："+change+", 余额: " + getAmount() + ", 理由：" + reason);
+		} else {
+			log.info("用户 " + getRealname() + "(编号"+getId().toString()+") 扣款金额失败，变动额："+change+", 余额: " + getAmount() + ", 理由：" + reason);
+		}
+		return ret;
+	}
 }
