@@ -1,33 +1,22 @@
 package yjt.api.v1;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.Part;
 
-import org.apache.commons.fileupload.DiskFileUpload;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.io.IOUtils;
 
 import com.alibaba.fastjson.JSONObject;
 import com.aliyuncs.DefaultAcsClient;
@@ -35,24 +24,16 @@ import com.aliyuncs.IAcsClient;
 import com.aliyuncs.dysmsapi.model.v20170525.SendSmsRequest;
 import com.aliyuncs.dysmsapi.model.v20170525.SendSmsResponse;
 import com.aliyuncs.exceptions.ClientException;
-import com.aliyuncs.exceptions.ServerException;
-import com.aliyuncs.http.MethodType;
 import com.aliyuncs.profile.DefaultProfile;
 import com.aliyuncs.profile.IClientProfile;
 import com.jfinal.aop.Invocation;
 import com.jfinal.kit.PathKit;
 import com.jfinal.kit.StrKit;
 import com.jfinal.log.Log;
-import com.jfinal.upload.MultipartRequest;
 import com.jfinal.upload.UploadFile;
 
 import io.jpress.core.BaseFrontController;
-import io.jpress.model.query.OptionQuery;
-import io.jpress.template.TemplateManager;
-import io.jpress.template.Thumbnail;
-import io.jpress.utils.AttachmentUtils;
 import io.jpress.utils.FileUtils;
-import io.jpress.utils.ImageUtils;
 import yjt.api.v1.Annotation.UploadAnnotation;
 
 public class ApiBaseController extends BaseFrontController{

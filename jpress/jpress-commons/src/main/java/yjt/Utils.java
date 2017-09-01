@@ -1,4 +1,4 @@
-package yjt.api.v1;
+package yjt;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -75,10 +75,17 @@ public class Utils {
 		return ret;
 	}
 	
-	protected static final DecimalFormat DF0_00   =new DecimalFormat("#.00");
+	protected static final DecimalFormat DF0_00   =new DecimalFormat("#0.00");
 	public static String bigDecimalRound2(BigDecimal bd){
 		return DF0_00.format(bd);
 	}
 	
+	public static String toYmd(Date d) {
+		return sdfYmd.format(d);
+	}
+	
+	public static String toYmdHms(Date d) {
+		return sdfYmdHms.format(d);
+	}
 	
 }

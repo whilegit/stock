@@ -13,7 +13,7 @@ import io.jpress.model.query.UserQuery;
 import yjt.api.v1.ApiBaseController;
 import yjt.api.v1.ApiBaseController.Code;
 import yjt.api.v1.Annotation.ParamAnnotation;
-import yjt.api.v1.Utils;
+import yjt.Utils;
 
 
 public class ParamInterceptor implements Interceptor{

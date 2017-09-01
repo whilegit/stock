@@ -32,10 +32,10 @@ import yjt.model.Message;
 import yjt.model.Report;
 import yjt.model.query.ApplyQuery;
 import yjt.model.query.CaptchaQuery;
-import yjt.model.query.ContractQuery;
 import yjt.model.query.FollowQuery;
 import yjt.model.query.MessageQuery;
 import yjt.api.v1.Interceptor.*;
+import yjt.Utils;
 import yjt.api.v1.Annotation.*;
 
 
@@ -138,25 +138,7 @@ public class IndexController extends ApiBaseController {
 	public void userInfo(){
 		BigInteger memberID = getParaToBigInteger("memberID");
 		User member = UserQuery.me().findByIdNoCache(memberID);
-		
-		Date birthday = member.getBirthday();
-		String birthdayStr = (birthday != null) ? sdfYmd.format(birthday) : "";
-		//仅查询正在还款期、展期的总金额，损失类的金额已核销在此不统计
-		double income = ContractQuery.me().queryDebits(member.getId());
-		double outcome = ContractQuery.me().queryCredits(member.getId());
-		HashMap<String, Object> profile = new HashMap<String, Object>();
-		profile.put("memberID", member.getId().toString());
-		profile.put("avatar", member.getAvatar());
-		profile.put("mobile", member.getMobile());
-		profile.put("nickname", member.getNickname());
-		profile.put("name", member.getRealname());
-		profile.put("gender", member.getGender());
-		profile.put("birthday", birthdayStr);
-		profile.put("score", ""+member.getScore());
-		profile.put("income", ""+income);
-		profile.put("outcome", ""+outcome);
-		
-		renderJson(getReturnJson(Code.OK, "", profile));
+		renderJson(getReturnJson(Code.OK, "", member.getMemberProfile()));
 	}
 	
 	@Before(ParamInterceptor.class)
@@ -379,6 +361,7 @@ public class IndexController extends ApiBaseController {
 		String newMemberToken = getRandomString(32);
 		member.setMemberToken(newMemberToken);
 		member.update();
+		profile.put("memberToken", newMemberToken);
 		renderJson(getReturnJson(Code.OK, "", profile));
 		return;
 	}
@@ -432,7 +415,7 @@ public class IndexController extends ApiBaseController {
 			json.put("id", msg.getId().toString());
 			json.put("content", msg.getContent());
 			Date createTime = msg.getCreateTime();
-			json.put("createTime", createTime != null ? Utils.sdfYmdHms.format(msg.getCreateTime()) : "");
+			json.put("createTime", createTime != null ? Utils.toYmdHms(msg.getCreateTime()) : "");
 			json.put("type", ""+msg.getType());
 			json.put("isRead", "" + msg.getIsRead());
 			json.put("isAction", "" + msg.getIsAction());

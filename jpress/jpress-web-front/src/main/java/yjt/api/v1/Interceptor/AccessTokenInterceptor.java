@@ -7,11 +7,9 @@ import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.alibaba.fastjson.JSONObject;
 import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.Invocation;
 import com.jfinal.kit.StrKit;
-import com.jfinal.upload.MultipartRequest;
 
 import yjt.api.v1.ApiBaseController;;
 public class AccessTokenInterceptor implements Interceptor{

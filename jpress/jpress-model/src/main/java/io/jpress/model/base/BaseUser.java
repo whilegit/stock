@@ -19,8 +19,11 @@ import io.jpress.message.MessageKit;
 import io.jpress.model.Metadata;
 import io.jpress.model.core.JModel;
 import io.jpress.model.query.MetaDataQuery;
+
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.IBean;
 import com.jfinal.plugin.ehcache.CacheKit;
 import com.jfinal.plugin.ehcache.IDataLoader;
@@ -212,7 +215,8 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	}
 
 	public java.lang.String getMobileStatus() {
-		return get("mobile_status");
+		String mobileStatus = get("mobile_status");
+		return !StrKit.isBlank(mobileStatus) ? mobileStatus : "0";
 	}
 
 	public void setTelephone(java.lang.String telephone) {
@@ -504,4 +508,117 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	public java.lang.Integer getOutPush(){
 		return get("out_push");
 	}
+	
+	public void setOverdue(java.lang.Integer overdue){
+		set("overdue", overdue);
+	}
+	
+	public java.lang.Integer getOverdue(){
+		return get("overdue");
+	}
+	
+	public void setCreditRecord(java.lang.Integer creditRecord){
+		set("credit_record", creditRecord);
+	}
+	
+	public String getCreditRecord(){
+		return get("credit_record");
+	}
+	
+	public void setCanLend(java.lang.Integer canLend){
+		set("can_lend", canLend);
+	}
+	
+	public java.lang.Integer getCanLend(){
+		return get("can_lend");
+	}
+	
+	public void setLat(double lat){
+		set("lat", BigDecimal.valueOf(lat));
+	}
+	
+	public java.math.BigDecimal getLat(){
+		return get("lat");
+	}
+	
+	public void setLng(double lng){
+		set("lng", BigDecimal.valueOf(lng));
+	}
+	
+	public java.math.BigDecimal getLng(){
+		return get("lng");
+	}
+	
+	public void setZhimaScore(java.lang.Integer zhimaScore){
+		set("zhima_score", zhimaScore);
+	}
+	
+	public java.lang.Integer getZhimaScore(){
+		return get("zhima_score");
+	}
+	
+	public void setAuthZhima(java.lang.Integer authZhima){
+		set("auth_zhima", authZhima);
+	}
+	
+	public java.lang.Integer getAuthZhima(){
+		return get("auth_zhima");
+	}
+	
+	public void setAuthAlipay(java.lang.Integer authAlipay){
+		set("auth_alipay", authAlipay);
+	}
+	
+	public java.lang.Integer getAuthAlipay(){
+		return get("auth_alipay");
+	}
+	
+	public void setAuthXuexing(java.lang.Integer authXuexing){
+		set("auth_xuexing", authXuexing);
+	}
+	
+	public java.lang.Integer getAuthXuexing(){
+		return get("auth_xuexing");
+	}
+	
+	public void setAuthBook(java.lang.Integer authBook){
+		set("auth_book", authBook);
+	}
+	
+	public java.lang.Integer getAuthBook(){
+		return get("auth_book");
+	}
+	
+	public void setAuthCard(java.lang.Integer authCard){
+		set("auth_card", authCard);
+	}
+	
+	public java.lang.Integer getAuthCard(){
+		return get("auth_card");
+	}
+	
+	public void setAuthFace(java.lang.Integer authFace){
+		set("auth_face", authFace);
+	}
+	
+	public java.lang.Integer getAuthFace(){
+		return get("auth_face");
+	}
+	
+	public void setAuthGjj(java.lang.Integer authGjj){
+		set("auth_gjj", authGjj);
+	}
+	
+	public java.lang.Integer getAuthGjj(){
+		return get("auth_gjj");
+	}
+	
+	public void setInterest(double interest){
+		set("interest", BigDecimal.valueOf(interest));
+	}
+	
+	public java.math.BigDecimal getInterest(){
+		return get("interest");
+	}
+	
 }

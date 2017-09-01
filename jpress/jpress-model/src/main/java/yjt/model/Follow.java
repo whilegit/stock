@@ -1,8 +1,5 @@
 package yjt.model;
 
-import java.math.BigInteger;
-
-import io.jpress.model.User;
 import io.jpress.model.core.Table;
 import yjt.model.base.BaseFollow;
 
@@ -16,8 +13,8 @@ public class Follow extends BaseFollow<Follow>{
 
 	private static final long serialVersionUID = 1L;
 	
-	private User followed;  //被关注人
-	private User follower; 	//关注人
+	//private User followed;  //被关注人
+	//private User follower; 	//关注人
 	
 	public static enum Status{
 		UNFOLLOWED("未关注", 0), FOLLOWED("已关注", 1);

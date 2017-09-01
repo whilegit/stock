@@ -90,11 +90,23 @@ public class User extends BaseUser<User> {
 		profile.put("score", ""+getScore());
 		profile.put("income", ""+income);
 		profile.put("outcome", ""+outcome);
+		profile.put("balance", yjt.Utils.bigDecimalRound2(getAmount()));
+		profile.put("interest", yjt.Utils.bigDecimalRound2(getInterest()));
 		profile.put("canBorrowMoney", ""+getCanBorrowMoney());
+		profile.put("canLend", "" + getCanLend());
 		profile.put("sysPush", ""+getSysPush());
 		profile.put("salePush", ""+getSalePush());
 		profile.put("inPush", ""+getInPush());
 		profile.put("outPush", ""+getOutPush());
+		profile.put("overdue",  "" + getOverdue());
+		profile.put("authAlipay", "" + getAuthAlipay());
+		profile.put("authBook", "" + getAuthBook());
+		profile.put("authCard", "" + getAuthCard());
+		profile.put("authFace", "" + getAuthFace());
+		profile.put("authGjj", "" + getAuthGjj());
+		profile.put("authMobile", "" + getMobileStatus());
+		profile.put("authXuexing", "" + getAuthXuexing());
+		profile.put("authZhima", "" + getAuthZhima());
 		
 		return profile;
 	}
