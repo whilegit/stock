@@ -33,6 +33,7 @@ import yjt.model.Message;
 import yjt.model.Report;
 import yjt.model.query.ApplyQuery;
 import yjt.model.query.CaptchaQuery;
+import yjt.model.query.ContractQuery;
 import yjt.model.query.FollowQuery;
 import yjt.model.query.MessageQuery;
 import yjt.api.v1.Interceptor.*;
@@ -140,6 +141,34 @@ public class IndexController extends ApiBaseController {
 		BigInteger memberID = getParaToBigInteger("memberID");
 		User member = UserQuery.me().findByIdNoCache(memberID);
 		renderJson(getReturnJson(Code.OK, "", member.getMemberProfile()));
+	}
+	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "userID",  must = true, type = ParamInterceptor.Type.INT, min=1, chs = "用户")
+	public void userDetail(){
+		BigInteger memberID = getParaToBigInteger("memberID");
+		BigInteger userID = getParaToBigInteger("userID");
+		User user = UserQuery.me().findByIdNoCache(userID);
+		if(user == null){
+			renderJson(getReturnJson(Code.ERROR, "用户不存在", EMPTY_OBJECT));
+			return;
+		}
+		Follow follow = FollowQuery.me().getFollow(userID, memberID);
+		JSONObject profile = user.getUserProfile(true);
+		profile.put("isFollowed", follow != null ? "1" : "0");
+		
+		JSONObject userContractStatics = ContractQuery.me().contractStatics(userID);
+		JSONObject betweenContractStatics = ContractQuery.me().contractBetween(memberID, userID);
+		JSONObject deal = new JSONObject();
+		deal.putAll(userContractStatics);
+		deal.putAll(betweenContractStatics);
+		
+		JSONObject ret = new JSONObject();
+		ret.put("index", profile);
+		ret.put("deal", deal);
+		
+		renderJson(getReturnJson(Code.OK, "", ret));
 	}
 	
 	@Before(ParamInterceptor.class)
@@ -273,11 +302,10 @@ public class IndexController extends ApiBaseController {
 				return;
 			}else{
 				int num = list.size();
-				@SuppressWarnings("rawtypes")
-				HashMap[] profiles = new HashMap[num];
+				JSONObject[] profiles = new JSONObject[num];
 				for(int i = 0; i<num; i++){
 					User u = list.get(i);
-					HashMap<String, Object> profile = u.getUserProfile(false);
+					JSONObject profile = u.getUserProfile(false);
 					if(eachFollowed == 0 || eachFollowed == 1)
 						profile.put("isFollowed", "1");
 					else{
@@ -307,13 +335,12 @@ public class IndexController extends ApiBaseController {
 				renderJson(getReturnJson(Code.OK, "用户不存在", data));
 				return;
 			}
-			HashMap<String, Object> profile = user.getUserProfile(false);
+			JSONObject profile = user.getUserProfile(false);
 			//是否已关注刚被搜索出来的对方
 			Follow follow = FollowQuery.me().getFollow(user.getId(), member.getId());
 			String flw = (follow != null && follow.getStatus() == Follow.Status.UNFOLLOWED.getIndex()) ? "1" : "0";
 			profile.put("isFollowed", flw);
-			@SuppressWarnings("rawtypes")
-			HashMap[] profiles = new HashMap[1];
+			JSONObject[] profiles = new JSONObject[1];
 			profiles[0] = profile;
 			data.put("result", profiles);
 			renderJson(getReturnJson(Code.OK, "", data));

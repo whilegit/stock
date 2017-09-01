@@ -353,7 +353,8 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	}
 
 	public java.lang.String getAddress() {
-		return get("address");
+		String address = get("address");
+		return address != null ? address : "";
 	}
 
 	public void setZipcode(java.lang.String zipcode) {
@@ -410,7 +411,8 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	}
 
 	public java.lang.String getIdcard() {
-		return get("idcard");
+		String idCard = get("idcard");
+		return idCard != null ? idCard : "";
 	}
 
 	public void setStatus(java.lang.String status) {
@@ -522,7 +524,8 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	}
 	
 	public String getCreditRecord(){
-		return get("credit_record");
+		String creditRecord = get("credit_record");
+		return creditRecord != null ? creditRecord : "";
 	}
 	
 	public void setCanLend(java.lang.Integer canLend){

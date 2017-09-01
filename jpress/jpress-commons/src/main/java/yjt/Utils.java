@@ -89,14 +89,17 @@ public class Utils {
 	}
 	
 	public static String toYmd(Date d) {
+		if(d == null) return "";
 		return sdfYmd.format(d);
 	}
 	
 	public static String toYmdHms(Date d) {
+		if(d == null) return "";
 		return sdfYmdHms.format(d);
 	}
 	
 	public static String getDayNumber(Date d) {
+		if(d == null) return "";
 		return sdfNumber.format(d);
 	}
 	

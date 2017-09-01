@@ -21,11 +21,15 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 
+import com.alibaba.fastjson.JSONObject;
 import com.jfinal.log.Log;
 
 import io.jpress.model.base.BaseUser;
 import io.jpress.model.core.Table;
+import io.jpress.model.query.UserQuery;
+import yjt.Utils;
 import yjt.model.query.ContractQuery;
+import yjt.model.query.FollowQuery;
 
 @Table(tableName = "user", primaryKey = "id")
 public class User extends BaseUser<User> {
@@ -79,8 +83,8 @@ public class User extends BaseUser<User> {
 	public HashMap<String, Object> getMemberProfile(){
 		HashMap<String, Object> profile = new HashMap<String, Object>();
 		BigInteger id = getId();
-		double income = ContractQuery.me().queryDebits(id);
-		double outcome = ContractQuery.me().queryCredits(id);
+		double income = ContractQuery.me().queryCurDebits(id);
+		double outcome = ContractQuery.me().queryCurCredits(id);
 		Date birthday = getBirthday();
 		String birthdayStr = (birthday != null) ? sdfYmd.format(birthday) : "";
 		
@@ -115,8 +119,8 @@ public class User extends BaseUser<User> {
 		return profile;
 	}
 	
-	public HashMap<String, Object> getUserProfile(boolean detail){
-		HashMap<String, Object> profile = new HashMap<String, Object>();
+	public JSONObject getUserProfile(boolean detail){
+		JSONObject profile = new JSONObject();
 		BigInteger id = getId();
 		
 		profile.put("userID", id.toString());
@@ -127,17 +131,32 @@ public class User extends BaseUser<User> {
 		if(detail == true){
 			profile.put("userGender", getGender());
 			profile.put("userNickname", getNickname());
-			double income = ContractQuery.me().queryDebits(id);
-			double outcome = ContractQuery.me().queryCredits(id);
+			double income = ContractQuery.me().queryCurDebits(id);
+			double outcome = ContractQuery.me().queryCurCredits(id);
 			Date birthday = getBirthday();
 			String birthdayStr = (birthday != null) ? sdfYmd.format(birthday) : "";
 			profile.put("birthday", birthdayStr);
 			profile.put("score", ""+getScore());
 			profile.put("income", ""+income);
 			profile.put("outcome", ""+outcome);
+			profile.put("userLocation", getUserLocation());
+			profile.put("userCard", getIdcard());
+			profile.put("userAddress", getAddress());
+			profile.put("zhimaScore", getZhimaScore().toString());
+			profile.put("validZhifubao", getAuthAlipay().toString());
+			profile.put("validXuexing", getAuthXuexing().toString());
+			profile.put("regDate", Utils.toYmdHms(getCreated()));
+			profile.put("creditRecord", getCreditRecord());
+			profile.put("friendCount", FollowQuery.me().getFollowedList(getId()).length + "");
 		}
 		
 		return profile;
+	}
+	
+	
+	//获取地理位置使用高德地图接口，暂时放一下
+	public String getUserLocation(){
+		return "";
 	}
 	
 	public boolean changeBalance(double change, String reason) {
