@@ -172,7 +172,7 @@ public class ContractQuery extends JBaseQuery{
 		return queryAmount(null, creditUid, stats);
 	}
 	
-	public List<Contract> queryRelatedContracts(BigInteger uid){
+	public List<Contract> queryContractsAsDebits(BigInteger uid){
 		Contract.Status[] stats = {Status.ESTABLISH, Status.EXTEND, Status.FINISH, Status.LOST};
 		
 		StringBuilder sqlBuilder = new StringBuilder("Select * From contract Where ");
@@ -186,15 +186,14 @@ public class ContractQuery extends JBaseQuery{
 		}
 		sqlBuilder.append(") ");
 		
-		sqlBuilder.append(" And (debit_id = ? Or credit_id = ?) ");
-		params.add(uid.toString());
+		sqlBuilder.append(" And debit_id = ? ");
 		params.add(uid.toString());
 
 		return DAO.find(sqlBuilder.toString(), params.toArray());
 	}
 	
 	public long queryDiffOppositors(BigInteger uid){
-		List<Contract> list = queryRelatedContracts(uid);
+		List<Contract> list = queryContractsAsDebits(uid);
 		Set<BigInteger> set = new HashSet<BigInteger>();
 		for(Contract contract : list){
 			BigInteger debitor = contract.getDebitId();
@@ -208,16 +207,16 @@ public class ContractQuery extends JBaseQuery{
 		return set.size();
 	}
 	
-	public JSONObject contractBetween(BigInteger u1, BigInteger u2){
+	public JSONObject contractBetween(BigInteger debitor, BigInteger creditor){
 		JSONObject json = new JSONObject();
 		Contract.Status[] totalStats = {Status.ESTABLISH, Status.EXTEND, Status.FINISH, Status.LOST};
 		Contract.Status[] curStats = {Status.ESTABLISH, Status.EXTEND};
-		long totalCount = findCount(totalStats, null, u1, u2) + findCount(totalStats, null, u2, u1);
-		long curCount = findCount(curStats, null, u1, u2) + findCount(curStats, null, u2, u1);
-		double curAmount = queryAmount(u1, u2, curStats) + queryAmount(u2, u1, curStats);
-		json.put("usCrtMoneyAmount", "" + curAmount);
-		json.put("usCrtMoneyCount", "" + curCount);
-		json.put("usCrtAllMoneyCount", "" + totalCount);
+		long totalCount = findCount(totalStats, null, debitor, creditor);
+		long curCount = findCount(curStats, null, debitor, creditor);
+		double curAmount = queryAmount(debitor, creditor, curStats);
+		json.put("usCrtMoneyAmount", "" + curAmount);      //当前debitor向creditor借入的交易总金额
+		json.put("usCrtMoneyCount", "" + curCount);        //当前debitor向creditor借入的交易笔数
+		json.put("usCrtAllMoneyCount", "" + totalCount);   //debitort向creditor借入的累计交易笔数
 		return json;
 	}
 	
@@ -232,11 +231,11 @@ public class ContractQuery extends JBaseQuery{
 		long userAllMoneyCount = findCount(totalStats, null, uid, null);
 		double returnMoneyAmount = queryAmount(uid, null, finishedStat);
 		long dealFriendCount = queryDiffOppositors(uid);
-		json.put("userMoneyAmount", userMoneyAmount);
-		json.put("userMoneyCount", userMoneyCount);
-		json.put("userAllMoneyCount", userAllMoneyCount);
-		json.put("returnMoneyAmount", returnMoneyAmount);
-		json.put("dealFriendCount", dealFriendCount);
+		json.put("userMoneyAmount", ""+userMoneyAmount);      //当前借入总金额
+		json.put("userMoneyCount", ""+userMoneyCount);        //当前借入笔数
+		json.put("userAllMoneyCount", ""+userAllMoneyCount);  //累计借入笔数
+		json.put("returnMoneyAmount", ""+returnMoneyAmount);  //累计已偿还总金额
+		json.put("dealFriendCount", ""+dealFriendCount);      //交易的好友数
 		return json;
 	}
 	

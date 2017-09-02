@@ -159,7 +159,7 @@ public class IndexController extends ApiBaseController {
 		profile.put("isFollowed", follow != null ? "1" : "0");
 		
 		JSONObject userContractStatics = ContractQuery.me().contractStatics(userID);
-		JSONObject betweenContractStatics = ContractQuery.me().contractBetween(memberID, userID);
+		JSONObject betweenContractStatics = ContractQuery.me().contractBetween(userID, memberID);
 		JSONObject deal = new JSONObject();
 		deal.putAll(userContractStatics);
 		deal.putAll(betweenContractStatics);

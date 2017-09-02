@@ -26,7 +26,6 @@ import com.jfinal.log.Log;
 
 import io.jpress.model.base.BaseUser;
 import io.jpress.model.core.Table;
-import io.jpress.model.query.UserQuery;
 import yjt.Utils;
 import yjt.model.query.ContractQuery;
 import yjt.model.query.FollowQuery;
