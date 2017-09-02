@@ -1,6 +1,8 @@
 package yjt.api.v1.Interceptor;
 
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -134,6 +136,15 @@ public class ParamInterceptor implements Interceptor{
 						err = chs + "错误";
 						break;
 					}
+				case ENUM_STRING:
+					List<String> allow_list = Arrays.asList(anno.allow_list());
+					if(!allow_list.contains(value)) {
+						pass = false;
+						code = Code.ERROR;
+						err = chs + "错误";
+						break;
+					}
+					break;
 				default:
 					break;
 			}
@@ -141,7 +152,6 @@ public class ParamInterceptor implements Interceptor{
 			if(pass == false){
 				break;
 			}
-
 		}
 		if(pass){
 			inv.invoke();
@@ -153,7 +163,7 @@ public class ParamInterceptor implements Interceptor{
 	
 	public static enum Type{
 		INT("整数",1), MOBILE("手机号",2), STRING("字符串", 3), MEMBER_TOKEN("用户令牌",4), DATE("日期", 5), 
-		DOUBLE("小数", 6);
+		DOUBLE("小数", 6), ENUM_STRING("字符串数组", 7);
 		private String name;
 		private int index;
 	    private Type(String name, int index) {  

@@ -173,6 +173,22 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "page",  must = true, type = ParamInterceptor.Type.INT, min=1,chs = "起始页")
+	@ParamAnnotation(name = "pageSize",  must = true, type = ParamInterceptor.Type.INT, min=1,chs = "每页数")
+	@ParamAnnotation(name = "type",  must = true, type = ParamInterceptor.Type.ENUM_STRING, allow_list= {"in","out","interest"},chs = "类型")
+	public void userInOutList() {
+		BigInteger memberID = getParaToBigInteger("memberID");
+		int page = getParaToInt("page");
+		int pageSize = getParaToInt("pageSize");
+		String type = getPara("type");
+		if(type.equals("interest")) type = "out";
+		JSONObject ret = ContractQuery.me().inOutList(memberID, type, page, pageSize);
+		renderJson(getReturnJson(Code.OK, "", ret));
+		return;
+	}
+	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
 	@ParamAnnotation(name = "userID",  must = true, type = ParamInterceptor.Type.INT, chs = "关注对象")
 	public void followUser(){
 		BigInteger memberID = getParaToBigInteger("memberID");

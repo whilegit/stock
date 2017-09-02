@@ -3,7 +3,6 @@
  */
 package yjt.model;
 
-import java.math.BigDecimal;
 import java.util.Date;
 
 import com.alibaba.fastjson.JSONObject;
@@ -175,8 +174,8 @@ public class Contract extends BaseContract<Contract>{
 		json.put("debitName", debitor.getRealname());
 		json.put("creditUid", creditor.getId().toString());
 		json.put("creditName", creditor.getRealname());
-		json.put("amount", Utils.bigDecimalRound2(BigDecimal.valueOf(getAmount())));
-		json.put("annualRate", Utils.bigDecimalRound2(BigDecimal.valueOf(getAnnualRate())));
+		json.put("amount", Utils.bigDecimalRound2(getAmount()));
+		json.put("annualRate", Utils.bigDecimalRound2(getAnnualRate()));
 		json.put("repaymentMethod", ""+getRepaymentMethod());
 		json.put("repaymentMethodChs", RepaymentMethod.getEnum(this.getRepaymentMethod()).getName());
 		json.put("createTime", Utils.toYmdHms(this.getCreateTime()));
@@ -188,6 +187,12 @@ public class Contract extends BaseContract<Contract>{
 		return json;
 	}
 	
+	public double calcInterest() {
+		double insteret = 0.0;
+		int loan_term = Utils.days(getValueDate(), getMaturityDate());
+		insteret = getAmount().doubleValue() * (Math.pow(getAnnualRate().doubleValue() / 100.0 + 1.00, ((double)loan_term) / 365.0) - 1.0);
+		return insteret;
+	}
 	
 	public static enum Status{
 		//状态，0合约初订立（贷方资金冻结），1风控一批准，2风控二批准，3风控三批准，4资金划转前关闭，5资金划转成功贷款正式进入还款期，6正常结束，7展期, 8损失,
@@ -266,8 +271,5 @@ public class Contract extends BaseContract<Contract>{
 		public int getIndex() {	return index;	}
 		public void setIndex(int index) {	this.index = index;	}
 	}
-	
-	
-	
 
 }

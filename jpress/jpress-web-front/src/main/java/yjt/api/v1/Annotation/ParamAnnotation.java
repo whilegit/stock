@@ -22,6 +22,7 @@ public @interface ParamAnnotation{
 	int max() default Integer.MAX_VALUE;
 	int minlen() default 0;
 	int maxlen() default Integer.MAX_VALUE;
+	String[] allow_list() default {""};
 	String def() default "";
 	String chs();
 }

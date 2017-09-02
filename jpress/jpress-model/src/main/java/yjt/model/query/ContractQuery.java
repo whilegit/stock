@@ -3,6 +3,8 @@ package yjt.model.query;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,6 +15,7 @@ import com.jfinal.kit.StrKit;
 
 import io.jpress.model.core.Jdb;
 import io.jpress.model.query.JBaseQuery;
+import yjt.Utils;
 import yjt.model.Contract;
 import yjt.model.Contract.Status;
 
@@ -28,12 +31,34 @@ public class ContractQuery extends JBaseQuery{
 	}
 	
 	public List<Contract> findList(Integer page, Integer pageSize, Contract.Status cs, String contractNumber, BigInteger debitUid, BigInteger creditUid){
+		Contract.Status[] stats = new Status[0];
+		if(cs != null && cs != Status.ALL) {
+			stats = new Status[] { cs };
+		}
+		return findList(page, pageSize, stats, contractNumber, debitUid, creditUid);
+	}
+	
+	public List<Contract> findList(Integer page, Integer pageSize, Contract.Status[] stats, String contractNumber, BigInteger debitUid, BigInteger creditUid){
 		StringBuilder sqlBuilder = new StringBuilder("Select * From contract as c ");
 		LinkedList<Object> params = new LinkedList<Object>();
 		
 		boolean needWhere = true;
-		if(cs != null && cs != Contract.Status.ALL)
-			needWhere = appendIfNotEmpty(sqlBuilder, "c.status", String.valueOf(cs.getIndex()), params, needWhere);
+		if(stats != null && stats.length > 0) {
+			if(stats.length == 1){
+				sqlBuilder.append("Where c.status = ? ");
+				params.add(stats[0].getIndex());
+			} else {
+				sqlBuilder.append("Where c.status in (");
+				for(int i = 0; i<stats.length; i++){
+					if(i != 0) sqlBuilder.append(",");
+					sqlBuilder.append("?");
+					params.add(stats[i].getIndex());
+				}
+				sqlBuilder.append(") ");
+			}
+			needWhere = false;
+		}
+		
 		if(StrKit.notBlank(contractNumber)){
 			needWhere = appendIfNotEmpty(sqlBuilder, "c.contract_number", contractNumber, params, needWhere);
 		}
@@ -53,6 +78,39 @@ public class ContractQuery extends JBaseQuery{
 		}else{
 			return DAO.find(sqlBuilder.toString(), params.toArray());
 		}
+	}
+	
+	public List<Contract> queryContracts(BigInteger debitor, BigInteger creditor, Contract.Status[] stats){
+		if(stats == null) 
+			stats = new Status[]{Status.ESTABLISH, Status.EXTEND, Status.FINISH, Status.LOST};
+		
+		StringBuilder sqlBuilder = new StringBuilder("Select * From contract Where ");
+		LinkedList<Object> params = new LinkedList<Object>();
+		
+		if(stats != null){
+			if(stats.length == 1){
+				sqlBuilder.append("status = ? ");
+				params.add(stats[0].getIndex());
+			} else {
+				sqlBuilder.append("status in (");
+				for(int i = 0; i<stats.length; i++){
+					if(i != 0) sqlBuilder.append(",");
+					sqlBuilder.append("?");
+					params.add(stats[i].getIndex());
+				}
+				sqlBuilder.append(") ");
+			}
+		}
+		if(debitor != null) {
+			sqlBuilder.append(" And debit_id = ? ");
+			params.add(debitor.toString());
+		}
+		if(creditor != null) {
+			sqlBuilder.append(" And debit_id = ? ");
+			params.add(creditor.toString());
+		}
+		
+		return DAO.find(sqlBuilder.toString(), params.toArray());
 	}
 	
 	public long findCount(Contract.Status[] stats, String contractNumber, BigInteger debitUid, BigInteger creditUid) {
@@ -172,28 +230,11 @@ public class ContractQuery extends JBaseQuery{
 		return queryAmount(null, creditUid, stats);
 	}
 	
-	public List<Contract> queryContractsAsDebits(BigInteger uid){
-		Contract.Status[] stats = {Status.ESTABLISH, Status.EXTEND, Status.FINISH, Status.LOST};
-		
-		StringBuilder sqlBuilder = new StringBuilder("Select * From contract Where ");
-		LinkedList<Object> params = new LinkedList<Object>();
-		
-		sqlBuilder.append("status in (");
-		for(int i = 0; i<stats.length; i++){
-			if(i != 0) sqlBuilder.append(",");
-			sqlBuilder.append("?");
-			params.add(stats[i].getIndex());
-		}
-		sqlBuilder.append(") ");
-		
-		sqlBuilder.append(" And debit_id = ? ");
-		params.add(uid.toString());
 
-		return DAO.find(sqlBuilder.toString(), params.toArray());
-	}
+
 	
 	public long queryDiffOppositors(BigInteger uid){
-		List<Contract> list = queryContractsAsDebits(uid);
+		List<Contract> list = queryContracts(uid, null, null);
 		Set<BigInteger> set = new HashSet<BigInteger>();
 		for(Contract contract : list){
 			BigInteger debitor = contract.getDebitId();
@@ -237,6 +278,48 @@ public class ContractQuery extends JBaseQuery{
 		json.put("returnMoneyAmount", ""+returnMoneyAmount);  //累计已偿还总金额
 		json.put("dealFriendCount", ""+dealFriendCount);      //交易的好友数
 		return json;
+	}
+	
+	
+	public JSONObject inOutList(BigInteger uid, String type, int page, int pageSize) {
+		JSONObject  ret = new JSONObject();
+		Contract.Status[] curStats = {Status.ESTABLISH, Status.EXTEND};
+		List<Contract> list = null;
+		long totalItems = 0;
+		if(type.equals("in")) {
+			list = findList(page, pageSize, curStats, null, uid, null);
+			totalItems = findCount(curStats, null, uid, null);
+		} else {
+			list = findList(page, pageSize, curStats, null, null, uid);
+			totalItems = findCount(curStats, null, null, uid);
+		}
+		List<JSONObject>  result = new ArrayList<JSONObject>();
+		for(Contract contract : list) {
+			JSONObject js = new JSONObject();
+			js.put("id", contract.getId().toString());
+			js.put("sn", contract.getContractNumber());
+			js.put("toUser", contract.getDebitId().toString());
+			js.put("fromUser", contract.getCreditId().toString());
+			js.put("money", Utils.bigDecimalRound2(contract.getAmount()));
+			js.put("rate", Utils.bigDecimalRound2(contract.getAnnualRate()));
+			String interest = "";
+			if(Contract.RepaymentMethod.getEnum(contract.getRepaymentMethod()) == Contract.RepaymentMethod.WHOLE_AT_MATURITY) {
+				//到期还本付息的还款方式才需要计算利息
+				interest = String.format("%.2f", contract.calcInterest());
+			} else {
+				//其它类型的还款方式需要重新设计接口
+			}
+			js.put("interest", interest);
+			js.put("startDate", Utils.toYmd(contract.getValueDate()));
+			js.put("endDate", Utils.toYmd(contract.getMaturityDate()));
+			js.put("day", ""+Utils.days(new Date(), contract.getMaturityDate()));
+			result.add(js);
+		}
+		ret.put("page", "" + page);
+		ret.put("pageSize", "" + pageSize);
+		ret.put("totalItems", "" + totalItems);
+		ret.put("result", result);
+		return ret;
 	}
 	
 	public Contract findById(final BigInteger id) {

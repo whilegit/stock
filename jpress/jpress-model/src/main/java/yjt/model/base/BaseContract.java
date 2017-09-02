@@ -3,6 +3,7 @@
  */
 package yjt.model.base;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.jfinal.plugin.activerecord.IBean;
@@ -159,14 +160,14 @@ public class BaseContract<M extends BaseContract<M>> extends JModel<M> implement
 	public void setAmount(double amount){
 		set("amount", amount);
 	}
-	public Double getAmount(){
+	public BigDecimal getAmount(){
 		return get("amount");
 	}
 	
 	public void setAnnualRate(double annualRate ){
 		set("annual_rate", annualRate);
 	}
-	public Double getAnnualRate(){
+	public BigDecimal getAnnualRate(){
 		return get("annual_rate");
 	}
 	
