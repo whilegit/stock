@@ -96,8 +96,8 @@ public class User extends BaseUser<User> {
 		profile.put("gender", getGender());
 		profile.put("birthday", birthdayStr);
 		profile.put("score", ""+getScore());
-		profile.put("income", ""+income);
-		profile.put("outcome", ""+outcome);
+		profile.put("income", String.format("%.2f", income));
+		profile.put("outcome", String.format("%.2f", outcome));
 		profile.put("balance", yjt.Utils.bigDecimalRound2(getAmount()));
 		profile.put("interest", yjt.Utils.bigDecimalRound2(getInterest()));
 		profile.put("canBorrowMoney", ""+getCanBorrowMoney());
@@ -137,8 +137,8 @@ public class User extends BaseUser<User> {
 			String birthdayStr = (birthday != null) ? sdfYmd.format(birthday) : "";
 			profile.put("birthday", birthdayStr);
 			profile.put("score", ""+getScore());
-			profile.put("income", ""+income);
-			profile.put("outcome", ""+outcome);
+			profile.put("income", String.format("%.2f", income));
+			profile.put("outcome", String.format("%.2f", outcome));
 			profile.put("userLocation", getUserLocation());
 			profile.put("userCard", getIdcard());
 			profile.put("userAddress", getAddress());

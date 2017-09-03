@@ -17,29 +17,29 @@ public class Apply extends BaseApply<Apply>{
 
 	private static final long serialVersionUID = 1L;
 	
-	public User getUser(){
+	public User getApplyUser(){
 		BigInteger userId = this.getApplyUid();
 		return UserQuery.me().findById(userId);
 	}
 	
 	public JSONObject getProfile() {
 		JSONObject json = new JSONObject();
-		User user = getUser();
+		User user = getApplyUser();
 		json.put("id", getApplyUid().toString());
 		json.put("userID", user.getId().toString());
 		json.put("userName", user.getRealname());
 		json.put("userAvatar", user.getAvatar());
-		json.put("userOverdue", "0");  //是否逾期暂时略过
+		json.put("userOverdue", ""+user.getOverdue());
 		long day = Utils.days(new Date(), getMaturityDate());
 		json.put("day", day>0 ? day+"" : "0");  //因为申请时没有固定借款日，此处只能计算未来到今日的天数了
 		json.put("money", Utils.bigDecimalRound2(getAmount()));
 		json.put("rate", Utils.bigDecimalRound2(getAnnualRate()) + "%");
 		json.put("endDate", Utils.toYmd(getMaturityDate()));
 		json.put("retType", "" + getRepaymentMethod());
-		json.put("fromUserCount", getToFriends().size());
+		json.put("fromUserCount", ""+getToFriends().size());
 		json.put("forUse", Apply.Purpose.getEnum(getPurpose()).getName());
 		json.put("video",getVideo());
-		json.put("status", getStatus());
+		json.put("status", ""+getStatus());
 		return json;
 	}
 	

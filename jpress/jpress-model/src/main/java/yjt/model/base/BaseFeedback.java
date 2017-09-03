@@ -76,9 +76,9 @@ public class BaseFeedback<M extends BaseFeedback<M>> extends JModel<M> implement
 	@Override
 	public boolean equals(Object o) {
 		if(o == null){ return false; }
-		if(!(o instanceof BaseFollow<?>)){return false;}
+		if(!(o instanceof BaseFeedback<?>)){return false;}
 
-		BaseFollow<?> m = (BaseFollow<?>) o;
+		BaseFeedback<?> m = (BaseFeedback<?>) o;
 		if(m.getId() == null){return false;}
 
 		return m.getId().compareTo(this.getId()) == 0;

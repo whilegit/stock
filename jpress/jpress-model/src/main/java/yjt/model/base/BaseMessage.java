@@ -1,7 +1,6 @@
 package yjt.model.base;
 
 import java.math.BigInteger;
-import java.util.Date;
 
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.IBean;
@@ -79,9 +78,9 @@ public class BaseMessage<M extends BaseMessage<M>> extends JModel<M> implements 
 	@Override
 	public boolean equals(Object o) {
 		if(o == null){ return false; }
-		if(!(o instanceof BaseApply<?>)){return false;}
+		if(!(o instanceof BaseMessage<?>)){return false;}
 
-		BaseApply<?> m = (BaseApply<?>) o;
+		BaseMessage<?> m = (BaseMessage<?>) o;
 		if(m.getId() == null){return false;}
 
 		return m.getId().compareTo(this.getId()) == 0;

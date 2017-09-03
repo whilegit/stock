@@ -77,9 +77,9 @@ public class BaseReport<M extends BaseReport<M>> extends JModel<M> implements IB
 	@Override
 	public boolean equals(Object o) {
 		if(o == null){ return false; }
-		if(!(o instanceof BaseFollow<?>)){return false;}
+		if(!(o instanceof BaseReport<?>)){return false;}
 
-		BaseFollow<?> m = (BaseFollow<?>) o;
+		BaseReport<?> m = (BaseReport<?>) o;
 		if(m.getId() == null){return false;}
 
 		return m.getId().compareTo(this.getId()) == 0;

@@ -255,7 +255,7 @@ public class ContractQuery extends JBaseQuery{
 		long totalCount = findCount(totalStats, null, debitor, creditor);
 		long curCount = findCount(curStats, null, debitor, creditor);
 		double curAmount = queryAmount(debitor, creditor, curStats);
-		json.put("usCrtMoneyAmount", "" + curAmount);      //当前debitor向creditor借入的交易总金额
+		json.put("usCrtMoneyAmount", String.format("%.2f", curAmount) );      //当前debitor向creditor借入的交易总金额
 		json.put("usCrtMoneyCount", "" + curCount);        //当前debitor向creditor借入的交易笔数
 		json.put("usCrtAllMoneyCount", "" + totalCount);   //debitort向creditor借入的累计交易笔数
 		return json;
@@ -272,10 +272,10 @@ public class ContractQuery extends JBaseQuery{
 		long userAllMoneyCount = findCount(totalStats, null, uid, null);
 		double returnMoneyAmount = queryAmount(uid, null, finishedStat);
 		long dealFriendCount = queryDiffOppositors(uid);
-		json.put("userMoneyAmount", ""+userMoneyAmount);      //当前借入总金额
+		json.put("userMoneyAmount", String.format("%.2f", userMoneyAmount));      //当前借入总金额
 		json.put("userMoneyCount", ""+userMoneyCount);        //当前借入笔数
 		json.put("userAllMoneyCount", ""+userAllMoneyCount);  //累计借入笔数
-		json.put("returnMoneyAmount", ""+returnMoneyAmount);  //累计已偿还总金额
+		json.put("returnMoneyAmount", String.format("%.2f", returnMoneyAmount));  //累计已偿还总金额
 		json.put("dealFriendCount", ""+dealFriendCount);      //交易的好友数
 		return json;
 	}
@@ -302,7 +302,7 @@ public class ContractQuery extends JBaseQuery{
 			js.put("fromUser", contract.getCreditId().toString());
 			js.put("money", Utils.bigDecimalRound2(contract.getAmount()));
 			js.put("rate", Utils.bigDecimalRound2(contract.getAnnualRate()));
-			String interest = "";
+			String interest = "-";
 			if(Contract.RepaymentMethod.getEnum(contract.getRepaymentMethod()) == Contract.RepaymentMethod.WHOLE_AT_MATURITY) {
 				//到期还本付息的还款方式才需要计算利息
 				interest = String.format("%.2f", contract.calcInterest());
