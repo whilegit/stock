@@ -2,7 +2,6 @@ package yjt.api.v1;
 
 import java.io.File;
 import java.math.BigInteger;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -47,7 +46,6 @@ import yjt.api.v1.Annotation.*;
 public class IndexController extends ApiBaseController {
 	
 	private static final boolean DEBUG = true;
-	protected static final SimpleDateFormat sdfYmd = new SimpleDateFormat("yyyy-MM-dd");
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
@@ -412,6 +410,35 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "oldPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=0,  chs = "旧交易密码")
+	@ParamAnnotation(name = "newPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=6,  chs = "新交易密码")
+	public void updateDealPwd() {
+		BigInteger memberID = getParaToBigInteger("memberID");
+		String oldPwd = getPara("oldPwd");
+		oldPwd = StrKit.notBlank(oldPwd) ? oldPwd : "";
+		String newPwd = getPara("newPwd").trim();
+		User member = UserQuery.me().findByIdNoCache(memberID);
+		if(StrKit.notBlank(member.getDealPassword())){
+			if(!EncryptUtils.verlifyUser(member.getDealPassword(), member.getDealSalt(), oldPwd)){
+				renderJson(getReturnJson(Code.ERROR, "原交易密码错误", EMPTY_OBJECT));
+				return;
+			}
+		}
+		HashMap<String, Object> profile = member.getMemberProfile();
+		
+		String salt = EncryptUtils.salt();
+		member.setDealPassword(EncryptUtils.encryptPassword(newPwd, salt));
+		member.setDealSalt(salt);
+		String newMemberToken = getRandomString(32);
+		member.setMemberToken(newMemberToken);
+		member.update();
+		profile.put("memberToken", newMemberToken);
+		renderJson(getReturnJson(Code.OK, "", profile));
+		return;
+	}
+	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
 	@UploadAnnotation
 	public void uploadFile(){
 		UploadFile uploadFile = getFile();
@@ -574,10 +601,17 @@ public class IndexController extends ApiBaseController {
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
 	@ParamAnnotation(name = "applyID",  must = true, type = ParamInterceptor.Type.INT, min=1,chs = "申请号")
+	@ParamAnnotation(name = "dealPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=6,chs = "交易密码")
 	@ParamAnnotation(name = "repaymentMethod",  must = false, type = ParamInterceptor.Type.INT, min=1, max=3,chs = "还款方式")
 	public void payApply() {
 		BigInteger memberID = getParaToBigInteger("memberID");
 		User member = UserQuery.me().findByIdNoCache(memberID);
+		String dealPwd = getPara("dealPwd").trim();
+		if(!EncryptUtils.verlifyUser(member.getDealPassword(), member.getDealSalt(), dealPwd)){
+			renderJson(getReturnJson(Code.ERROR, "交易密码错误", EMPTY_OBJECT));
+			return;
+		}
+		
 		BigInteger applyID = getParaToBigInteger("applyID");
 		Apply apply = ApplyQuery.me().findById(applyID);
 		if(apply == null){
@@ -613,13 +647,19 @@ public class IndexController extends ApiBaseController {
 			return;
 		}
 		
+		if(member.getCanLend() != 1) {
+			renderJson(getReturnJson(Code.ERROR, "您没有借出的权限", EMPTY_OBJECT));
+			return;
+		}
+		
+		
 		int repaymentMethod = getParaToInt("repaymentMethod", Contract.getDefaultReportMethod().getIndex());
 		JSONObject result = Contract.createContract(apply, member, debitor, Contract.RepaymentMethod.getEnum(repaymentMethod));
 		if(StrKit.notBlank(result.getString("err"))) {
 			renderJson(getReturnJson(Code.ERROR, result.getString("err"), EMPTY_OBJECT));
 			return;
 		}
-		renderJson(getReturnJson(Code.OK, "", ((Contract)result.get("contract")).getProfile())); 
+		renderJson(getReturnJson(Code.OK, "", apply.getProfile())); 
 		return;
 	}
 	

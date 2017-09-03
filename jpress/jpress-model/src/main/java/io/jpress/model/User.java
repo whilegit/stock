@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.HashMap;
 
 import com.alibaba.fastjson.JSONObject;
+import com.jfinal.kit.StrKit;
 import com.jfinal.log.Log;
 
 import io.jpress.model.base.BaseUser;
@@ -114,7 +115,7 @@ public class User extends BaseUser<User> {
 		profile.put("authMobile", "" + getMobileStatus());
 		profile.put("authXuexing", "" + getAuthXuexing());
 		profile.put("authZhima", "" + getAuthZhima());
-		
+		profile.put("issetDealPassword", StrKit.notBlank(getDealPassword()) ? "1" : "0");
 		return profile;
 	}
 	

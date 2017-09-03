@@ -186,6 +186,22 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 		return get("salt");
 	}
 
+	public void setDealPassword(java.lang.String dealPassword) {
+		set("deal_password", dealPassword);
+	}
+
+	public java.lang.String getDealPassword() {
+		return get("deal_password");
+	}
+
+	public void setDealSalt(java.lang.String dealSalt) {
+		set("deal_salt", dealSalt);
+	}
+
+	public java.lang.String getDealSalt() {
+		return get("deal_salt");
+	}
+	
 	public void setEmail(java.lang.String email) {
 		set("email", email);
 	}
