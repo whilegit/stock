@@ -23,6 +23,7 @@ import io.jpress.model.query.UserQuery;
 import io.jpress.router.RouterMapping;
 import io.jpress.utils.EncryptUtils;
 import io.jpress.utils.FileUtils;
+import yjt.model.Ad;
 import yjt.model.Apply;
 import yjt.model.Captcha;
 import yjt.model.Contract;
@@ -30,6 +31,7 @@ import yjt.model.Feedback;
 import yjt.model.Follow;
 import yjt.model.Message;
 import yjt.model.Report;
+import yjt.model.query.AdQuery;
 import yjt.model.query.ApplyQuery;
 import yjt.model.query.CaptchaQuery;
 import yjt.model.query.ContractQuery;
@@ -129,8 +131,41 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "lat",  must = false, type = ParamInterceptor.Type.DOUBLE, min=1, max=90,  chs = "纬度")
+	@ParamAnnotation(name = "lng",  must = false, type = ParamInterceptor.Type.DOUBLE, min=1, max=180, chs = "经度")
 	public void index(){
-		renderJson(getReturnJson(Code.OK, "Hello Index", EMPTY_OBJECT));
+		BigInteger memberID = getParaToBigInteger("memberID");
+		String latStr = this.getPara("lat");
+		String lngStr = this.getPara("lng");
+		if(StrKit.notBlank(latStr, lngStr)){
+			double lat = Double.valueOf(latStr);
+			double lng = Double.valueOf(lngStr);
+			User member = UserQuery.me().findById(memberID);
+			member.setLat(lat);
+			member.setLng(lng);
+			member.update();
+		}
+		
+		List<Ad> ads = AdQuery.me().findList();
+		JSONObject[] adList = new JSONObject[ads.size()];
+		for(int i = 0; i<ads.size(); i++){
+			JSONObject json = new JSONObject();
+			json.put("img", ads.get(i).getImg());
+			json.put("url", ads.get(i).getUrl());
+			adList[i] = json;
+		}
+		
+		Apply.Status[] stats = {Apply.Status.VALID};
+		List<Apply> applies = ApplyQuery.me().findList(null,null, stats, null, memberID);
+		JSONObject[] applyList = new JSONObject[applies.size()];
+		for(int i = 0; i<applies.size(); i++){
+			applyList[i] = applies.get(i).getProfile();
+		}
+		
+		JSONObject ret = new JSONObject();
+		ret.put("adList", adList);
+		ret.put("applyList", applyList);
+		renderJson(getReturnJson(Code.OK, "", ret));
 	}
 	
 	@Before(ParamInterceptor.class)
