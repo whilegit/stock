@@ -231,6 +231,14 @@ public class BaseApply<M extends BaseApply<M>> extends JModel<M> implements IBea
 		return get("create_time");
 	}
 	
+	public void setContractId(BigInteger contractId){
+		set("contract_id", contractId);
+	}
+	
+	public BigInteger getContractId(){
+		return get("contract_id");
+	}
+	
 	public void setStatus(int status){
 		set("status", status);
 	}

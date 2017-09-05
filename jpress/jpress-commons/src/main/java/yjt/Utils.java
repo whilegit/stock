@@ -111,4 +111,18 @@ public class Utils {
 		long internal = (getDayStartTime(toDate) - getDayStartTime(fromDate)) / 1000;
 		return (int) (internal / 86400);
 	}
+	
+	public static String getFileExtention(String path){
+		int len = path.length();
+		int last_slash = path.lastIndexOf('/');
+		if(last_slash == -1 || last_slash >= len -1){
+			return "";
+		}
+		String filename = path.substring(last_slash + 1, len);
+		int lash_dot = filename.lastIndexOf('.');
+		if(lash_dot == -1 || lash_dot >= len -1){
+			return "";
+		}
+		return filename.substring(lash_dot+1, filename.length());
+	}
 }

@@ -3,6 +3,7 @@
  */
 package yjt.model;
 
+import java.math.BigInteger;
 import java.util.Date;
 
 import com.alibaba.fastjson.JSONObject;
@@ -85,6 +86,7 @@ public class Contract extends BaseContract<Contract>{
 		contract.setCreateTime(now);
 		contract.setCreditId(creditor.getId());
 		contract.setDebitId(apply.getApplyUid());
+		contract.setApplyId(apply.getId());
 		contract.setMaturityDate(apply.getMaturityDate());
 		contract.setRepaymentMethod(repaymentMethod != null ? repaymentMethod.getIndex() : getDefaultReportMethod().getIndex());
 		//确定用户是否有直接借款的权利，若无则需后台核准(经修改，没有借款权限的贷出者直接返回)
@@ -126,6 +128,7 @@ public class Contract extends BaseContract<Contract>{
 				apply.setStatus(Apply.Status.DEALED.getIndex());
 				apply.setValueDate(now);
 			}
+			apply.setContractId(contract.getId());
 			flag = apply.update();
 			if(flag == false) {
 				throw new Exception("申请状态更新失败");
@@ -156,6 +159,8 @@ public class Contract extends BaseContract<Contract>{
 			//恢复申请的状态
 			apply.setStatus(Apply.Status.VALID.getIndex());
 			apply.setValueDate(null);
+			apply.setContractId(BigInteger.ZERO);
+			apply.update();
 			log.info("申请号重设为可交易状态, 申请号 " + apply.getId().toString() + ",相关交易编号 " + contract.getContractNumber());
 			
 			ret.put("err", e.getMessage());

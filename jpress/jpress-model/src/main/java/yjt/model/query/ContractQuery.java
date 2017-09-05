@@ -157,8 +157,17 @@ public class ContractQuery extends JBaseQuery{
 	public boolean isContractNumberExists(String contractNumber) {
 		LinkedList<Object> params = new LinkedList<Object>();
 		StringBuilder sqlBuilder = new StringBuilder("Select id From contract Where contract_number = ? Order By id Desc Limit 1");
+		params.add(contractNumber);
 		Contract contract = DAO.findFirst(sqlBuilder.toString(), params);
 		return contract != null;
+	}
+	
+	public Contract findByApplyId(final BigInteger applyId){
+		LinkedList<Object> params = new LinkedList<Object>();
+		StringBuilder sqlBuilder = new StringBuilder("Select id From contract Where contract_id = ? Order By id Desc Limit 1");
+		params.add(applyId.toString());
+		Contract contract = DAO.findFirst(sqlBuilder.toString(), params);
+		return contract;
 	}
 	
 	/**

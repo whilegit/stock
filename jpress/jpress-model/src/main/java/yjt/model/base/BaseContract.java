@@ -279,6 +279,14 @@ public class BaseContract<M extends BaseContract<M>> extends JModel<M> implement
 		return get("repayment_status");
 	}
 	
+	public void setApplyId(BigInteger applyId){
+		set("apply_id", applyId);
+	}
+	public BigInteger getApplyId(){
+		return get("apply_id");
+	}
+	
+	
 	public void setUpdateTime(java.util.Date updateTime ){
 		set("update_time", updateTime);
 	}
