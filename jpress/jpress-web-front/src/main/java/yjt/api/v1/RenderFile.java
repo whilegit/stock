@@ -10,22 +10,22 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.jfinal.render.Render;
 
-import yjt.Utils;
-
 public class RenderFile extends Render{
 
+	protected boolean deleteFlag = false;
 	protected String filepath;
 	protected String mime;
 
-	@Override
+	public RenderFile () {
+		super();
+	}
 	public void render() {
 		FileInputStream fis = null;
 		ServletOutputStream sos = null;
 		// TODO Auto-generated method stub
-		String newpath;
+		File image = null;
 		try {
-			newpath = new String(filepath.getBytes("ISO-8859-1"), "UTF-8");
-			File image = new File(newpath);
+			image = new File(filepath);
 			fis = org.apache.commons.io.FileUtils.openInputStream(image);
 			byte[] byt = new byte[fis.available()];
 			fis.read(byt);
@@ -46,15 +46,18 @@ public class RenderFile extends Render{
 				// TODO Auto-generated catch block
 				//e.printStackTrace();
 			}
+			if(deleteFlag && image != null && image.exists()) {
+				image.delete();
+			}
 		}
-		
 	}
 	
-	public Render setContext(HttpServletRequest request, HttpServletResponse response, String filepath, String mime) {
+	public Render setContext(HttpServletRequest request, HttpServletResponse response, String filepath, String mime, boolean deleteFlag) {
 		this.request = request;
 		this.response = response;
 		this.filepath = filepath;
 		this.mime = mime;
+		this.deleteFlag = deleteFlag;
 		return this;
 	}
 

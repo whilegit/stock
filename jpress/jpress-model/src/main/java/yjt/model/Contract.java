@@ -3,16 +3,22 @@
  */
 package yjt.model;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Date;
+import java.util.UUID;
 
 import com.alibaba.fastjson.JSONObject;
+import com.jfinal.kit.PathKit;
 import com.jfinal.kit.StrKit;
 import com.jfinal.log.Log;
 
 import io.jpress.model.User;
 import io.jpress.model.core.Table;
 import io.jpress.model.query.UserQuery;
+import io.jpress.utils.FileUtils;
 import yjt.Utils;
 import yjt.model.base.BaseContract;
 import yjt.model.query.ContractQuery;
@@ -201,6 +207,134 @@ public class Contract extends BaseContract<Contract>{
 		int loan_term = Utils.days(getValueDate(), getMaturityDate());
 		insteret = getAmount().doubleValue() * (Math.pow(getAnnualRate().doubleValue() / 100.0 + 1.00, ((double)loan_term) / 365.0) - 1.0);
 		return insteret;
+	}
+	
+	/**
+	 * 获取合约协议的位置
+	 * @param contract 
+	 * @param apply
+	 * @param debitor
+	 * @param creditor
+	 * @param debitorSign
+	 * @param creditorSign
+	 * @return
+	 */
+	public static synchronized String getAgreementFilePath(Contract contract, Apply apply, User debitor, User creditor, 
+											Date debitorSign, Date creditorSign) {
+		String contractNumber = "";
+		String debitorName = "", debitorIdCard = "";
+		String creditorName= "", creditorIdCard = "";
+		String cY = "", cM="", cD = "";
+		String dY = "", dM="", dD = "";
+
+		String webRoot = PathKit.getWebRootPath().replace('\\', '/');
+		if(contract != null) {
+			String agreement = contract.getAgreement();
+			if(StrKit.notBlank(agreement)) {
+				File f = new File(webRoot + agreement);
+				if(f.exists()) {
+					//如果已经生成了合约协议，直接返回图片
+					return webRoot + agreement;
+				}
+			}
+			if(debitor == null) debitor = contract.getDebitUser();
+			if(creditor == null) creditor = contract.getCreditUser();
+			contractNumber = contract.getContractNumber();
+			debitorSign = apply.getCreateTime();
+			creditorSign = contract.getCreateTime();
+		} else if(apply != null) {
+			if(debitor == null) debitor = apply.getApplyUser();
+			debitorSign = apply.getCreateTime();
+		} 
+
+		if(debitor != null) {
+			debitorName = debitor.getRealname();
+			debitorIdCard = debitor.getIdcard();
+		}
+		if(creditor != null) {
+			creditorName = creditor.getRealname();
+			creditorIdCard = creditor.getIdcard();
+		}
+		if(debitorSign != null) {
+			String[] d = Utils.toYmdAry(debitorSign);
+			dY = d[0];
+			dM = d[1]; 
+			dD = d[2];
+		}
+		if(creditorSign != null) {
+			String[] d = Utils.toYmdAry(creditorSign);
+			cY = d[0];
+			cM = d[1]; 
+			cD = d[2];
+		}
+		
+		String source = webRoot + "/attachment/agreement/static/borrow-agreement.png";
+		String font = webRoot + "/attachment/agreement/static/msyh.ttf";
+		String suffix = FileUtils.getSuffix(source);
+		String uuid = UUID.randomUUID().toString().replace("-", "");
+		String path = webRoot + "/attachment/agreement/" + Utils.toYm_d(new Date()) + "/" + uuid + suffix;
+		File newFile = new File(path);
+		if (!newFile.getParentFile().exists()) {
+			newFile.getParentFile().mkdirs();
+		}
+
+		StringBuilder buf = new StringBuilder();
+		buf.append("magick ");
+		buf.append(source + " ");
+		buf.append("-font " + font +" ");
+		buf.append("-pointsize 20 ");
+		buf.append("-draw \"text 360,350 '" + contractNumber + "'\" ");
+		buf.append("-draw \"text 485,410 '"+creditorName+"'\" ");
+		buf.append("-draw \"text 300,467 '"+creditorIdCard+"'\" ");
+		buf.append("-draw \"text 485,525 '"+debitorName+"'\" ");
+		buf.append("-draw \"text 300,580 '"+debitorIdCard+"'\" ");
+		buf.append("-draw \"text 420,5740 '"+debitorName+"'\" ");
+		buf.append("-draw \"text 280,5775 '"+dY+"'\" ");
+		buf.append("-draw \"text 395,5775 '"+dM+"'\" ");
+		buf.append("-draw \"text 476,5775 '"+dD+"'\" ");
+		buf.append("-draw \"text 420,5852 '"+creditorName+"'\" ");
+		buf.append("-draw \"text 280,5887 '"+cY+"'\" ");
+		buf.append("-draw \"text 395,5887 '"+cM+"'\" ");
+		buf.append("-draw \"text 476,5887 '"+cD+"'\" ");
+		buf.append("-draw \"text 280,6000 '"+cY+"'\" ");
+		buf.append("-draw \"text 400,6000 '"+cM+"'\" ");
+		buf.append("-draw \"text 480,6000 '"+cD+"'\" ");
+		buf.append("-colors 50 ");
+		buf.append(path);
+		boolean windows = System.getProperty("os.name").toLowerCase().startsWith("win");
+		
+		File commandFile = new File(webRoot + "/attachment/agreement/static/cmd.bat");
+		try {
+			byte[] cmd = null;
+			if(windows) 
+				cmd = buf.toString().replace('\\', '/').getBytes("GBK");
+			else
+				cmd = buf.toString().getBytes();
+			
+			if(commandFile.exists() == false) commandFile.createNewFile();
+			FileOutputStream fos = new FileOutputStream(commandFile);
+			fos.write(cmd);
+			fos.close();
+			String[] cmds = null;
+			if(windows) 
+				cmds = new String[]{"cmd", "/C", commandFile.getAbsolutePath()};
+			else
+				cmds = new String[] {"/bin/sh", "-c", commandFile.getAbsolutePath()};
+			Utils.exec(cmds);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			path = null;
+		} finally {
+			commandFile.delete();
+		}
+		
+		if(contract != null) {
+			contract.setAgreement(path.substring(webRoot.length()));
+			contract.update();
+		}
+		
+		return path;
 	}
 	
 	public static enum Status{

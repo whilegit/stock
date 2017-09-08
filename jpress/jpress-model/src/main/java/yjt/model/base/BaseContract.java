@@ -131,7 +131,8 @@ public class BaseContract<M extends BaseContract<M>> extends JModel<M> implement
 	}
 
 	public java.lang.String getContractNumber() {
-		return get("contract_number");
+		String contractNumber = get("contract_number");
+		return contractNumber != null ? contractNumber : "";
 	}
 
 	public void setContractTypeId(int contractTypeId) {
@@ -140,6 +141,15 @@ public class BaseContract<M extends BaseContract<M>> extends JModel<M> implement
 
 	public int getContractTypeId() {
 		return get("contract_type_id");
+	}
+	
+	public void setAgreement(java.lang.String agreement) {
+		set("agreement", agreement);
+	}
+
+	public java.lang.String getAgreement() {
+		String agreement =  get("agreement");
+		return agreement != null ? agreement : "";
 	}
 
 	public void setCreditId(java.math.BigInteger creditId) {

@@ -106,12 +106,13 @@ public class UserQuery extends JBaseQuery {
 	}
 
 	public User findById(final BigInteger userId) {
-		return DAO.getCache(userId, new IDataLoader() {
+		/*return DAO.getCache(userId, new IDataLoader() {
 			@Override
 			public Object load() {
 				return DAO.findById(userId);
 			}
-		});
+		});*/
+		return DAO.findById(userId);
 	}
 	
 	/**

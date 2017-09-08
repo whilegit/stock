@@ -1,5 +1,7 @@
 package yjt;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
@@ -14,6 +16,7 @@ import com.jfinal.kit.StrKit;
 
 public class Utils {
 	protected static final SimpleDateFormat sdfYmd = new SimpleDateFormat("yyyy-MM-dd");
+	protected static final SimpleDateFormat sdfYm_d = new SimpleDateFormat("yyyyMM/dd");
 	protected static final SimpleDateFormat sdfYmdHms = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	protected static final SimpleDateFormat sdfNumber = new SimpleDateFormat("yyyyMMddHHmmss");
 	protected static final Pattern MOBILE_PATTERN = Pattern.compile("^1[345789][0-9]{9}$");
@@ -93,6 +96,17 @@ public class Utils {
 		return sdfYmd.format(d);
 	}
 	
+	public static String[] toYmdAry(Date d) {
+		return  sdfYmd.format(d).split("[\\/\\-]");
+	}
+	
+	
+	
+	public static String toYm_d(Date d) {
+		if(d == null) return "";
+		return sdfYm_d.format(d);
+	}
+	
 	public static String toYmdHms(Date d) {
 		if(d == null) return "";
 		return sdfYmdHms.format(d);
@@ -123,6 +137,36 @@ public class Utils {
 		if(lash_dot == -1 || lash_dot >= len -1){
 			return "";
 		}
+		
 		return filename.substring(lash_dot+1, filename.length());
 	}
+	
+	public static void exec(String[] commandStr) {  
+        BufferedReader br = null;  
+        try {  
+            Process p = Runtime.getRuntime().exec(commandStr);  
+
+            br = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String line = null;  
+            StringBuilder sb = new StringBuilder();  
+            while ((line = br.readLine()) != null) {  
+                sb.append(line + "\n");  
+            }  
+            //p.destroy();
+            System.out.println(sb.toString());  
+        } catch (Exception e) {  
+            e.printStackTrace();  
+        }   
+        finally  
+        {  
+            if (br != null)  
+            {  
+                try {  
+                    br.close();  
+                } catch (Exception e) {  
+                    e.printStackTrace();  
+                }  
+            }  
+        }  
+    }  
 }

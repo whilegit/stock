@@ -164,7 +164,7 @@ public class ContractQuery extends JBaseQuery{
 	
 	public Contract findByApplyId(final BigInteger applyId){
 		LinkedList<Object> params = new LinkedList<Object>();
-		StringBuilder sqlBuilder = new StringBuilder("Select id From contract Where contract_id = ? Order By id Desc Limit 1");
+		StringBuilder sqlBuilder = new StringBuilder("Select id From contract Where apply_id = ? And status>=5 Order By id Desc Limit 1");
 		params.add(applyId.toString());
 		Contract contract = DAO.findFirst(sqlBuilder.toString(), params);
 		return contract;

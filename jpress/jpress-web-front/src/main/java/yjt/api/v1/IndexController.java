@@ -1,22 +1,12 @@
 package yjt.api.v1;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
-
-import org.im4java.core.ConvertCmd;
-import org.im4java.core.IM4JavaException;
-import org.im4java.core.IMOperation;
 
 import com.alibaba.fastjson.JSONObject;
 import com.aliyuncs.exceptions.ClientException;
@@ -894,6 +884,7 @@ public class IndexController extends ApiBaseController {
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
 	@ParamAnnotation(name = "applyID",  must = true, type = ParamInterceptor.Type.INT, min=1, chs = "申请号")
 	public void applyAgreement(){
+		BigInteger memberID = getParaToBigInteger("memberID");
 		BigInteger applyID = getParaToBigInteger("applyID");
 		Apply apply = ApplyQuery.me().findById(applyID);
 		if(apply == null){
@@ -909,26 +900,40 @@ public class IndexController extends ApiBaseController {
 			renderJson(getReturnJson(Code.ERROR, "申请已过期", EMPTY_OBJECT));
 			return;
 		}
-		String webRoot = PathKit.getWebRootPath();
-		String path1 = webRoot + "/attachment/20170626/6747d073dfad442db77dfc3f1c833641.jpg";
-		String path2 = webRoot + "/attachment/20170626/6747d073dfad442db77dfc3f1c833641_.jpg";
-		IMOperation operation = new IMOperation();
-		operation.addImage(path1);
-		operation.rotate(90d);
-		operation.addImage(path2);
-
-		ConvertCmd cmd = new ConvertCmd();
-		try {
-			cmd.run(operation);
-			RenderFile render = new RenderFile();
-			String mime = "image/" + Utils.getFileExtention(path2);
-			render.setContext(this.getRequest(), this.getResponse(), path2, mime);
-			this.render(render);
-		} catch (IOException | InterruptedException | IM4JavaException e) {
-			renderJson(getReturnJson(Code.ERROR, "<html><head><meta charset='utf-8'><title></title></head><body><div><pre>获取协议失败</pre></div></body></html>", EMPTY_OBJECT));
-		} finally {
-
+		User creditor = null;
+		User debitor = apply.getApplyUser();
+		Contract contract = null;
+		Date creditorSign = null;
+		BigInteger contractId = apply.getContractId();
+		if(contractId != null && !contractId.equals(BigInteger.ZERO)) {
+			contract = ContractQuery.me().findById(contractId);
+			if(contract == null) {
+				log.info("apply.id(" + applyID.toString() + ") 已经成交但无对应的合约记录");
+				renderJson(getReturnJson(Code.ERROR, "内部错误", EMPTY_OBJECT));
+				return;
+			}
+			creditor = contract.getCreditUser();
+			if(memberID.equals(creditor.getId()) == false && memberID.equals(debitor.getId()) == false) {
+				renderJson(getReturnJson(Code.ERROR, "您不是当事方无权查看", EMPTY_OBJECT));
+				return;
+			}
+		} else {
+			if(memberID.equals(debitor.getId()) == false) {
+				creditorSign = new Date();
+				creditor = UserQuery.me().findById(memberID);
+			}
 		}
+		
+		String agreement = Contract.getAgreementFilePath(contract, apply, debitor, creditor, apply.getCreateTime(), creditorSign);
+		if(agreement == null) {
+			renderJson(getReturnJson(Code.ERROR, "协议生成失败", EMPTY_OBJECT));
+			return;
+		}
+
+		RenderFile render = new RenderFile();
+		String mime = "image/" + Utils.getFileExtention(agreement);
+		render.setContext(this.getRequest(), this.getResponse(), agreement, mime, (contract == null));
+		this.render(render);
 	}
 	
 	@SuppressWarnings("unused")

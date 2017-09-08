@@ -236,7 +236,10 @@ public class BaseApply<M extends BaseApply<M>> extends JModel<M> implements IBea
 	}
 	
 	public BigInteger getContractId(){
-		return get("contract_id");
+		Object contractId = get("contract_id");
+		if(contractId instanceof BigInteger) return (BigInteger) contractId;
+		else if(contractId instanceof Long) return BigInteger.valueOf((Long)contractId);
+		return BigInteger.ZERO;
 	}
 	
 	public void setStatus(int status){
