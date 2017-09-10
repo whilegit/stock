@@ -152,5 +152,13 @@ public class BaseCaptcha<M extends BaseCaptcha<M>> extends JModel<M> implements 
 	public java.util.Date getCreateTime(){
 		return get("create_time");
 	}
+	
+	public void setType(String type) {
+		set("type", type);
+	}
+	
+	public String getType() {
+		return get("type");
+	}
 
 }

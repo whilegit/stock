@@ -170,6 +170,46 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "page",  must = true, type = ParamInterceptor.Type.INT, min=1,chs = "起始页")
+	@ParamAnnotation(name = "pageSize",  must = true, type = ParamInterceptor.Type.INT, min=1,chs = "每页数")
+	public void friendList() {
+		BigInteger memberID = getParaToBigInteger("memberID");
+		int page = getParaToInt("page");
+		int pageSize = getParaToInt("pageSize");
+
+		BigInteger[] followedAry =  FollowQuery.me().getFollowedList(memberID);
+		int totalItems = followedAry.length;
+		List<User> userAry = new ArrayList<User>();
+		if(followedAry.length > 0 && followedAry.length > (page -1) * pageSize) {
+			List<BigInteger> followedList = Arrays.asList(followedAry);
+			int start = (page-1) * pageSize;
+			int end = page * pageSize > followedAry.length ? followedAry.length : page * pageSize;
+			List<BigInteger> subList = followedList.subList(start, end);
+			followedAry = new BigInteger[subList.size()];
+			subList.toArray(followedAry);
+			userAry = UserQuery.me().findList(followedAry);
+		} 
+		
+		ArrayList<JSONObject> result = new ArrayList<JSONObject>();
+		for(User u : userAry) {
+			JSONObject o = new JSONObject();
+			o.put("userID", u.getId().toString());
+			o.put("userName", u.getRealname());
+			o.put("userAvatar", u.getAvatar());
+			o.put("isFollowed", "1");
+			result.add(o);
+		}
+		
+		JSONObject json = new JSONObject();
+		json.put("totalItems", "" + totalItems);
+		json.put("page", ""+page);
+		json.put("pageSize", ""+pageSize);
+		json.put("result", result);
+		renderJson(getReturnJson(Code.OK, "", json));
+	}
+	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
 	public void userInfo(){
 		BigInteger memberID = getParaToBigInteger("memberID");
 		User member = UserQuery.me().findByIdNoCache(memberID);
@@ -700,15 +740,25 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
+	@ParamAnnotation(name = "type",  must = true, type = ParamInterceptor.Type.ENUM_STRING, allow_list= {"reg","findPwd","validMobile"},chs = "类型")
 	public void sendCaptcha(){
 		String mobile = getPara("mobile");
-		String  code = (int) (Math.random() * 1000000) + "";
+		String code = String.format("%06d", (int) (Math.random() * 1000000));
+		String type = getPara("type");
+		String template = null;
+		if(type.equals("reg")) template = "SMS_94665102";
+		else if(type.equals("findPwd")) template = "SMS_94665102";
+		else if(type.equals("validMobile"))  template = "SMS_94665102";
+		else {
+			return;
+		}
 		JSONObject json = new JSONObject();
 		json.put("code", code);
 		try {
-			sendSms(mobile, "SMS_86610162", json);
+			sendSms(mobile, template, json);
 			Captcha captcha = getModel(Captcha.class);
 			captcha.setCode(code);
+			captcha.setType(type);
 			captcha.setMobile(mobile);
 			captcha.setIp(this.getIPAddress());
 			captcha.setCreateTime(new Date());

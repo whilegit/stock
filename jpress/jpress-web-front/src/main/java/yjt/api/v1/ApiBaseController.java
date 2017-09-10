@@ -227,8 +227,9 @@ public class ApiBaseController extends BaseFrontController{
     static final String domain = "dysmsapi.aliyuncs.com";
 
     // TODO 此处需要替换成开发者自己的AK(在阿里云访问控制台寻找)
-    static final String accessKeyId = "LTAI2CyIn5cvuXf0";
-    static final String accessKeySecret = "q23aGRpz0v6y1q2L1IwuQWaqw9gXA6";
+    static final String accessKeyId = "LTAI4II4ZTbGpU2J"; //LTAI2CyIn5cvuXf0
+    static final String accessKeySecret = "ZO8mXV01jDhuyb7gIFEsOPNqJoNAaP"; //q23aGRpz0v6y1q2L1IwuQWaqw9gXA6
+    static final String signName = "易谈科技";  //林忠仁
     
 	public static SendSmsResponse sendSms(String mobile, String template, JSONObject json) throws ClientException {
 
@@ -246,7 +247,7 @@ public class ApiBaseController extends BaseFrontController{
         //必填:待发送手机号
         request.setPhoneNumbers(mobile);
         //必填:短信签名-可在短信控制台中找到
-        request.setSignName("林忠仁");
+        request.setSignName(signName);
         //必填:短信模板-可在短信控制台中找到
         request.setTemplateCode(template);
         //可选:模板中的变量替换JSON串,如模板内容为"亲爱的${name},您的验证码为${code}"时,此处的值为
@@ -260,7 +261,6 @@ public class ApiBaseController extends BaseFrontController{
 
         //hint 此处可能会抛出异常，注意catch
         SendSmsResponse sendSmsResponse = acsClient.getAcsResponse(request);
-
         return sendSmsResponse;
     }
 	
