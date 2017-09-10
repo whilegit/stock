@@ -278,8 +278,11 @@ public class Contract extends BaseContract<Contract>{
 			newFile.getParentFile().mkdirs();
 		}
 
+		boolean windows = System.getProperty("os.name").toLowerCase().startsWith("win");
+		
 		StringBuilder buf = new StringBuilder();
-		buf.append("magick ");
+		if(windows) buf.append("magick ");
+		else buf.append("convert ");
 		buf.append(source + " ");
 		buf.append("-font " + font +" ");
 		buf.append("-pointsize 20 ");
@@ -301,7 +304,6 @@ public class Contract extends BaseContract<Contract>{
 		buf.append("-draw \"text 480,6000 '"+cD+"'\" ");
 		buf.append("-colors 50 ");
 		buf.append(path);
-		boolean windows = System.getProperty("os.name").toLowerCase().startsWith("win");
 		
 		File commandFile = new File(webRoot + "/attachment/agreement/static/cmd.bat");
 		try {
@@ -326,7 +328,7 @@ public class Contract extends BaseContract<Contract>{
 			//e.printStackTrace();
 			path = null;
 		} finally {
-			commandFile.delete();
+			//commandFile.delete();
 		}
 		
 		if(contract != null) {
