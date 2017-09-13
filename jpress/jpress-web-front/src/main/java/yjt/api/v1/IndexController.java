@@ -1062,7 +1062,7 @@ public class IndexController extends ApiBaseController {
 			renderJson(getReturnJson(Code.ERROR, "请勿重复认证", EMPTY_OBJECT));
 			return;
 		}
-		if("1".equals(mobileStatus)){
+		if("0".equals(mobileStatus)){
 			//一般不需要用到
 			renderJson(getReturnJson(Code.ERROR, "请先验证手机号码", EMPTY_OBJECT));
 			return;
