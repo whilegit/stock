@@ -34,12 +34,15 @@ public class IdcardVerify {
 		headers.add(new BasicNameValuePair("X-Ca-Request-Mode", "debug"));
 		
 		try {
-			String result = Utils.get(url, params, headers);
-			if(!StrKit.isBlank(result)){
-				IdcardVerify verifier = JSON.parseObject(result, IdcardVerify.class);
-				ret = (verifier != null && verifier.getStatus() == 0 && verifier.getMsg().equals("ok") 
-						&& verifier.getResult().getIdcard().equals(idcard));
-				System.out.println(verifier.toString());
+			String html = Utils.get(url, params, headers);
+			if(!StrKit.isBlank(html)){
+				IdcardVerify verifier = JSON.parseObject(html, IdcardVerify.class);
+				if(verifier != null && verifier.getStatus() == 0 && verifier.getMsg().equals("ok")){
+					Result result = verifier.getResult();
+					if(idcard.equals(result.getIdcard()) && realname.equals(result.getRealname()) && result.getVerifystatus() == 0){
+						ret = true;
+					}
+				}
 			}
 		} catch (Exception e) {
 			//e.printStackTrace();

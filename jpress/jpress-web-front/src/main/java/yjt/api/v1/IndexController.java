@@ -38,6 +38,7 @@ import yjt.model.query.ContractQuery;
 import yjt.model.query.FollowQuery;
 import yjt.model.query.MessageQuery;
 import yjt.verify.IdcardVerify;
+import yjt.verify.MobileVerify;
 import yjt.api.v1.Interceptor.*;
 import yjt.Utils;
 import yjt.api.v1.Annotation.*;
@@ -1035,6 +1036,79 @@ public class IndexController extends ApiBaseController {
 		renderJson(getReturnJson(Code.OK, "身份证认证成功", EMPTY_OBJECT));
 		return;
 		
+	}
+	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
+	@ParamAnnotation(name = "idcard",  must = false, type = ParamInterceptor.Type.STRING, minlen=18, maxlen=18, chs = "身份证号")
+	@ParamAnnotation(name = "realname",  must = false, type = ParamInterceptor.Type.STRING, minlen=2, maxlen=4, chs = "真实姓名")
+	@ParamAnnotation(name = "typeid",  must = false, type = ParamInterceptor.Type.INT, min=1, max=7, chs = "证件类型")
+	public void verifyMobile(){
+		BigInteger memberID = getParaToBigInteger("memberID");
+		String idcard = getPara("idcard", "");
+		String realname = getPara("realname", "");
+		String mobile = getPara("mobile");
+		Integer typeid = getParaToInt("typeid", 1);
+		
+		User member = UserQuery.me().findByIdNoCache(memberID);
+		if(!mobile.equals(member.getMobile())){
+			renderJson(getReturnJson(Code.ERROR, "该手机与您注册的手机号不同，如需修改请联系客服", EMPTY_OBJECT));
+			return;
+		}
+		String mobileStatus = member.getMobileStatus();
+		// 0:表示手机号码未验证; 1: 手机号码已验证但未实名认证； 2: 已通过验证和实名认证
+		if("2".equals(mobileStatus)){
+			renderJson(getReturnJson(Code.ERROR, "请勿重复认证", EMPTY_OBJECT));
+			return;
+		}
+		if("1".equals(mobileStatus)){
+			//一般不需要用到
+			renderJson(getReturnJson(Code.ERROR, "请先验证手机号码", EMPTY_OBJECT));
+			return;
+		}
+		
+		int authCard = member.getAuthCard();
+		if(authCard == 0){
+			//renderJson(getReturnJson(Code.ERROR, "请先进行身份证认证", EMPTY_OBJECT));
+			//return;
+			if(!StrKit.notBlank(idcard, realname)){
+				renderJson(getReturnJson(Code.ERROR, "请提供身份证号和真实姓名", EMPTY_OBJECT));
+				return;
+			}
+			//检查身份证号码的编码是否合法
+			if(!Utils.isValidIdcard(idcard)) {
+				renderJson(getReturnJson(Code.ERROR, "身份证号码格式错误", EMPTY_OBJECT));
+				return;
+			}
+			//检测名字是否有英文
+			if(Utils.hasAlphaBeta(realname)) {
+				renderJson(getReturnJson(Code.ERROR, "请用真实姓名", EMPTY_OBJECT));
+				return;
+			}
+		} else {
+			realname = member.getRealname();
+			idcard = member.getIdcard();
+		}
+		
+		//开始验证
+		boolean flag = MobileVerify.verify(idcard,mobile,  realname, typeid.toString());
+		if(flag == false) {
+			renderJson(getReturnJson(Code.ERROR, "手机号码认证失败", EMPTY_OBJECT));
+			return;
+		}
+		
+		//如该用户未进行过身份证认证，顺便把身份证也一并设为认证了(安全性?)
+		if(authCard == 0){
+			member.setIdcard(idcard);
+			member.setRealname(realname);
+			member.setAuthCard(1);
+		}
+		member.setMobileStatus("2");
+		member.update();
+		
+		renderJson(getReturnJson(Code.OK, "手机号码认证成功", EMPTY_OBJECT));
+		return;
 	}
 	
 	@SuppressWarnings("unused")
