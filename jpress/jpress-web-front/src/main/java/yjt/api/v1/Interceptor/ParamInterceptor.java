@@ -37,6 +37,7 @@ public class ParamInterceptor implements Interceptor{
 			String name = anno.name();
 			String chs = anno.chs();
 			int minlen = anno.minlen();
+			int maxlen = anno.maxlen();
 			
 			String value = bc.getPara(name);
 			if(StrKit.isBlank(value)){
@@ -86,6 +87,10 @@ public class ParamInterceptor implements Interceptor{
 					int len = value.length();
 					if(len < minlen){
 						err = chs+"至少"+minlen + "位";
+						pass = false;
+					}
+					if(len > maxlen) {
+						err = chs+"不超过"+maxlen + "位";
 						pass = false;
 					}
 					break;

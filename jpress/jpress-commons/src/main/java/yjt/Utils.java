@@ -1,16 +1,36 @@
 package yjt;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.StatusLine;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
 import com.jfinal.kit.StrKit;
 
@@ -169,4 +189,197 @@ public class Utils {
             }  
         }  
     }  
+	
+	/**
+	 * HTTP Post方法加载页面
+	 * @param url
+	 * @param params          键值对
+	 * @return
+	 * @throws ClientProtocolException
+	 * @throws IOException
+	 */
+	public static String post(String url, List<NameValuePair> params, List<NameValuePair> headers) throws ClientProtocolException, IOException {
+		String result = null;
+		
+		CloseableHttpClient httpclient = HttpClients.createDefault();
+		HttpPost httpPost = new HttpPost(url);
+		if(headers != null && headers.size() > 0) {
+			Iterator<NameValuePair> it = headers.iterator();
+			while(it.hasNext()) {
+				NameValuePair entry = it.next();
+				httpPost.setHeader(entry.getName(), entry.getValue());
+			}
+		}
+		
+		httpPost.setEntity(new UrlEncodedFormEntity(params));
+		CloseableHttpResponse response = httpclient.execute(httpPost);
+
+		try {
+			StatusLine status = response.getStatusLine();
+			int code = status.getStatusCode();
+			HttpEntity entity = response.getEntity();
+			
+			if(code == 200){
+				if(entity != null){
+					Charset charset = getContentTypeCharset(response);
+					if(charset == null) charset = Charset.forName("UTF-8");
+					result = IOUtils.toString(entity.getContent(), charset.name());
+				}
+			} else if(entity != null) {
+				EntityUtils.consume(entity);
+			}
+		} finally {
+			response.close();
+		}
+		return result;
+	}
+	
+	/**
+	 * HTTP Get方法加载页面
+	 * @param url
+	 * @param defaultCharset         自动判断编码类型 > defaultCharset > UTF-8, 兜底为UTF-8
+	 * @return 返回Http报文的Body部分
+	 * @throws ClientProtocolException
+	 * @throws IOException
+	 */
+	public static String get(String url,  List<NameValuePair> params, List<NameValuePair> headers) throws ClientProtocolException, IOException {
+		String result = null;
+		
+		CloseableHttpClient httpclient = HttpClients.createDefault();
+		if(params != null && params.size() > 0){
+			String query = "";
+			Iterator<NameValuePair> it = params.iterator();
+			while(it.hasNext()){
+				NameValuePair nvp = it.next();
+				query += "&" + URLEncoder.encode(nvp.getName(), "UTF-8") + "=" + URLEncoder.encode(nvp.getValue(), "UTF-8");
+			}
+			
+			if(url.indexOf('?') < 0){
+				query = query.substring(1, query.length());
+				url = url + "?" + query;
+			} else {
+				url = url + query;
+			}
+		}
+		System.out.println(url);
+		HttpGet httpGet = new HttpGet(url);
+		
+		if(headers != null && headers.size() > 0) {
+			Iterator<NameValuePair> it = headers.iterator();
+			while(it.hasNext()) {
+				NameValuePair entry = it.next();
+				httpGet.setHeader(entry.getName(), entry.getValue());
+			}
+		}
+		
+		CloseableHttpResponse response = httpclient.execute(httpGet);
+		// The underlying HTTP connection is still held by the response object
+		// to allow the response content to be streamed directly from the network socket.
+		// In order to ensure correct deallocation of system resources
+		// the user MUST call CloseableHttpResponse#close() from a finally clause.
+		// Please note that if response content is not fully consumed the underlying
+		// connection cannot be safely re-used and will be shut down and discarded
+		// by the connection manager. 
+		try {
+			StatusLine status = response.getStatusLine();
+			int code = status.getStatusCode();
+			HttpEntity entity = response.getEntity();
+			if(code == 200){
+				if(entity != null){
+					//long len = entity.getContentLength();
+					Charset charset = getContentTypeCharset(response);
+					if(charset == null) charset = Charset.forName("UTF-8");
+					result = IOUtils.toString(entity.getContent(), charset.name());
+				}
+			} else if(entity != null) {
+				EntityUtils.consume(entity);
+			}
+		} finally {
+			response.close();
+		}
+		return result;
+	}
+	
+	/**
+	 * 用于getContentTypeCharset静态方法
+	 */
+	protected static Pattern contentTypeCharset = Pattern.compile("(?<=CHARSET\\=)[a-z0-9\\-]+", Pattern.CASE_INSENSITIVE);
+	
+	/**
+	 * 探测HttpClient返回报文中，是否设置编码格式
+	 * @param response
+	 * @return
+	 */
+	protected static Charset getContentTypeCharset(CloseableHttpResponse response){
+		Charset charset = null;
+		Header contentType = response.getFirstHeader("Content-Type");
+		if(contentType != null){
+			charset = detectCharset(contentType.getValue());
+		}
+		return charset;
+	}
+	
+	protected static Charset detectCharset(String str){
+		Charset charset = null;
+		Matcher m = contentTypeCharset.matcher(str);
+		if(m.find()){
+			String set = m.group().trim().toUpperCase();
+			charset = Charset.forName(set);
+		}
+		return charset;
+	}
+
+	
+	public static boolean hasAlphaBeta(String str) {
+		if(StrKit.isBlank(str)) return false;
+		Pattern p = Pattern.compile("[a-z]", Pattern.CASE_INSENSITIVE);
+		Matcher m = p.matcher(str);
+		return m.find();
+	}
+	
+	public static boolean isValidIdcard(String idcard) {
+		if(StrKit.isBlank(idcard)) return false;
+		idcard = idcard.toUpperCase();
+		//总体格式检查
+		Pattern p = Pattern.compile("^[0-9]{17}[0-9X]$");
+		if(p.matcher(idcard).find() == false) {
+			return false;
+		}
+		
+		//省码检查
+		Integer[] provinceCode = {11, 12, 13, 14, 15,
+				  21,22,23,
+				  31,32,33,34,35,36,37,
+				  41,42,43,44,45,46,
+				  50,51,52,53,54,
+				  61,62,63,64,65,
+				  }; //81,82港澳略
+		List<Integer> prvList = Arrays.asList(provinceCode);
+		Integer prv = Integer.valueOf(idcard.substring(0, 2));
+		if(!prvList.contains(prv)) {
+			return false;
+		}
+		
+		//生日检查
+		SimpleDateFormat sdfYmd = new SimpleDateFormat("yyyyMMdd");
+		sdfYmd.setLenient(false);
+		try {
+			sdfYmd.parse(idcard.substring(6, 14));
+		} catch (ParseException e) {
+			return false;
+		}
+		
+		//校验码检查
+		int[] weight = {7,9,10,5,8,4,2,1,6,3,7,9,10,5,8,4,2};
+		int convolve = 0;
+		for(int i = 0; i< 17; i++) {
+			char ch = idcard.charAt(i);
+			int v = ch - '0';
+			convolve += v * weight[i];
+		}
+		int remaider = convolve % 11;
+		char[] remaiderMap = {'1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'};		
+		return idcard.charAt(17) == remaiderMap[remaider];
+	}
+
 }

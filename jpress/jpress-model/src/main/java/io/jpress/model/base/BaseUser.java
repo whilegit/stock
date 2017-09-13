@@ -422,6 +422,22 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 		return get("idcardtype");
 	}
 
+	public void setIdcardFront(java.lang.String idcardFront) {
+		set("idcard_front", idcardFront);
+	}
+	
+	public java.lang.String getIdcardFront() {
+		return get("idcard_front");
+	}
+
+	public void setIdcardBack(java.lang.String idcardBack) {
+		set("idcard_back", idcardBack);
+	}
+	
+	public java.lang.String getIdcardBack() {
+		return get("idcard_back");
+	}
+
 	public void setIdcard(java.lang.String idcard) {
 		set("idcard", idcard);
 	}

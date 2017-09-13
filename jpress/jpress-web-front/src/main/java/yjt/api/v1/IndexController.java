@@ -37,6 +37,7 @@ import yjt.model.query.CaptchaQuery;
 import yjt.model.query.ContractQuery;
 import yjt.model.query.FollowQuery;
 import yjt.model.query.MessageQuery;
+import yjt.verify.IdcardVerify;
 import yjt.api.v1.Interceptor.*;
 import yjt.Utils;
 import yjt.api.v1.Annotation.*;
@@ -984,6 +985,56 @@ public class IndexController extends ApiBaseController {
 		String mime = "image/" + Utils.getFileExtention(agreement);
 		render.setContext(this.getRequest(), this.getResponse(), agreement, mime, (contract == null));
 		this.render(render);
+	}
+	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "idcard",  must = true, type = ParamInterceptor.Type.STRING, minlen=18, maxlen=18, chs = "身份证号")
+	@ParamAnnotation(name = "realname",  must = true, type = ParamInterceptor.Type.STRING, minlen=2, maxlen=4, chs = "真实姓名")
+	@ParamAnnotation(name = "idcardimg1",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, chs = "身份证正面照片")
+	@ParamAnnotation(name = "idcardimg2",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, chs = "身份证反面照片")
+	public void verifyIDCard() {
+		BigInteger memberID = getParaToBigInteger("memberID");
+		String idcard = getPara("idcard").trim().toLowerCase();
+		String realname = getPara("realname").trim().toLowerCase();
+		String idcardimg1 = getPara("idcardimg1").trim();
+		String idcardimg2 = getPara("idcardimg2").trim();
+		
+		User member = UserQuery.me().findByIdNoCache(memberID);
+		if(member.getAuthCard() == 1) {
+			renderJson(getReturnJson(Code.ERROR, "请勿重复认证", EMPTY_OBJECT));
+			return;
+		}
+		
+		//检测名字是否有英文
+		if(Utils.hasAlphaBeta(realname)) {
+			renderJson(getReturnJson(Code.ERROR, "请用真实姓名", EMPTY_OBJECT));
+			return;
+		}
+		
+		//检查身份证号码的编码是否合法
+		if(!Utils.isValidIdcard(idcard)) {
+			renderJson(getReturnJson(Code.ERROR, "身份证号码格式错误", EMPTY_OBJECT));
+			return;
+		}
+		
+		//开始验证
+		boolean flag = IdcardVerify.verify(realname, idcard);
+		if(flag == false) {
+			renderJson(getReturnJson(Code.ERROR, "身份证认证失败", EMPTY_OBJECT));
+			return;
+		}
+		
+		member.setAuthCard(1);
+		member.setIdcard(idcard);
+		member.setRealname(realname);
+		member.setIdcardFront(idcardimg1);
+		member.setIdcardFront(idcardimg2);
+		member.update();
+		
+		renderJson(getReturnJson(Code.OK, "身份证认证成功", EMPTY_OBJECT));
+		return;
+		
 	}
 	
 	@SuppressWarnings("unused")
