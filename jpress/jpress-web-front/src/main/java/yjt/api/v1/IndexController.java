@@ -37,6 +37,7 @@ import yjt.model.query.CaptchaQuery;
 import yjt.model.query.ContractQuery;
 import yjt.model.query.FollowQuery;
 import yjt.model.query.MessageQuery;
+import yjt.verify.BankcardVerify;
 import yjt.verify.IdcardVerify;
 import yjt.verify.MobileVerify;
 import yjt.api.v1.Interceptor.*;
@@ -115,6 +116,8 @@ public class IndexController extends ApiBaseController {
 		
 		user = getModel(User.class);
 		user.setMobile(mobile);
+		//通过手机号注册的帐号, mobile_status为1，待认证后改成2
+		user.setMobileStatus("1");
 		user.setAvatar(avatar);
 		user.setPassword(EncryptUtils.encryptPassword(password, salt));
 		user.setSalt(salt);
@@ -1053,7 +1056,7 @@ public class IndexController extends ApiBaseController {
 		
 		User member = UserQuery.me().findByIdNoCache(memberID);
 		if(!mobile.equals(member.getMobile())){
-			renderJson(getReturnJson(Code.ERROR, "该手机与您注册的手机号不同，如需修改请联系客服", EMPTY_OBJECT));
+			renderJson(getReturnJson(Code.ERROR, "该手机号与您注册的手机号不同，如需修改请联系客服", EMPTY_OBJECT));
 			return;
 		}
 		String mobileStatus = member.getMobileStatus();
@@ -1108,6 +1111,101 @@ public class IndexController extends ApiBaseController {
 		member.update();
 		
 		renderJson(getReturnJson(Code.OK, "手机号码认证成功", EMPTY_OBJECT));
+		return;
+	}
+	
+
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "bankcard",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, maxlen=30, chs = "银行卡号")
+	@ParamAnnotation(name = "idcard",  must = false, type = ParamInterceptor.Type.STRING, minlen=18, maxlen=18, chs = "身份证号")
+	@ParamAnnotation(name = "mobile",  must = false, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
+	@ParamAnnotation(name = "realname",  must = false, type = ParamInterceptor.Type.STRING, minlen=2, maxlen=4, chs = "真实姓名")
+	public void verifyBankCard() {
+		BigInteger memberID = getParaToBigInteger("memberID");
+		String bankcard = getPara("bankcard");
+		String idcard = getPara("idcard", "");
+		String realname = getPara("realname", "");
+		String mobile = getPara("mobile", "");
+		User member = UserQuery.me().findByIdNoCache(memberID);
+		
+		int authBank = member.getAuthBank();
+		if(authBank == 1) {
+			renderJson(getReturnJson(Code.ERROR, "请勿重复认证", EMPTY_OBJECT));
+			return;
+		}
+		
+		String mobileStatus = member.getMobileStatus();
+		if("0".equals(mobileStatus)){
+			//一般不需要用到
+			renderJson(getReturnJson(Code.ERROR, "请先验证手机号码", EMPTY_OBJECT));
+			return;
+		}
+		
+		if(StrKit.notBlank(mobile) ) {
+			if(!mobile.equals(member.getMobile())) {
+				renderJson(getReturnJson(Code.ERROR, "该手机号与您注册的手机号不同，如需修改请联系客服", EMPTY_OBJECT));
+				return;
+			}
+		} else {
+			mobile = member.getMobile();
+		}
+		
+		int authCard = member.getAuthCard();
+		if(!StrKit.notBlank(idcard, realname)) {
+			if(authCard == 0) {
+				renderJson(getReturnJson(Code.ERROR, "请先进行身份证认证", EMPTY_OBJECT));
+				return;
+			}else {
+				idcard = member.getIdcard();
+				realname = member.getRealname();
+			}
+		} else {
+			if(authCard == 0) {
+				//检查身份证号码的编码是否合法
+				if(!Utils.isValidIdcard(idcard)) {
+					renderJson(getReturnJson(Code.ERROR, "身份证号码格式错误", EMPTY_OBJECT));
+					return;
+				}
+				//检测名字是否有英文
+				if(Utils.hasAlphaBeta(realname)) {
+					renderJson(getReturnJson(Code.ERROR, "请用真实姓名", EMPTY_OBJECT));
+					return;
+				}
+			} else {
+				String saved_idcard = member.getIdcard();
+				String saved_realname = member.getRealname();
+				if(!idcard.equals(saved_idcard) || !realname.equals(saved_realname)) {
+					renderJson(getReturnJson(Code.ERROR, "当前提供的姓名或身份证号与之前认证的不符", EMPTY_OBJECT));
+					return;
+				}
+			}
+		}
+		
+		//开始验证
+		boolean flag = BankcardVerify.verify(bankcard, idcard,mobile, realname);
+		if(flag == false) {
+			renderJson(getReturnJson(Code.ERROR, "银行卡认证失败", EMPTY_OBJECT));
+			return;
+		}
+		//更新身份证的认证情况
+		if(authCard == 0) {
+			member.setIdcard(idcard);
+			member.setRealname(realname);
+			member.setAuthCard(1);
+		}
+		
+		//更新手机号码的认证情况
+		
+		if(! "2".equals(mobileStatus)) {
+			member.setMobileStatus("2");
+		}
+		//更新银行卡的认证情况
+		member.setBankcard(bankcard);
+		member.setAuthBank(1);
+		member.update();
+		
+		renderJson(getReturnJson(Code.OK, "银行卡认证成功", EMPTY_OBJECT));
 		return;
 	}
 	

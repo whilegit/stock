@@ -11,40 +11,37 @@ import com.jfinal.kit.StrKit;
 
 import yjt.Utils;
 
-public class MobileVerify {
+public class BankcardVerify {
 
 	protected int status;
 	protected String msg;
 	protected Result result;
 	
-	public static boolean verify(String idcard, String mobile, String realname, String typeid){
-		if(!StrKit.notBlank(idcard, mobile, realname)){
+	public static boolean verify(String bankcard, String idcard, String mobile, String realname){
+		if(!StrKit.notBlank(bankcard, idcard, mobile, realname)){
 			return false;
 		}
 		boolean checked = false;
-		String url = "http://jisusjhsm.market.alicloudapi.com/mobileverify/verify";
+		String url = "http://jisubank4.market.alicloudapi.com/bankcardverify4/verify";
 		//String url = "http://phpstudy/testpay.php";
 		List<NameValuePair> params = new ArrayList<NameValuePair>();
+		params.add(new BasicNameValuePair("bankcard", bankcard));
 		params.add(new BasicNameValuePair("idcard", idcard));
 		params.add(new BasicNameValuePair("mobile", mobile));
 		params.add(new BasicNameValuePair("realname", realname));
-		if(StrKit.isBlank(typeid)){
-			typeid = "1";
-		}
-		params.add(new BasicNameValuePair("typeid", typeid));
 
 		List<NameValuePair> headers = new ArrayList<NameValuePair>();
-		headers.add(new BasicNameValuePair("Authorization", "APPCODE " + AppCodes.MOBILEVERIFY_APPCODE));
+		headers.add(new BasicNameValuePair("Authorization", "APPCODE " + AppCodes.BANKCARDVERIFY_APPCODE));
 		headers.add(new BasicNameValuePair("Content-Type", "application/json; charset=utf-8"));
 		headers.add(new BasicNameValuePair("X-Ca-Request-Mode", "debug"));
 			
 		try {
 			String html = Utils.get(url, params, headers);
 			if(StrKit.notBlank(html)){
-				MobileVerify verifier = JSON.parseObject(html, MobileVerify.class);
+				BankcardVerify verifier = JSON.parseObject(html, BankcardVerify.class);
 				if(verifier != null && verifier.getStatus() == 0){
 					Result result = verifier.getResult();
-					if(result != null && mobile.equals(result.getMobile()) && 
+					if(result != null && bankcard.equals(result.getBankcard()) && mobile.equals(result.getMobile()) && 
 							idcard.equals(result.getIdcard()) && realname.equals(result.getRealname()) && result.getVerifystatus() == 0){
 						checked = true;
 					}
@@ -88,45 +85,65 @@ public class MobileVerify {
 	}
 
 	class Result{
-		protected String mobile;
+		protected String bankcard;
 		protected String realname;
 		protected String idcard;
+		protected String mobile;
 		protected int verifystatus;
 		protected String verifymsg;
-		public String getMobile() {
-			return mobile;
+		
+		public String getBankcard() {
+			return bankcard;
 		}
-		public void setMobile(String mobile) {
-			this.mobile = mobile;
+
+		public void setBankcard(String bankcard) {
+			this.bankcard = bankcard;
 		}
+
 		public String getRealname() {
 			return realname;
 		}
+
 		public void setRealname(String realname) {
 			this.realname = realname;
 		}
+
 		public String getIdcard() {
 			return idcard;
 		}
+
 		public void setIdcard(String idcard) {
 			this.idcard = idcard;
 		}
+
+		public String getMobile() {
+			return mobile;
+		}
+
+		public void setMobile(String mobile) {
+			this.mobile = mobile;
+		}
+
 		public int getVerifystatus() {
 			return verifystatus;
 		}
+
 		public void setVerifystatus(int verifystatus) {
 			this.verifystatus = verifystatus;
 		}
+
 		public String getVerifymsg() {
 			return verifymsg;
 		}
+
 		public void setVerifymsg(String verifymsg) {
 			this.verifymsg = verifymsg;
 		}
+
 		@Override
 		public String toString() {
 			// TODO Auto-generated method stub
-			return "{'mobile':'" + mobile + "','realname':'" + realname + "','idcard':'" + idcard + "'," + 
+			return "{'bankcard':'"+bankcard+"','mobile':'" + mobile + "','realname':'" + realname + "','idcard':'" + idcard + "'," + 
 					"'verifystatus':'" + verifystatus + "','verifymsg':'" + verifymsg + "'}";
 		}
 	}

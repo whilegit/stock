@@ -64,6 +64,8 @@ CREATE TABLE `jpress_user` (
   `avatar` varchar(256) DEFAULT NULL COMMENT '头像',
   `idcardtype` varchar(128) DEFAULT NULL COMMENT '证件类型：身份证 护照 军官证等',
   `idcard` varchar(128) DEFAULT NULL COMMENT '证件号码',
+  `idcard_front` varchar(255) DEFAULT '' COMMENT '身份证正面照片',
+  `idcard_back` varchar(255) DEFAULT '' COMMENT '身份证反面照片',
   `status` varchar(32) DEFAULT 'normal' COMMENT '状态',
   `created` datetime DEFAULT NULL COMMENT '创建日期',
   `create_source` varchar(128) DEFAULT NULL COMMENT '用户来源（可能来之oauth第三方）',
@@ -76,7 +78,10 @@ CREATE TABLE `jpress_user` (
   `can_lend` tinyint(3) DEFAULT '1' COMMENT '【新增】是否有能够直接借出',
   `lat` decimal(7,5) DEFAULT '0.00000' COMMENT '【新增】纬度',
   `lng` decimal(8,5) DEFAULT '0.00000' COMMENT '【新增】经度',
+  `bankcard` varchar(45) DEFAULT '' COMMENT '银行卡',
+  `banktype` varchar(45) DEFAULT NULL COMMENT '发卡行',
   `zhima_score` int(10) DEFAULT '0' COMMENT '【新增】用户芝麻分',
+  `auth_bank` tinyint(3) DEFAULT '0' COMMENT '银行卡是否经过认证',
   `auth_zhima` tinyint(3) DEFAULT '0' COMMENT '【新增】芝麻认证',
   `auth_alipay` tinyint(3) DEFAULT '0' COMMENT '【新增】支付宝是否验证',
   `auth_xuexing` tinyint(3) DEFAULT '0' COMMENT '【新增】学信认证',
@@ -102,7 +107,7 @@ CREATE TABLE `jpress_user` (
 
 LOCK TABLES `jpress_user` WRITE;
 /*!40000 ALTER TABLE `jpress_user` DISABLE KEYS */;
-INSERT INTO `jpress_user` VALUES (1,'yjt','testttestss','林忠仁','70f73a53980c9d07b7925d0d07ade8b516ddf632feee29992d066503f41150d5','448bda287017a3fbc2fac','123',NULL,'6215714@qq.com',NULL,'18968596872','0',NULL,10000.00,3000,1,1,1,1,'1','administrator','perm-edit','xxx',1,0,'6215714',NULL,'while1',NULL,NULL,'1984-07-23 00:00:00',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'/attachment/20170615/4b04908922884382b3f2362948ea54f4.jpg',NULL,NULL,'activited','2017-06-06 23:14:30',NULL,'2017-08-21 23:00:39',NULL,'AHiHAAJiBawCj7ELzm3gInOFke6ZeyHR',0,0,NULL,1,0.00000,0.00000,0,0,0,0,0,0,0,0,10.00),(2,'admin','admin1-nick',NULL,'5a7612c7e12f83d58f1f185a6c32bae01c37cfb385f26129408ad9bcc6693b32','7b68edf4fd70f076160',NULL,NULL,'admin@yjt.com',NULL,'13012345678',NULL,NULL,0.00,3000,1,1,1,1,NULL,'visitor','user-edit','none',1,0,'6215714',NULL,'aaa',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'activited','2017-06-20 23:33:04',NULL,'2017-06-20 23:33:05',NULL,'geZHCthskHSTgt8aeqg5LijepDeJ8F9j',0,0,NULL,1,0.00000,0.00000,0,0,0,0,0,0,0,0,0.00),(3,'test01','test01nick','张三','123456','abcd',NULL,NULL,'11@qq.com','y','13811111111','y','01011111111',0.00,0,1,1,1,1,'1','visitor','contract-list','哥是个传说',0,0,'1111111','wechat_111',NULL,NULL,NULL,'2000-11-01 00:00:00',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'activited',NULL,NULL,NULL,NULL,'',0,0,NULL,1,0.00000,0.00000,0,0,0,0,0,0,0,0,0.00),(4,'test02','test02nick','李四','123456','abcd',NULL,NULL,'22@qq.com','y','13822222222','y','01022222222',0.00,0,1,1,1,1,'2','visitor','','姐是个传说',0,0,'22222222','wechat_111',NULL,NULL,NULL,'2000-11-02 00:00:00',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'activited',NULL,NULL,NULL,NULL,'',0,0,NULL,1,0.00000,0.00000,0,0,0,0,0,0,0,0,0.00);
+INSERT INTO `jpress_user` VALUES (1,'yjt','testttestss','林忠仁','70f73a53980c9d07b7925d0d07ade8b516ddf632feee29992d066503f41150d5','448bda287017a3fbc2fac','123',NULL,'6215714@qq.com',NULL,'18968596872','2',NULL,10000.00,3000,1,1,1,1,'1','administrator','perm-edit','xxx',1,0,'6215714',NULL,'while1',NULL,NULL,'1984-07-23 00:00:00',NULL,NULL,NULL,NULL,NULL,NULL,NULL,'/attachment/20170615/4b04908922884382b3f2362948ea54f4.jpg',NULL,'331081198407237619','','','activited','2017-06-06 23:14:30',NULL,'2017-08-21 23:00:39',NULL,'1itFhBUkqqceZ1fKpZlMaX6WwMiUIxQl',0,0,NULL,1,0.00000,0.00000,'6228480402564881235',NULL,0,1,0,0,0,0,1,0,0,10.00),(2,'admin','admin1-nick','杨白劳','5a7612c7e12f83d58f1f185a6c32bae01c37cfb385f26129408ad9bcc6693b32','7b68edf4fd70f076160',NULL,NULL,'admin@yjt.com',NULL,'13012345678',NULL,NULL,0.00,3000,1,1,1,1,NULL,'visitor','user-edit','none',1,0,'6215714',NULL,'aaa',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'331081199008127619','','','activited','2017-06-20 23:33:04',NULL,'2017-06-20 23:33:05',NULL,'geZHCthskHSTgt8aeqg5LijepDeJ8F9j',0,0,NULL,1,0.00000,0.00000,'',NULL,0,0,0,0,0,0,0,0,0,0.00),(3,'test01','test01nick','张三','123456','abcd',NULL,NULL,'11@qq.com','y','13811111111','y','01011111111',0.00,0,1,1,1,1,'1','visitor','contract-list','哥是个传说',0,0,'1111111','wechat_111',NULL,NULL,NULL,'2000-11-01 00:00:00',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'','','activited',NULL,NULL,NULL,NULL,'',0,0,NULL,1,0.00000,0.00000,'',NULL,0,0,0,0,0,0,0,0,0,0.00),(4,'test02','test02nick','李四','123456','abcd',NULL,NULL,'22@qq.com','y','13822222222','y','01022222222',0.00,0,1,1,1,1,'2','visitor','','姐是个传说',0,0,'22222222','wechat_111',NULL,NULL,NULL,'2000-11-02 00:00:00',NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,'','','activited',NULL,NULL,NULL,NULL,'',0,0,NULL,1,0.00000,0.00000,'',NULL,0,0,0,0,0,0,0,0,0,0.00);
 /*!40000 ALTER TABLE `jpress_user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -115,4 +120,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-09-03 17:33:52
+-- Dump completed on 2017-09-14 11:22:51

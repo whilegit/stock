@@ -551,7 +551,7 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 		return get("overdue");
 	}
 	
-	public void setCreditRecord(java.lang.Integer creditRecord){
+	public void setCreditRecord(java.lang.String creditRecord){
 		set("credit_record", creditRecord);
 	}
 	
@@ -584,12 +584,38 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 		return get("lng");
 	}
 	
+	public void setBankcard(java.lang.String bankcard){
+		set("bankcard", bankcard);
+	}
+	
+	public String getBankcard(){
+		String bankcard = get("bankcard");
+		return bankcard != null ? bankcard : "";
+	}
+	
+	public void setBanktype(java.lang.String banktype){
+		set("banktype", banktype);
+	}
+	
+	public String getBanktype(){
+		String banktype = get("banktype");
+		return banktype != null ? banktype : "";
+	}
+	
 	public void setZhimaScore(java.lang.Integer zhimaScore){
 		set("zhima_score", zhimaScore);
 	}
 	
 	public java.lang.Integer getZhimaScore(){
 		return get("zhima_score");
+	}
+	
+	public void setAuthBank(java.lang.Integer authBank){
+		set("auth_bank", authBank);
+	}
+	
+	public java.lang.Integer getAuthBank(){
+		return get("auth_bank");
 	}
 	
 	public void setAuthZhima(java.lang.Integer authZhima){
