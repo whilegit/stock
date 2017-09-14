@@ -438,6 +438,14 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 		return get("idcard_back");
 	}
 
+	public void setFaceimg(java.lang.String faceimg) {
+		set("faceimg", faceimg);
+	}
+	
+	public java.lang.String getFaceimg() {
+		return get("faceimg");
+	}
+	
 	public void setIdcard(java.lang.String idcard) {
 		set("idcard", idcard);
 	}

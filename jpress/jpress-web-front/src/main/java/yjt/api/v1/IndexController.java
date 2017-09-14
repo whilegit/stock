@@ -1209,6 +1209,30 @@ public class IndexController extends ApiBaseController {
 		return;
 	}
 	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "faceimg",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, chs = "人脸近照")
+	public void verifyFace() {
+		BigInteger memberID = getParaToBigInteger("memberID");
+		String faceimg = getPara("faceimg").trim();
+		User member = UserQuery.me().findByIdNoCache(memberID);
+		
+		if(member.getAuthFace() == 1) {
+			renderJson(getReturnJson(Code.ERROR, "请勿重复认证", EMPTY_OBJECT));
+			return;
+		}
+		if(member.getAuthCard() != 1) {
+			renderJson(getReturnJson(Code.ERROR, "请先完成身份证认证", EMPTY_OBJECT));
+			return;
+		}
+		
+		member.setFaceimg(faceimg);
+		member.update();
+		//后台确认比对后，将auth_face设为1
+		renderJson(getReturnJson(Code.OK, "人脸认证已经提交，请耐心等待审核通过", EMPTY_OBJECT));
+		return;
+	}
+	
 	@SuppressWarnings("unused")
 	@Clear(AccessTokenInterceptor.class)
 	public void getAccessToken(){
