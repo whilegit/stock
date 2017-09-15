@@ -15,6 +15,8 @@
  */
 package io.jpress;
 
+import com.unionpay.acp.sdk.SDKConfig;
+
 import io.jpress.core.Jpress;
 import io.jpress.core.JpressConfig;
 import io.jpress.message.Actions;
@@ -58,6 +60,9 @@ public class Config extends JpressConfig {
 
 		// 初始化权限管理列表
 		PermKit.init();
+		
+		// 加载银联支付初始化参数
+		SDKConfig.getConfig().loadPropertiesFromSrc(); 
 		
 		MessageKit.sendMessage(Actions.JPRESS_STARTED);
 

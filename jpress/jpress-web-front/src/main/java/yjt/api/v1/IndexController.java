@@ -31,6 +31,7 @@ import yjt.model.Feedback;
 import yjt.model.Follow;
 import yjt.model.Message;
 import yjt.model.Report;
+import yjt.model.UnionpayLog;
 import yjt.model.query.AdQuery;
 import yjt.model.query.ApplyQuery;
 import yjt.model.query.CaptchaQuery;
@@ -41,6 +42,7 @@ import yjt.verify.BankcardVerify;
 import yjt.verify.IdcardVerify;
 import yjt.verify.MobileVerify;
 import yjt.api.v1.Interceptor.*;
+import yjt.api.v1.UnionAppPay.UnionAppPay;
 import yjt.Utils;
 import yjt.api.v1.Annotation.*;
 
@@ -1230,6 +1232,57 @@ public class IndexController extends ApiBaseController {
 		member.update();
 		//后台确认比对后，将auth_face设为1
 		renderJson(getReturnJson(Code.OK, "人脸认证已经提交，请耐心等待审核通过", EMPTY_OBJECT));
+		return;
+	}
+	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "fee",  must = true, type = ParamInterceptor.Type.INT, min=1, chs = "充值金额")
+	public void createOrder() {
+		BigInteger memberID = getParaToBigInteger("memberID");
+		int fee = getParaToInt("fee");
+		Date now = new Date();
+		//生成一个唯一的支付序列号
+		String paySn = UnionpayLog.genUniquePaySn(now);
+		if(StrKit.isBlank(paySn)) {
+			//实际上是连续十次无法生成一个唯一的序列化，只能放弃
+			renderJson(getReturnJson(Code.ERROR, "服务暂时不可用，请稍后重试", EMPTY_OBJECT));
+			return;
+		}
+		UnionAppPay pay = new UnionAppPay();
+		HashMap<String, String> params = new HashMap<String, String>();
+		params.put("txnAmt", String.format("%d", fee * 100));  //银联接口单位是分
+		params.put("orderId", paySn);
+		params.put("txnTime", Utils.getDayNumber(now));
+		HashMap<String, String> result = (HashMap<String, String>) pay.comsume(params);
+		if(result == null) {
+			//无法获取到预支付的tn码，应查看log
+			renderJson(getReturnJson(Code.ERROR, "服务暂时不可用，请稍后重试", EMPTY_OBJECT));
+			return;
+		}
+		String tn = result.get("tn");
+		
+		//插入充值记录表
+		UnionpayLog unionpayLog = getModel(UnionpayLog.class);
+		unionpayLog.setFee(fee);
+		unionpayLog.setCreateTime(now);
+		unionpayLog.setPaySn(paySn);
+		unionpayLog.setStatus(0);  //表示未支付
+		unionpayLog.setTn(tn);
+		unionpayLog.setUserId(memberID);
+		unionpayLog.setUpdateTime(now);
+		boolean flag = unionpayLog.save();
+		if(flag == false) {
+			//无法插入支付记录表中，可能表不存在
+			renderJson(getReturnJson(Code.ERROR, "服务暂时不可用，请稍后重试", EMPTY_OBJECT));
+			return;
+		}
+		
+		//返回给前端，前端凭tn码完成具体的支付操作
+		JSONObject json = new JSONObject();
+		json.put("orderSN", paySn);
+		json.put("tn", tn);
+		renderJson(getReturnJson(Code.OK, "", json));
 		return;
 	}
 	
