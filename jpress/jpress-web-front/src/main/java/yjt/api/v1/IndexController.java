@@ -1,6 +1,7 @@
 package yjt.api.v1;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +44,7 @@ import yjt.verify.IdcardVerify;
 import yjt.verify.MobileVerify;
 import yjt.api.v1.Interceptor.*;
 import yjt.api.v1.UnionAppPay.UnionAppPay;
+import yjt.location.Amap;
 import yjt.Utils;
 import yjt.api.v1.Annotation.*;
 
@@ -314,12 +316,14 @@ public class IndexController extends ApiBaseController {
 			}
 			flag = false;
 		}
+
 		HashMap<String, Object> profile = new HashMap<String, Object>();
 		profile.put("userID", userID.toString());
 		profile.put("userName", user.getRealname());
 		profile.put("userAvatar", user.getAvatar());
 		profile.put("userMobile", user.getMobile());
 		profile.put("isFollowed", flag ? "1" : "0");
+		profile.put("userLocation", user.getUserLocation());
 		renderJson(getReturnJson(Code.OK, "", profile));
 	}
 	

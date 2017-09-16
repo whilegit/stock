@@ -28,6 +28,7 @@ import com.jfinal.log.Log;
 import io.jpress.model.base.BaseUser;
 import io.jpress.model.core.Table;
 import yjt.Utils;
+import yjt.location.Amap;
 import yjt.model.query.ContractQuery;
 import yjt.model.query.FollowQuery;
 
@@ -156,7 +157,22 @@ public class User extends BaseUser<User> {
 	
 	//获取地理位置使用高德地图接口，暂时放一下
 	public String getUserLocation(){
-		return "";
+		String location = "";
+		BigDecimal lat = getLat();
+		BigDecimal lng = getLng();
+		if(lat != null && lng != null) {
+			double dlat = lat.doubleValue();
+			double dlng = lng.doubleValue();
+			//非在中国范围内，不查询地图
+			if(dlat > 18.0 && dlat < 54.0 && dlng > 73.0 && dlng < 135.0) {
+				Amap.Regeo regeo = Amap.trans(dlat, dlng);
+				if(regeo != null) {
+					location = regeo.getRegeocode().getFormattedAddress();
+				}
+			}
+		}
+		
+		return location;
 	}
 	
 	public boolean changeBalance(double change, String reason) {
