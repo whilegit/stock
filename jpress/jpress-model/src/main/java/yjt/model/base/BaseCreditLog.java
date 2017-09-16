@@ -1,5 +1,6 @@
 package yjt.model.base;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.jfinal.plugin.activerecord.IBean;
@@ -12,17 +13,17 @@ import io.jpress.model.core.JModel;
 import io.jpress.model.query.MetaDataQuery;
 
 
-public class BaseUnionpayLog<M extends BaseUnionpayLog<M>> extends JModel<M> implements IBean {
+public class BaseCreditLog<M extends BaseCreditLog<M>> extends JModel<M> implements IBean {
 
 	private static final long serialVersionUID = 1L;
 	
 	
-	public static final String CACHE_NAME = "unionpaylog";
-	public static final String METADATA_TYPE = "unionpaylog";
+	public static final String CACHE_NAME = "creditlog";
+	public static final String METADATA_TYPE = "creditlog";
 
-	public static final String ACTION_ADD = "unionpaylog:add";
-	public static final String ACTION_DELETE = "unionpaylog:delete";
-	public static final String ACTION_UPDATE = "unionpaylog:update";
+	public static final String ACTION_ADD = "creditlog:add";
+	public static final String ACTION_DELETE = "creditlog:delete";
+	public static final String ACTION_UPDATE = "creditlog:update";
 	
 	public void removeCache(Object key){
 		if(key == null) return;
@@ -78,9 +79,9 @@ public class BaseUnionpayLog<M extends BaseUnionpayLog<M>> extends JModel<M> imp
 	@Override
 	public boolean equals(Object o) {
 		if(o == null){ return false; }
-		if(!(o instanceof BaseUnionpayLog<?>)){return false;}
+		if(!(o instanceof BaseCreditLog<?>)){return false;}
 
-		BaseUnionpayLog<?> m = (BaseUnionpayLog<?>) o;
+		BaseCreditLog<?> m = (BaseCreditLog<?>) o;
 		if(m.getId() == null){return false;}
 
 		return m.getId().compareTo(this.getId()) == 0;
@@ -126,14 +127,6 @@ public class BaseUnionpayLog<M extends BaseUnionpayLog<M>> extends JModel<M> imp
 		return id instanceof BigInteger ? (BigInteger)id : new BigInteger(id.toString());
 	}
 	
-	public void setPaySn(String paySn) {
-		set("pay_sn", paySn);
-	}
-	
-	public String getPaySn() {
-		return get("pay_sn");
-	}
-	
 	public void setUserId(java.math.BigInteger userId) {
 		set("user_id", userId);
 	}
@@ -144,12 +137,51 @@ public class BaseUnionpayLog<M extends BaseUnionpayLog<M>> extends JModel<M> imp
 		return userId instanceof BigInteger ? (BigInteger)userId : new BigInteger(userId.toString());
 	}
 	
-	public void setFee(int fee) {
-		set("fee", fee);
+	public void setCreditType(int creditType){
+		set("credit_type", creditType);
+	}
+	public int getCreditType(){
+		return get("credit_type");
 	}
 	
-	public int getFee() {
-		return get("fee");
+	public void setPlatform(int platform){
+		set("platform", platform);
+	}
+	public int getPlatform(){
+		return get("platform");
+	}
+	
+	public void setChange(double change) {
+		set("change", change);
+	}
+	
+	public Double getChange() {
+		Object change = get("change");
+		return change instanceof BigDecimal ? ((BigDecimal)change).doubleValue() : (Double)change;
+	}
+	
+	public void setCur(double cur) {
+		set("cur", cur);
+	}
+	
+	public Double getCur() {
+		Object cur = get("cur");
+		return cur instanceof BigDecimal ? ((BigDecimal)cur).doubleValue() : (Double)cur;
+	}
+	
+	public void setClerk(BigInteger clerk) {
+		set("clerk", clerk);
+	}
+	public BigInteger getClerk() {
+		return get("clerk");
+	}
+	
+	public void setLog(String log) {
+		set("log", log);
+	}
+	public String getLog() {
+		String log = get("log");
+		return log != null ? log : "";
 	}
 	
 	public void setCreateTime(java.util.Date createTime ){
@@ -157,26 +189,5 @@ public class BaseUnionpayLog<M extends BaseUnionpayLog<M>> extends JModel<M> imp
 	}
 	public java.util.Date getCreateTime(){
 		return get("create_time");
-	}
-	
-	public void setTn(String tn) {
-		set("tn", tn);
-	}
-	public String getTn() {
-		return get("tn");
-	}
-	
-	public void setStatus(int status){
-		set("status", status);
-	}
-	public int getStatus(){
-		return get("status");
-	}
-	
-	public void setUpdateTime(java.util.Date updateTime ){
-		set("update_time", updateTime);
-	}
-	public java.util.Date getUpdateTime(){
-		return get("update_time");
 	}
 }

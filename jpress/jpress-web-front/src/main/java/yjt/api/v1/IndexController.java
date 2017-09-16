@@ -1,7 +1,6 @@
 package yjt.api.v1;
 
 import java.io.File;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,6 +27,7 @@ import yjt.model.Ad;
 import yjt.model.Apply;
 import yjt.model.Captcha;
 import yjt.model.Contract;
+import yjt.model.CreditLog;
 import yjt.model.Feedback;
 import yjt.model.Follow;
 import yjt.model.Message;
@@ -37,6 +37,7 @@ import yjt.model.query.AdQuery;
 import yjt.model.query.ApplyQuery;
 import yjt.model.query.CaptchaQuery;
 import yjt.model.query.ContractQuery;
+import yjt.model.query.CreditLogQuery;
 import yjt.model.query.FollowQuery;
 import yjt.model.query.MessageQuery;
 import yjt.verify.BankcardVerify;
@@ -44,7 +45,6 @@ import yjt.verify.IdcardVerify;
 import yjt.verify.MobileVerify;
 import yjt.api.v1.Interceptor.*;
 import yjt.api.v1.UnionAppPay.UnionAppPay;
-import yjt.location.Amap;
 import yjt.Utils;
 import yjt.api.v1.Annotation.*;
 
@@ -747,6 +747,41 @@ public class IndexController extends ApiBaseController {
 		}
 		renderJson(getReturnJson(Code.OK, "", apply.getProfile())); 
 		return;
+	}
+	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "page",  must = true, type = ParamInterceptor.Type.INT, min=1,chs = "起始页")
+	@ParamAnnotation(name = "pageSize",  must = true, type = ParamInterceptor.Type.INT, min=1,chs = "每页数")
+	public void userBalanceInOutList() {
+		BigInteger memberID = getParaToBigInteger("memberID");
+		int page = getParaToInt("page");
+		int pageSize = getParaToInt("pageSize");
+		
+		long totolItems = CreditLogQuery.me().findCount(memberID);
+		List<CreditLog> list = new ArrayList<CreditLog>();
+		if(totolItems > 0) {
+			list = CreditLogQuery.me().findList(page, pageSize, memberID, null);
+		}
+		JSONObject[] result = new JSONObject[list.size()];
+		for(int i = 0; i<list.size(); i++) {
+			CreditLog log = list.get(i);
+			JSONObject j = new JSONObject();
+			j.put("id", log.getId().toString());
+			j.put("money", String.format("%.2f", log.getChange()));
+			j.put("info", log.getLog());
+			j.put("type", CreditLog.Platfrom.getEnum(log.getPlatform()).getName());
+			j.put("date", Utils.toYmd(log.getCreateTime()));
+			result[i] = j;
+		}
+		
+		JSONObject json = new JSONObject();
+		json.put("page", "" + page);
+		json.put("pageSize", "" + pageSize);
+		json.put("totalItems", "" + totolItems);
+		json.put("result", result);
+		
+		renderJson(getReturnJson(Code.OK, "", json));
 	}
 	
 	@Before(ParamInterceptor.class)

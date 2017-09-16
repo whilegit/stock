@@ -1,25 +1,17 @@
 package yjt.model;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
 import com.alibaba.fastjson.JSONObject;
-import com.jfinal.kit.PathKit;
-import com.jfinal.kit.StrKit;
 import com.jfinal.log.Log;
 
 import io.jpress.model.User;
 import io.jpress.model.core.Table;
 import io.jpress.model.query.UserQuery;
-import io.jpress.utils.FileUtils;
 import yjt.Utils;
 import yjt.model.base.BaseApply;
-import yjt.model.query.ContractQuery;
 
 @Table(tableName = "apply", primaryKey = "id")
 public class Apply extends BaseApply<Apply>{
