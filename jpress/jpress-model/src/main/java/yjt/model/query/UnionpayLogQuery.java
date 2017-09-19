@@ -3,6 +3,8 @@ package yjt.model.query;
 import java.math.BigInteger;
 import java.util.LinkedList;
 
+import com.jfinal.kit.StrKit;
+
 import io.jpress.model.query.JBaseQuery;
 import yjt.model.UnionpayLog;
 
@@ -15,11 +17,15 @@ public class UnionpayLogQuery extends JBaseQuery{
 	}
 	
 	public boolean isPaySnExists(String paySn) {
+		return findByPaySn(paySn) != null;
+	}
+	
+	public UnionpayLog findByPaySn(String paySn) {
+		if(StrKit.isBlank(paySn)) return null;
 		LinkedList<Object> params = new LinkedList<Object>();
-		StringBuilder sqlBuilder = new StringBuilder("Select id From unionpaylog Where pay_sn = ? Order By id Desc Limit 1");
-		params.add(paySn);
-		UnionpayLog paylog = DAO.findFirst(sqlBuilder.toString(), params);
-		return paylog != null;
+		StringBuilder sqlBuilder = new StringBuilder();
+		appendAndIfNotEmpty(sqlBuilder, "pay_sn", paySn, params);
+		return DAO.doFindFirst(sqlBuilder.toString(), params.toArray());
 	}
 	
 	public UnionpayLog findById(final BigInteger id) {

@@ -29,6 +29,7 @@ import io.jpress.model.base.BaseUser;
 import io.jpress.model.core.Table;
 import yjt.Utils;
 import yjt.location.Amap;
+import yjt.model.CreditLog;
 import yjt.model.query.ContractQuery;
 import yjt.model.query.FollowQuery;
 
@@ -175,7 +176,7 @@ public class User extends BaseUser<User> {
 		return location;
 	}
 	
-	public boolean changeBalance(double change, String reason) {
+	public boolean changeBalance(double change, String reason, BigInteger clerk, CreditLog.Platfrom platform) {
 		double amount = getAmount().doubleValue();
 		setAmount(BigDecimal.valueOf(amount + change));
 		boolean ret = update();
@@ -184,6 +185,17 @@ public class User extends BaseUser<User> {
 		} else {
 			log.info("用户 " + getRealname() + "(编号"+getId().toString()+") 扣款金额失败，变动额："+change+", 余额: " + getAmount() + ", 理由：" + reason);
 		}
+		
+		CreditLog creditLog = new CreditLog();
+		creditLog.setChange(change);
+		creditLog.setClerk(clerk);
+		creditLog.setCreateTime(new Date());
+		creditLog.setCreditType(1);
+		creditLog.setCur(getAmount().doubleValue());
+		creditLog.setLog(reason);
+		creditLog.setPlatform(platform.getIndex());
+		creditLog.setUserId(getId());
+		creditLog.save();
 		return ret;
 	}
 }

@@ -40,6 +40,7 @@ import yjt.model.query.ContractQuery;
 import yjt.model.query.CreditLogQuery;
 import yjt.model.query.FollowQuery;
 import yjt.model.query.MessageQuery;
+import yjt.model.query.UnionpayLogQuery;
 import yjt.verify.BankcardVerify;
 import yjt.verify.IdcardVerify;
 import yjt.verify.MobileVerify;
@@ -1323,6 +1324,39 @@ public class IndexController extends ApiBaseController {
 		json.put("tn", tn);
 		renderJson(getReturnJson(Code.OK, "", json));
 		return;
+	}
+	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "orderSN",  must = true, type = ParamInterceptor.Type.STRING, minlen=10, chs = "充值订单号")
+	public void queryOrder() {
+		BigInteger memberID = getParaToBigInteger("memberID");
+		String paySn = getPara("orderSN");
+		UnionpayLog unionpayLog = UnionpayLogQuery.me().findByPaySn(paySn);
+		if(unionpayLog == null) {
+			renderJson(getReturnJson(Code.ERROR, "充值订单号不存在", EMPTY_OBJECT));
+			return;
+		}
+		if(! memberID.equals(unionpayLog.getUserId())) {
+			renderJson(getReturnJson(Code.ERROR, "无权查询", EMPTY_OBJECT));
+			return;
+		}
+		if(unionpayLog.getStatus() == 1) {
+			renderJson(getReturnJson(Code.OK, "支付成功", EMPTY_OBJECT));
+			return;
+		} else {
+			//主动查询交易是否成功
+			UnionAppPay unionAppPay = new UnionAppPay();
+			boolean flag = unionAppPay.query(paySn, Utils.getDayNumber(unionpayLog.getCreateTime()));
+			if(flag == true) {
+				// 考虑到，如果后端通知接口和前端查询接口存在竞争，导致线程不安全，此处仅告知成功但不更新数据
+				renderJson(getReturnJson(Code.OK, "支付已经成功，稍后将转入您的余额账户中", EMPTY_OBJECT));
+				return;
+			} else {
+				renderJson(getReturnJson(Code.ERROR, "交易处理中，请耐心等待。如充值30分钟后仍未到帐，请联系客服处理。", EMPTY_OBJECT));
+				return;
+			}
+		}
 	}
 	
 	@SuppressWarnings("unused")

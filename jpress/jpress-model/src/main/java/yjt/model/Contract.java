@@ -141,22 +141,22 @@ public class Contract extends BaseContract<Contract>{
 			}
 			//如果用户可以直接放款，则立即进行资转划转
 			if(creditor.getCanLend() == 1) {
-				isDeductBalance = creditor.changeBalance(-apply_amount, "作为贷方扣款，交易号： " + contract.getContractNumber());
+				isDeductBalance = creditor.changeBalance(-apply_amount, "作为贷方扣款，交易号： " + contract.getContractNumber(), BigInteger.ZERO, CreditLog.Platfrom.JIETIAO365);
 				if(isDeductBalance == false) {
 					throw new Exception("扣款失败");
 				}
 				
-				isAddBalance = debitor.changeBalance(+apply_amount, "作为借方放款，交易号： " + contract.getContractNumber());
+				isAddBalance = debitor.changeBalance(+apply_amount, "作为借方放款，交易号： " + contract.getContractNumber(),BigInteger.ZERO, CreditLog.Platfrom.JIETIAO365);
 				if(isAddBalance == false) {
 					throw new Exception("扣款失败");
 				}
 			}
 		} catch (Exception e) {
 			if(isDeductBalance == true) {
-				creditor.changeBalance(+apply_amount, "作为贷方扣款冲回，交易号： " + contract.getContractNumber());
+				creditor.changeBalance(+apply_amount, "作为贷方扣款冲回，交易号： " + contract.getContractNumber(), BigInteger.ZERO, CreditLog.Platfrom.JIETIAO365);
 			}
 			if(isAddBalance == true) {
-				debitor.changeBalance(-apply_amount, "作为借方放款扣回，交易号： " + contract.getContractNumber());
+				debitor.changeBalance(-apply_amount, "作为借方放款扣回，交易号： " + contract.getContractNumber(), BigInteger.ZERO, CreditLog.Platfrom.JIETIAO365);
 			}
 			contract.setStatus(Contract.Status.CLOSE.getIndex());   //失败将合约也解除
 			contract.update();
