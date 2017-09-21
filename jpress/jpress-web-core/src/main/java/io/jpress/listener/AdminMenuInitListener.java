@@ -40,19 +40,25 @@ public class AdminMenuInitListener implements MessageListener {
 		}
 
 		MenuManager menuMnager = (MenuManager) temp;
-		initModuleMenuGroup(menuMnager);
+		//initModuleMenuGroup(menuMnager);
 
-		menuMnager.addMenuGroup(createAttachmentMenuGroup());
-		menuMnager.addMenuGroup(createWechatMenuGroup());
+		//menuMnager.addMenuGroup(createAttachmentMenuGroup());
+		//menuMnager.addMenuGroup(createWechatMenuGroup());
 
-		menuMnager.addMenuGroup(MenuGroup.createBlockGroup());
-
+		//menuMnager.addMenuGroup(MenuGroup.createBlockGroup());
 		menuMnager.addMenuGroup(createUserMenuGroup());
+		
 		menuMnager.addMenuGroup(createContractMenuGroup());
-		menuMnager.addMenuGroup(createTemplateMenuGroup());
-		menuMnager.addMenuGroup(createAddonMenuGroup());
+		menuMnager.addMenuGroup(createApplyMenuGroup());
+		menuMnager.addMenuGroup(createDrawMenuGroup());
+		menuMnager.addMenuGroup(createAdMenuGroup());
+		menuMnager.addMenuGroup(createReportMenuGroup());
+		menuMnager.addMenuGroup(createFeedbackMenuGroup());
+		
+		//menuMnager.addMenuGroup(createTemplateMenuGroup());
+		//menuMnager.addMenuGroup(createAddonMenuGroup());
 		menuMnager.addMenuGroup(createSettingMenuGroup());
-		menuMnager.addMenuGroup(createToolsMenuGroup());
+		//menuMnager.addMenuGroup(createToolsMenuGroup());
 	}
 
 	public void initModuleMenuGroup(MenuManager menuMnager) {
@@ -130,6 +136,50 @@ public class AdminMenuInitListener implements MessageListener {
 		}
 		return group;
 	}
+	
+	private MenuGroup createApplyMenuGroup(){
+		MenuGroup group = new MenuGroup("apply", "fa fa-file-text-o", "申请管理");
+		{
+			group.addMenuItem(new MenuItem("list", "/admin/apply", "申请列表"));
+			group.addMenuItem(new MenuItem("info", "/admin/apply/stat", "申请统计"));
+		}
+		return group;
+	}
+	
+	private MenuGroup createDrawMenuGroup(){
+		MenuGroup group = new MenuGroup("draw", "fa fa-file-text-o", "提现管理");
+		{
+			group.addMenuItem(new MenuItem("list", "/admin/draw", "提现列表"));
+		}
+		return group;
+	}
+	
+	private MenuGroup createAdMenuGroup(){
+		MenuGroup group = new MenuGroup("ad", "fa fa-file-text-o", "广告管理");
+		{
+			group.addMenuItem(new MenuItem("list", "/admin/ad", "广告列表"));
+		}
+		return group;
+	}
+	
+	private MenuGroup createFeedbackMenuGroup(){
+		MenuGroup group = new MenuGroup("feedback", "fa fa-file-text-o", "反馈管理");
+		{
+			group.addMenuItem(new MenuItem("list", "/admin/feedback", "反馈列表"));
+		}
+		return group;
+	}
+	
+	
+	private MenuGroup createReportMenuGroup(){
+		MenuGroup group = new MenuGroup("report", "fa fa-file-text-o", "举报管理");
+		{
+			group.addMenuItem(new MenuItem("list", "/admin/report", "举报列表"));
+		}
+		return group;
+	}
+	
+	
 
 	private MenuGroup createTemplateMenuGroup() {
 		MenuGroup group = new MenuGroup("template", "fa fa-magic", "模板");
