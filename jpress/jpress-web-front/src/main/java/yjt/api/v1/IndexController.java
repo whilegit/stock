@@ -464,8 +464,13 @@ public class IndexController extends ApiBaseController {
 	public void existsMobile(){
 		String mobile = getPara("mobile");
 		User user = UserQuery.me().findUserByMobile(mobile);
-		Code code = (user != null) ? Code.OK : Code.ERROR;
-		renderJson(getReturnJson(code, "", EMPTY_OBJECT));
+		Code code =  Code.ERROR;
+		String msg = "";
+		if(user != null) {
+			code = Code.OK;
+			msg = "手机号已存在";
+		}
+		renderJson(getReturnJson(code, msg, EMPTY_OBJECT));
 		return;
 	}
 	

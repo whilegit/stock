@@ -107,7 +107,7 @@ public class ParamInterceptor implements Interceptor{
 					User user = UserQuery.me().findByIdNoCache(memberID);
 					if(user == null){
 						pass = false;
-						code = Code.ERROR;
+						code = Code.TIMEOUT;
 						err = "用户不存在";
 						break;
 					}
