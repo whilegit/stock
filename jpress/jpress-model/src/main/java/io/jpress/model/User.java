@@ -184,6 +184,7 @@ public class User extends BaseUser<User> {
 			log.info("用户 " + getRealname() + "(编号"+getId().toString()+") 变动金额成功，变动额："+change+", 余额: " + getAmount() + ", 理由：" + reason);
 		} else {
 			log.info("用户 " + getRealname() + "(编号"+getId().toString()+") 扣款金额失败，变动额："+change+", 余额: " + getAmount() + ", 理由：" + reason);
+			return false;
 		}
 		
 		CreditLog creditLog = new CreditLog();

@@ -14,6 +14,7 @@ import com.jfinal.aop.Before;
 import com.jfinal.aop.Clear;
 import com.jfinal.kit.PathKit;
 import com.jfinal.kit.StrKit;
+import com.jfinal.log.Log;
 import com.jfinal.upload.UploadFile;
 
 import io.jpress.core.interceptor.JI18nInterceptor;
@@ -33,6 +34,7 @@ import yjt.model.Follow;
 import yjt.model.Message;
 import yjt.model.Report;
 import yjt.model.UnionpayLog;
+import yjt.model.Withdraw;
 import yjt.model.query.AdQuery;
 import yjt.model.query.ApplyQuery;
 import yjt.model.query.CaptchaQuery;
@@ -54,6 +56,7 @@ import yjt.api.v1.Annotation.*;
 @Before(AccessTokenInterceptor.class)
 @Clear(JI18nInterceptor.class)
 public class IndexController extends ApiBaseController {
+	protected static final Log log = Log.getLog(IndexController.class);
 	
 	private static final boolean DEBUG = true;
 	
@@ -788,6 +791,64 @@ public class IndexController extends ApiBaseController {
 		json.put("result", result);
 		
 		renderJson(getReturnJson(Code.OK, "", json));
+	}
+	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "type",  must = true, type = ParamInterceptor.Type.ENUM_STRING, allow_list= {"bank","weixin","alipay"},chs = "提现类型")
+	@ParamAnnotation(name = "account",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, maxlen=30, chs = "银行卡号")
+	@ParamAnnotation(name = "name",  must = true, type = ParamInterceptor.Type.STRING, minlen=2, maxlen=4, chs = "真实姓名")
+	@ParamAnnotation(name = "money",  must = true, type = ParamInterceptor.Type.INT, min=10,chs = "提现金额")
+	public void userWithdraw() {
+		BigInteger memberID = getParaToBigInteger("memberID");
+		String type = getPara("type");
+		String account = getPara("account");
+		String realname = getPara("name");
+		int money = getParaToInt("money");
+		
+		User member = UserQuery.me().findByIdNoCache(memberID);
+		if(!realname.equals(member.getRealname())) {
+			renderJson(getReturnJson(Code.ERROR, "提交的真实姓名与本帐号注册的姓名不符，请联系客服修改", EMPTY_OBJECT));
+			return;
+		}
+		//银行卡号就不检测了
+		
+		int balance = member.getAmount().intValue();
+		if(balance < money) {
+			renderJson(getReturnJson(Code.ERROR, "余额不足", EMPTY_OBJECT));
+			return;
+		}
+		
+		if(! "bank".equals(type)) {
+			if("weixin".equals(type)) {
+				renderJson(getReturnJson(Code.ERROR, "暂不支持微信提现", EMPTY_OBJECT));
+			} else if("alipay".equals(type)) {
+				renderJson(getReturnJson(Code.ERROR, "暂不支持支付宝提现", EMPTY_OBJECT));
+			} else {
+				renderJson(getReturnJson(Code.ERROR, "不能识别的提现方式", EMPTY_OBJECT));
+			}
+			return;
+		}
+		
+		Withdraw withdraw = getModel(Withdraw.class);
+		withdraw.setUserId(memberID);
+		withdraw.setType(Withdraw.PayType.UNIONPAY.getIndex());  //默认银联支付
+		withdraw.setMoney(money);
+		withdraw.setBankAccount(account);
+		withdraw.setRealname(realname);
+		withdraw.setCreateTime(new Date());
+		withdraw.setStatus(0);
+		boolean flag = withdraw.save();
+		if(flag == false) {
+			log.error("<<<<<<<<<<<<<<<提现申请无法插入数据库>>>>>>>>>>>>>>>>>>");
+			renderJson(getReturnJson(Code.ERROR, "有点抽风，工程师正在拼命!", EMPTY_OBJECT));
+			return;
+		}
+		
+		member.changeBalance( -money, "提现预扣款", BigInteger.ZERO, CreditLog.Platfrom.JIETIAO365);
+		
+		renderJson(getReturnJson(Code.OK, "申请已提交，我们尽快处理您的提现申请", EMPTY_OBJECT));
+		return;
 	}
 	
 	@Before(ParamInterceptor.class)
