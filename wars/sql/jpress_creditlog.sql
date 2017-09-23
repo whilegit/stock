@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `jpress_creditlog`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `jpress_creditlog` (
-  `id` bigint(20) NOT NULL,
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `user_id` bigint(20) NOT NULL COMMENT '变动的用户',
   `credit_type` tinyint(3) NOT NULL COMMENT '1余额,2积分',
   `platform` tinyint(3) DEFAULT '0' COMMENT '变动相关的平台,1: weixin, 2: alipay, 3: unionpay, 4: 365借条',
@@ -33,7 +33,7 @@ CREATE TABLE `jpress_creditlog` (
   `log` varchar(255) NOT NULL COMMENT '操作事项',
   `create_time` datetime NOT NULL COMMENT '日志生成时间',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='【新增】余额变动日志';
+) ENGINE=MyISAM AUTO_INCREMENT=6 DEFAULT CHARSET=utf8 COMMENT='【新增】余额变动日志';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -42,7 +42,7 @@ CREATE TABLE `jpress_creditlog` (
 
 LOCK TABLES `jpress_creditlog` WRITE;
 /*!40000 ALTER TABLE `jpress_creditlog` DISABLE KEYS */;
-INSERT INTO `jpress_creditlog` VALUES (1,1,1,3,10.00,30.00,1,'测试','2017-09-16 11:49:00');
+INSERT INTO `jpress_creditlog` VALUES (1,1,1,3,10.00,30.00,1,'测试','2017-09-16 11:49:00'),(2,1,1,4,-10.00,9980.00,0,'提现预扣款','2017-09-23 16:03:28'),(3,1,1,4,-10.00,9970.00,0,'提现预扣款','2017-09-23 16:04:32'),(4,1,1,4,-10.00,9960.00,0,'提现预扣款','2017-09-23 16:04:53'),(5,1,1,4,-10.00,9950.00,0,'提现预扣款','2017-09-23 16:05:07');
 /*!40000 ALTER TABLE `jpress_creditlog` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -55,4 +55,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-09-16 11:53:51
+-- Dump completed on 2017-09-23 16:13:43
