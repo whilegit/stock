@@ -108,13 +108,13 @@ public class ParamInterceptor implements Interceptor{
 					if(user == null){
 						pass = false;
 						code = Code.TIMEOUT;
-						err = "用户不存在";
+						err = "登录已失效，请重新登录";
 						break;
 					}
 					if(memberToken.equals(user.getMemberToken()) == false){
 						pass = false;
 						code = Code.TIMEOUT;
-						err = "用户令牌失效";
+						err = "登录已失效，请重新登录";
 						break;
 					}
 					break;
