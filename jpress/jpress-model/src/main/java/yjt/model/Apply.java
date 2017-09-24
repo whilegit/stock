@@ -30,7 +30,7 @@ public class Apply extends BaseApply<Apply>{
 		json.put("id", getApplyUid().toString());
 		json.put("userID", user.getId().toString());
 		json.put("userName", user.getRealname());
-		json.put("userAvatar", user.getAvatar());
+		json.put("userAvatar", Utils.toMedia(user.getAvatar()));
 		json.put("userOverdue", ""+user.getOverdue());
 		long day = Utils.days(new Date(), getMaturityDate());
 		json.put("day", day>0 ? day+"" : "0");  //因为申请时没有固定借款日，此处只能计算未来到今日的天数了

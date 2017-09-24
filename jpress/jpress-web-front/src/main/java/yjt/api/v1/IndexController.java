@@ -166,8 +166,8 @@ public class IndexController extends ApiBaseController {
 		JSONObject[] adList = new JSONObject[ads.size()];
 		for(int i = 0; i<ads.size(); i++){
 			JSONObject json = new JSONObject();
-			json.put("img", ads.get(i).getImg());
-			json.put("url", ads.get(i).getUrl());
+			json.put("img", Utils.toMedia(ads.get(i).getImg()));
+			json.put("url", Utils.toMedia(ads.get(i).getUrl()));
 			adList[i] = json;
 		}
 		
@@ -211,7 +211,7 @@ public class IndexController extends ApiBaseController {
 			JSONObject o = new JSONObject();
 			o.put("userID", u.getId().toString());
 			o.put("userName", u.getRealname());
-			o.put("userAvatar", u.getAvatar());
+			o.put("userAvatar", Utils.toMedia(u.getAvatar()));
 			o.put("isFollowed", "1");
 			result.add(o);
 		}
@@ -327,7 +327,7 @@ public class IndexController extends ApiBaseController {
 		HashMap<String, Object> profile = new HashMap<String, Object>();
 		profile.put("userID", userID.toString());
 		profile.put("userName", user.getRealname());
-		profile.put("userAvatar", user.getAvatar());
+		profile.put("userAvatar", Utils.toMedia(user.getAvatar()));
 		profile.put("userMobile", user.getMobile());
 		profile.put("isFollowed", flag ? "1" : "0");
 		profile.put("userLocation", user.getUserLocation());
@@ -355,7 +355,7 @@ public class IndexController extends ApiBaseController {
 		Integer outPush = getParaToInt("outPush");
 		
 		User user = UserQuery.me().findByIdNoCache(memberID);
-		if(StrKit.notBlank(avatar))	user.setAvatar(avatar);
+		if(StrKit.notBlank(avatar))	user.setAvatar(Utils.stripMedia(avatar));
 		if(StrKit.notBlank(nickname)) user.setNickname(nickname);
 		if(StrKit.notBlank(name)) user.setRealname(name);
 		if(StrKit.notBlank(gender))	user.setGender(gender);
@@ -600,7 +600,7 @@ public class IndexController extends ApiBaseController {
 		attachment.save();
 
 		JSONObject json = new JSONObject();
-		json.put("src", path);
+		json.put("src", Utils.toMedia(path));
 		renderJson(getReturnJson(Code.OK, "", json));
 	}
 	
@@ -663,6 +663,7 @@ public class IndexController extends ApiBaseController {
 		String toFriendsStr = getPara("toFriends");
 		String video = getPara("video");
 		if(video == null) video = "";
+		else video = Utils.stripMedia(video);
 		
 		double amount = Double.parseDouble(moneyStr);
 		if(amount >= 3000.0 && StrKit.isBlank(video)){
@@ -1081,7 +1082,7 @@ public class IndexController extends ApiBaseController {
 		Report report = getModel(Report.class);
 		report.setFromUserId(memberID);
 		report.setToUserId(toUserID);
-		report.setImgs(imgs);
+		report.setImgs(Utils.stripMultiMedia(imgs));
 		report.setContent(content);
 		report.setCreateTime(new Date());
 		boolean flag = report.save();
@@ -1193,8 +1194,8 @@ public class IndexController extends ApiBaseController {
 		member.setAuthCard(1);
 		member.setIdcard(idcard);
 		member.setRealname(realname);
-		member.setIdcardFront(idcardimg1);
-		member.setIdcardFront(idcardimg2);
+		member.setIdcardFront(Utils.stripMedia(idcardimg1));
+		member.setIdcardFront(Utils.stripMedia(idcardimg2));
 		member.update();
 		
 		renderJson(getReturnJson(Code.OK, "身份证认证成功", EMPTY_OBJECT));
@@ -1387,7 +1388,7 @@ public class IndexController extends ApiBaseController {
 			return;
 		}
 		
-		member.setFaceimg(faceimg);
+		member.setFaceimg(Utils.stripMedia(faceimg));
 		member.update();
 		//后台确认比对后，将auth_face设为1
 		renderJson(getReturnJson(Code.OK, "人脸认证已经提交，请耐心等待审核通过", EMPTY_OBJECT));

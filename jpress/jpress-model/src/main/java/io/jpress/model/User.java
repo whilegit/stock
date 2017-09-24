@@ -91,7 +91,7 @@ public class User extends BaseUser<User> {
 		String birthdayStr = (birthday != null) ? sdfYmd.format(birthday) : "";
 
 		profile.put("memberID", id.toString());
-		profile.put("avatar", getAvatar());
+		profile.put("avatar", Utils.toMedia(getAvatar()));
 		profile.put("mobile", getMobile());
 		profile.put("nickname", getNickname());
 		profile.put("name", getAuthCard() == 1 ? getRealname() : "未认证");
@@ -127,7 +127,7 @@ public class User extends BaseUser<User> {
 		BigInteger id = getId();
 		
 		profile.put("userID", id.toString());
-		profile.put("userAvatar", getAvatar());
+		profile.put("userAvatar", Utils.toMedia(getAvatar()));
 		profile.put("userMobile", getMobile());
 		profile.put("userName", getRealname());
 		

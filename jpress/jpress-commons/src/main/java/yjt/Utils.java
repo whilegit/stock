@@ -19,6 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
@@ -32,6 +33,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
+import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;
 
 public class Utils {
@@ -40,6 +42,8 @@ public class Utils {
 	protected static final SimpleDateFormat sdfYmdHms = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	protected static final SimpleDateFormat sdfNumber = new SimpleDateFormat("yyyyMMddHHmmss");
 	protected static final Pattern MOBILE_PATTERN = Pattern.compile("^1[345789][0-9]{9}$");
+	
+	protected static String domain = null;
 	
 	public static long getTodayStartTime(){
 		Date d = new Date();
@@ -380,6 +384,61 @@ public class Utils {
 		int remaider = convolve % 11;
 		char[] remaiderMap = {'1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'};		
 		return idcard.charAt(17) == remaiderMap[remaider];
+	}
+	
+	
+	public static String toMedia(String url){
+		String ret = "";
+		if(StrKit.isBlank(url)) return "";
+		if(domain == null){
+			PropKit.use("jpress.properties");
+			domain = PropKit.get("domain", "");
+			if(StringUtils.endsWith(domain, "/")){
+				domain = domain.substring(0, domain.length()-1);
+			}
+		}
+		if(StringUtils.startsWith(url, "http")) ret = url;
+		else{
+			String slash = "";
+			if(!StringUtils.startsWith(url, "/")) slash = "/";
+			ret = domain + slash + url;
+		}
+		return ret;
+	}
+	
+	public static String stripMultiMedia(String urls){
+		if(StrKit.isBlank(urls)) return "";
+		
+		String[] urlAry = urls.split(",");
+		String newUrls = "";
+		for(String url : urlAry){
+			newUrls += stripMedia(url) + ",";
+		}
+		if(StringUtils.endsWith(newUrls, ",")){
+			newUrls = newUrls.substring(0, newUrls.length()-1);
+		}
+		return newUrls;
+	}
+	
+	public static String stripMedia(String url){
+		String ret = "";
+		if(StrKit.isBlank(url)) return "";
+		if(domain == null){
+			PropKit.use("jpress.properties");
+			domain = PropKit.get("domain", "");
+			if(StringUtils.endsWith(domain, "/")){
+				domain = domain.substring(0, domain.length()-1);
+			}
+		}
+		
+		if(StringUtils.startsWith(url, domain)){
+			ret = url.substring(domain.length());
+		} else {
+			String slash = "";
+			if(!StringUtils.startsWith(url, "/")) slash = "/";
+			ret = slash + url;
+		}
+		return ret;
 	}
 
 }
