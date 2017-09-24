@@ -44,6 +44,7 @@ public class ParamInterceptor implements Interceptor{
 				if(must){
 					err = "缺少"+chs+"参数";
 					pass = false;
+					code = Code.ERROR;
 					break;
 				}else{
 					continue;
@@ -58,16 +59,19 @@ public class ParamInterceptor implements Interceptor{
 					} catch (Exception e){
 						err = chs+"错误";
 						pass = false;
+						code = Code.ERROR;
 						break;
 					}
 					if(v < anno.min()){
 						err = chs + "不少于" + anno.min();
 						pass = false;
+						code = Code.ERROR;
 						break;
 					}
 					if(v > anno.max()){
 						err = chs + "不大于" + anno.max();
 						pass = false;
+						code = Code.ERROR;
 						break;
 					}
 					break;
@@ -75,6 +79,7 @@ public class ParamInterceptor implements Interceptor{
 					if(!Utils.isMobile(value)){
 						err = chs + "格式错误";
 						pass = false;
+						code = Code.ERROR;
 					}
 					break;
 				case STRING:
@@ -82,16 +87,19 @@ public class ParamInterceptor implements Interceptor{
 					if(StrKit.isBlank(value)){
 						err = "缺少" + chs;
 						pass = false;
+						code = Code.ERROR;
 						break;
 					}
 					int len = value.length();
 					if(len < minlen){
 						err = chs+"至少"+minlen + "位";
 						pass = false;
+						code = Code.ERROR;
 					}
 					if(len > maxlen) {
 						err = chs+"不超过"+maxlen + "位";
 						pass = false;
+						code = Code.ERROR;
 					}
 					break;
 				case MEMBER_TOKEN:
