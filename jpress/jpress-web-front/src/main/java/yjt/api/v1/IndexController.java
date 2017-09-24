@@ -508,7 +508,7 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "oldPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=0,  chs = "旧交易密码")
+	@ParamAnnotation(name = "oldPwd",  must = false, type = ParamInterceptor.Type.STRING, minlen=0,  chs = "旧交易密码")
 	@ParamAnnotation(name = "newPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=6,  chs = "新交易密码")
 	public void updateDealPwd() {
 		BigInteger memberID = getParaToBigInteger("memberID");
