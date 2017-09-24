@@ -149,6 +149,7 @@ public class ParamInterceptor implements Interceptor{
 						err = chs + "错误";
 						break;
 					}
+					break;
 				case ENUM_STRING:
 					List<String> allow_list = Arrays.asList(anno.allow_list());
 					if(!allow_list.contains(value)) {

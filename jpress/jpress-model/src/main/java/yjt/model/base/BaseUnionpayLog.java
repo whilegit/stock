@@ -144,11 +144,11 @@ public class BaseUnionpayLog<M extends BaseUnionpayLog<M>> extends JModel<M> imp
 		return userId instanceof BigInteger ? (BigInteger)userId : new BigInteger(userId.toString());
 	}
 	
-	public void setFee(int fee) {
+	public void setFee(double fee) {
 		set("fee", fee);
 	}
 	
-	public int getFee() {
+	public Double getFee() {
 		return get("fee");
 	}
 	

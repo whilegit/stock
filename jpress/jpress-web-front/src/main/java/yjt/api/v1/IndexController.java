@@ -1396,10 +1396,15 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "fee",  must = true, type = ParamInterceptor.Type.INT, min=1, chs = "充值金额")
+	@ParamAnnotation(name = "fee",  must = true, type = ParamInterceptor.Type.DOUBLE, min=0, chs = "充值金额")
 	public void createOrder() {
 		BigInteger memberID = getParaToBigInteger("memberID");
-		int fee = getParaToInt("fee");
+		String feeStr = getPara("fee");
+		double fee =  Double.parseDouble(feeStr);
+		if(fee < 0.01){
+			renderJson(getReturnJson(Code.ERROR, "充值金额不少于0.01元", EMPTY_OBJECT));
+			return;
+		}
 		Date now = new Date();
 		//生成一个唯一的支付序列号
 		String paySn = UnionpayLog.genUniquePaySn(now);
@@ -1410,7 +1415,7 @@ public class IndexController extends ApiBaseController {
 		}
 		UnionAppPay pay = new UnionAppPay();
 		HashMap<String, String> params = new HashMap<String, String>();
-		params.put("txnAmt", String.format("%d", fee * 100));  //银联接口单位是分
+		params.put("txnAmt", String.format("%d", (int)(fee * 100)));  //银联接口单位是分
 		params.put("orderId", paySn);
 		params.put("txnTime", Utils.getDayNumber(now));
 		HashMap<String, String> result = (HashMap<String, String>) pay.comsume(params);
