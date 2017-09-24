@@ -37,9 +37,12 @@ public class AccessTokenInterceptor implements Interceptor{
 	}
 	
 	public static String getCurrentAccessToken(){
+		/*
 		SimpleDateFormat sdf=new SimpleDateFormat("yyyy/MM/dd");
 		String today = sdf.format(new Date());
 		String token = getMD5(ACCESSTOKEN_SALT + today);
+		*/
+		String token = "d1bf755b5579590c44bf3fb72623245f9bd5cea5";
 		return token;
 	}
 	

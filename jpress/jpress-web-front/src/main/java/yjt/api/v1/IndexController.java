@@ -865,6 +865,14 @@ public class IndexController extends ApiBaseController {
 		else {
 			return;
 		}
+		
+		Captcha existsCapche = CaptchaQuery.me().getCaptcha(mobile);
+		if(existsCapche != null &&
+				existsCapche.getCreateTime().getTime() + 60 * 1000 > System.currentTimeMillis()){
+			renderJson(getReturnJson(Code.ERROR, "发送频繁，请在一分钟后重试", EMPTY_OBJECT));
+			return;
+		}
+		
 		JSONObject json = new JSONObject();
 		json.put("code", code);
 		try {
@@ -876,7 +884,7 @@ public class IndexController extends ApiBaseController {
 			captcha.setIp(this.getIPAddress());
 			captcha.setCreateTime(new Date());
 			captcha.save();
-			renderJson(getReturnJson(Code.OK, "", EMPTY_OBJECT));
+			renderJson(getReturnJson(Code.OK, "发送成功", EMPTY_OBJECT));
 		} catch (ClientException e) {
 			renderJson(getReturnJson(Code.ERROR, "短信发送失败", EMPTY_OBJECT));
 		}
