@@ -142,7 +142,7 @@ public class IndexController extends ApiBaseController {
 		}
 		HashMap<String, Object> profile = user.getMemberProfile();
 		profile.put("memberToken", memberToken);
-		renderJson(getReturnJson(Code.OK, "", profile));
+		renderJson(getReturnJson(Code.OK, "注册成功", profile));
 	}
 	
 	@Before(ParamInterceptor.class)
