@@ -536,6 +536,48 @@ public class IndexController extends ApiBaseController {
 	}
 	
 	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
+	@ParamAnnotation(name = "captcha",  must = true, type = ParamInterceptor.Type.STRING, minlen=4, chs = "验证码")
+	@ParamAnnotation(name = "newPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=6,  chs = "新密码")
+	public void findPwd(){
+		String mobile = getPara("mobile");
+		String captchaStr = getPara("captcha");
+		String newPwd = getPara("newPwd");
+		
+		User member = UserQuery.me().findUserByMobile(mobile);
+		if(member == null){
+			renderJson(getReturnJson(Code.ERROR, "用户不存在，请检查手机号", EMPTY_OBJECT));
+			return;
+		}
+		Captcha captcha = CaptchaQuery.me().getCaptcha(mobile);
+		if(captcha == null){
+			renderJson(getReturnJson(Code.ERROR, "验证码不存在", EMPTY_OBJECT));
+			return;
+		}
+		if(captchaStr.equals(captcha.getCode()) == false){
+			renderJson(getReturnJson(Code.ERROR, "验证码错误", EMPTY_OBJECT));
+			return;
+		}
+		
+		long sendTime = captcha.getCreateTime().getTime();
+		if(sendTime + 30 * 60 * 1000 < System.currentTimeMillis()){
+			renderJson(getReturnJson(Code.ERROR, "验证码超时，请重新获取", EMPTY_OBJECT));
+			return;
+		}
+		
+		HashMap<String, Object> profile = member.getMemberProfile();
+		
+		String salt = EncryptUtils.salt();
+		member.setPassword(EncryptUtils.encryptPassword(newPwd, salt));
+		member.setSalt(salt);
+		String newMemberToken = getRandomString(32);
+		member.setMemberToken(newMemberToken);
+		member.update();
+		profile.put("memberToken", newMemberToken);
+		renderJson(getReturnJson(Code.OK, "", profile));
+	}
+	
+	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
 	@UploadAnnotation
 	public void uploadFile(){
