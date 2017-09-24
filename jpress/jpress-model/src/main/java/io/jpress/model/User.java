@@ -89,12 +89,12 @@ public class User extends BaseUser<User> {
 		double outcome = ContractQuery.me().queryCurCredits(id);
 		Date birthday = getBirthday();
 		String birthdayStr = (birthday != null) ? sdfYmd.format(birthday) : "";
-		
+
 		profile.put("memberID", id.toString());
 		profile.put("avatar", getAvatar());
 		profile.put("mobile", getMobile());
 		profile.put("nickname", getNickname());
-		profile.put("name", getRealname());
+		profile.put("name", getAuthCard() == 1 ? getRealname() : "未认证");
 		profile.put("gender", getGender());
 		profile.put("birthday", birthdayStr);
 		profile.put("score", ""+getScore());
@@ -110,6 +110,7 @@ public class User extends BaseUser<User> {
 		profile.put("outPush", ""+getOutPush());
 		profile.put("overdue",  "" + getOverdue());
 		profile.put("authAlipay", "" + getAuthAlipay());
+		profile.put("authBank", "" + getAuthBank());
 		profile.put("authBook", "" + getAuthBook());
 		profile.put("authCard", "" + getAuthCard());
 		profile.put("authFace", "" + getAuthFace());
