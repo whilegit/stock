@@ -60,16 +60,19 @@ public class IndexController extends ApiBaseController {
 	
 	private static final boolean DEBUG = true;
 	
-	@Before(ParamInterceptor.class)
-	@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
-	@ParamAnnotation(name = "password",  must = true, type = ParamInterceptor.Type.STRING, chs = "密码")
+	//@Before(ParamInterceptor.class)　因参数检查的特殊性，手机号和密码移到里面来检查
+	//@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
+	//@ParamAnnotation(name = "password",  must = true, type = ParamInterceptor.Type.STRING, chs = "密码")
 	public void login(){
 		String mobile = getPara("mobile");
 		String password = getPara("password");
-
+		if(!StrKit.notBlank(mobile, password)){
+			renderJson(getReturnJson(Code.ERROR, "手机号或密码错误", EMPTY_OBJECT));
+			return;
+		}
 		User user = UserQuery.me().findUserByMobile(mobile);
 		if(user == null){
-			renderJson(getReturnJson(Code.ERROR, "手机号码或密码错误", EMPTY_OBJECT));
+			renderJson(getReturnJson(Code.ERROR, "手机号或密码错误", EMPTY_OBJECT));
 			return;
 		}
 		if(EncryptUtils.verlifyUser(user.getPassword(), user.getSalt(), password)){
