@@ -40,13 +40,15 @@ public class AdminMenuInitListener implements MessageListener {
 		}
 
 		MenuManager menuMnager = (MenuManager) temp;
-		//initModuleMenuGroup(menuMnager);
+		initModuleMenuGroup(menuMnager);
 
 		//menuMnager.addMenuGroup(createAttachmentMenuGroup());
+
 		//menuMnager.addMenuGroup(createWechatMenuGroup());
 
 		//menuMnager.addMenuGroup(MenuGroup.createBlockGroup());
 		menuMnager.addMenuGroup(createUserMenuGroup());
+		menuMnager.addMenuGroup(createAuthMenuGroup());
 		
 		menuMnager.addMenuGroup(createContractMenuGroup());
 		menuMnager.addMenuGroup(createApplyMenuGroup());
@@ -127,6 +129,16 @@ public class AdminMenuInitListener implements MessageListener {
 		}
 		return group;
 	}
+	
+	private MenuGroup createAuthMenuGroup() {
+		MenuGroup group = new MenuGroup("auth", "fa fa-user", "认证");
+		{
+			group.addMenuItem(new MenuItem("list", "/admin/auth", "认证列表"));
+		}
+		return group;
+	}
+	
+	
 	
 	private MenuGroup createContractMenuGroup(){
 		MenuGroup group = new MenuGroup("contract", "fa fa-file-text-o", "合约管理");

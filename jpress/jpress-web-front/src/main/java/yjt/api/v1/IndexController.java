@@ -243,9 +243,11 @@ public class IndexController extends ApiBaseController {
 			renderJson(getReturnJson(Code.ERROR, "用户不存在", EMPTY_OBJECT));
 			return;
 		}
-		Follow follow = FollowQuery.me().getFollow(userID, memberID);
 		JSONObject profile = user.getUserProfile(true);
-		profile.put("isFollowed", follow != null ? "1" : "0");
+		Follow follow = FollowQuery.me().getFollow(userID, memberID);
+		
+		String flw = (follow != null && follow.getStatus() == Follow.Status.FOLLOWED.getIndex()) ? "1" : "0";
+		profile.put("isFollowed", flw);
 		
 		JSONObject userContractStatics = ContractQuery.me().contractStatics(userID);
 		JSONObject betweenContractStatics = ContractQuery.me().contractBetween(userID, memberID);
