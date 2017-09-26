@@ -445,7 +445,7 @@ public class IndexController extends ApiBaseController {
 			JSONObject profile = user.getUserProfile(false);
 			//是否已关注刚被搜索出来的对方
 			Follow follow = FollowQuery.me().getFollow(user.getId(), member.getId());
-			String flw = (follow != null && follow.getStatus() == Follow.Status.UNFOLLOWED.getIndex()) ? "1" : "0";
+			String flw = (follow != null && follow.getStatus() == Follow.Status.FOLLOWED.getIndex()) ? "1" : "0";
 			profile.put("isFollowed", flw);
 			JSONObject[] profiles = new JSONObject[1];
 			profiles[0] = profile;
