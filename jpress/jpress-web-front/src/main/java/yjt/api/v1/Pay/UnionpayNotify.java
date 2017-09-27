@@ -28,22 +28,22 @@ public class UnionpayNotify extends BaseFrontController{
 		if(params != null) {
 			String orderId =params.get("orderId");
 			String txnTime = params.get("txnTime");
-			UnionpayLog log = UnionpayLogQuery.me().findByPaySn(orderId);
-			if(log != null) {
-				int status = log.getStatus();
+			UnionpayLog unionpayLog = UnionpayLogQuery.me().findByPaySn(orderId);
+			if(unionpayLog != null) {
+				int status = unionpayLog.getStatus();
 				if(status == 0) {
-					Date createTime = log.getCreateTime();
+					Date createTime = unionpayLog.getCreateTime();
 					if(txnTime.equals(Utils.getDayNumber(createTime))){
 						//交易确实成功，更新数据库
-						User user = UserQuery.me().findByIdNoCache(log.getUserId());
+						User user = UserQuery.me().findByIdNoCache(unionpayLog.getUserId());
 						if(user != null) {
-							LogUtil.writeLog("银联通知交易成功，用户 " + user.getId().toString() + "增加金额 " + log.getFee() + "元");
+							LogUtil.writeLog("银联通知交易成功，用户 " + user.getId().toString() + "增加金额 " + unionpayLog.getFee() + "元");
 
-							log.setStatus(1);
-							log.setUpdateTime(new Date());
-							log.update();
+							unionpayLog.setStatus(1);
+							unionpayLog.setUpdateTime(new Date());
+							unionpayLog.update();
 							
-							user.changeBalance(log.getFee(), "银联App控件版充值转入", BigInteger.ZERO, CreditLog.Platfrom.UNIONPAY);
+							user.changeBalance(unionpayLog.getFee(), "银联App控件版充值转入", BigInteger.ZERO, CreditLog.Platfrom.UNIONPAY);
 							
 						} else {
 							LogUtil.writeLog("银联通知交易成功，但该笔支付的用户却不存在, paySn=" + orderId + ", txtTime=" + txnTime);

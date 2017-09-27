@@ -1,5 +1,6 @@
 package yjt.model.base;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.jfinal.plugin.activerecord.IBean;
@@ -149,7 +150,8 @@ public class BaseUnionpayLog<M extends BaseUnionpayLog<M>> extends JModel<M> imp
 	}
 	
 	public Double getFee() {
-		return get("fee");
+		Object fee = get("fee");
+		return fee instanceof BigDecimal ? ((BigDecimal)fee).doubleValue() : (Double)fee;
 	}
 	
 	public void setCreateTime(java.util.Date createTime ){
