@@ -243,9 +243,11 @@ public class IndexController extends ApiBaseController {
 			renderJson(getReturnJson(Code.ERROR, "用户不存在", EMPTY_OBJECT));
 			return;
 		}
-		Follow follow = FollowQuery.me().getFollow(userID, memberID);
 		JSONObject profile = user.getUserProfile(true);
-		profile.put("isFollowed", follow != null ? "1" : "0");
+		Follow follow = FollowQuery.me().getFollow(userID, memberID);
+		
+		String flw = (follow != null && follow.getStatus() == Follow.Status.FOLLOWED.getIndex()) ? "1" : "0";
+		profile.put("isFollowed", flw);
 		
 		JSONObject userContractStatics = ContractQuery.me().contractStatics(userID);
 		JSONObject betweenContractStatics = ContractQuery.me().contractBetween(userID, memberID);
@@ -445,7 +447,7 @@ public class IndexController extends ApiBaseController {
 			JSONObject profile = user.getUserProfile(false);
 			//是否已关注刚被搜索出来的对方
 			Follow follow = FollowQuery.me().getFollow(user.getId(), member.getId());
-			String flw = (follow != null && follow.getStatus() == Follow.Status.UNFOLLOWED.getIndex()) ? "1" : "0";
+			String flw = (follow != null && follow.getStatus() == Follow.Status.FOLLOWED.getIndex()) ? "1" : "0";
 			profile.put("isFollowed", flw);
 			JSONObject[] profiles = new JSONObject[1];
 			profiles[0] = profile;
@@ -600,7 +602,7 @@ public class IndexController extends ApiBaseController {
 		attachment.save();
 
 		JSONObject json = new JSONObject();
-		json.put("src", Utils.toMedia(path));
+		json.put("url", Utils.toMedia(path));
 		renderJson(getReturnJson(Code.OK, "", json));
 	}
 	
@@ -1519,10 +1521,7 @@ public class IndexController extends ApiBaseController {
 	public void uploadFileTest(){
 		User member = UserQuery.me().findById(BigInteger.ONE);
 		this.renderHtml("<html><head></head><body>"+
-							"<form action='/jpress-web/v1/uploadFile' method='post' enctype='multipart/form-data'>"+
-				                 "<input type='text' name='accessToken' value='"+AccessTokenInterceptor.getCurrentAccessToken()+"'>" +
-							     "<input type='text' name='memberToken' value='"+member.getMemberToken()+"'>" +
-							     "<input type='text' name='memberID' value='1'>" +
+							"<form action='/v1/uploadFile?memberID=1&memberToken="+member.getMemberToken()+"&accessToken=" + AccessTokenInterceptor.getCurrentAccessToken() + "' method='post' enctype='multipart/form-data'>"+
 				                 "<input type='file' name='file'>" +
 							     "<input type='submit' value='submit'>"+
 				            "</form>"
