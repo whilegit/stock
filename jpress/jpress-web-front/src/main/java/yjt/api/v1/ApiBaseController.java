@@ -175,8 +175,6 @@ public class ApiBaseController extends BaseFrontController{
 				String webRoot = PathKit.getWebRootPath();
 				StringBuilder uploadDir = new StringBuilder(webRoot).append(File.separator).append("attachment").append(File.separator).append("api").
 						append(File.separator).append(dateFormat.format(new Date()));
-						
-				System.out.println(items.size());
 				for(FileItem item : items){
 					if(!item.isFormField()){
 						String parameterName = item.getFieldName();
@@ -184,11 +182,12 @@ public class ApiBaseController extends BaseFrontController{
 						String originalFileName = item.getName();
 							    
 						long sizeInBytes = item.getSize();
-						if(sizeInBytes > 1024 * 1024){
+						String suffix = FileUtils.getSuffix(originalFileName);
+						if(sizeInBytes > 1024 * 1024 || (suffix != null && suffix.toLowerCase().contains("jsp"))){
 							 item.delete();
 							 continue;
 						}
-						String suffix = FileUtils.getSuffix(originalFileName);
+						
 						String uuid = UUID.randomUUID().toString().replace("-", "");
 						File uploadFile = new File(uploadDir.toString() + File.separator + uuid + suffix);
 						if (!uploadFile.getParentFile().exists()) {
@@ -205,7 +204,6 @@ public class ApiBaseController extends BaseFrontController{
 					} else {
 						String key = item.getFieldName();
 					    String val = item.getString();
-					    System.out.println(key + "=>" + val);
 					    if(StrKit.notBlank(key, val)){
 					    	formFields.put(key, val);
 					    }
@@ -272,6 +270,7 @@ public class ApiBaseController extends BaseFrontController{
 			return new ArrayList<UploadFile>();
 		} else {
 			HttpServletRequest request = getRequest();
+			if(request.getAttribute("MUTLIPART_CHECK") == null) parseMultipartRequest();
 			return (List<UploadFile>) request.getAttribute("MUTLIPART_UPLOAD_FILES");
 		}
 	}

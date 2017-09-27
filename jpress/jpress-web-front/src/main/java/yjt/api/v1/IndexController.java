@@ -602,7 +602,7 @@ public class IndexController extends ApiBaseController {
 		attachment.save();
 
 		JSONObject json = new JSONObject();
-		json.put("src", Utils.toMedia(path));
+		json.put("url", Utils.toMedia(path));
 		renderJson(getReturnJson(Code.OK, "", json));
 	}
 	
@@ -1517,10 +1517,7 @@ public class IndexController extends ApiBaseController {
 	public void uploadFileTest(){
 		User member = UserQuery.me().findById(BigInteger.ONE);
 		this.renderHtml("<html><head></head><body>"+
-							"<form action='/jpress-web/v1/uploadFile' method='post' enctype='multipart/form-data'>"+
-				                 "<input type='text' name='accessToken' value='"+AccessTokenInterceptor.getCurrentAccessToken()+"'>" +
-							     "<input type='text' name='memberToken' value='"+member.getMemberToken()+"'>" +
-							     "<input type='text' name='memberID' value='1'>" +
+							"<form action='/v1/uploadFile?memberID=1&memberToken="+member.getMemberToken()+"&accessToken=" + AccessTokenInterceptor.getCurrentAccessToken() + "' method='post' enctype='multipart/form-data'>"+
 				                 "<input type='file' name='file'>" +
 							     "<input type='submit' value='submit'>"+
 				            "</form>"
