@@ -1208,8 +1208,8 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "idcard",  must = true, type = ParamInterceptor.Type.STRING, minlen=18, maxlen=18, chs = "身份证号", minlenErrTips="身份证号码为18位", maxlenErrTips="身份证号码为18位")
 	@ParamAnnotation(name = "realname",  must = true, type = ParamInterceptor.Type.STRING, minlen=2, maxlen=4, chs = "真实姓名", minlenErrTips="真实姓名至少两个汉字", maxlenErrTips="真实姓名不超过四位")
+	@ParamAnnotation(name = "idcard",  must = true, type = ParamInterceptor.Type.STRING, minlen=18, maxlen=18, chs = "身份证号", minlenErrTips="身份证号码为18位", maxlenErrTips="身份证号码为18位")
 	@ParamAnnotation(name = "idcardimg1",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, chs = "身份证正面照片", minlenErrTips="请上传身份证正面照片", mustErrTips="请上传身份证正面照片")
 	@ParamAnnotation(name = "idcardimg2",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, chs = "身份证反面照片", minlenErrTips="请上传身份证反面照片", mustErrTips="请上传身份证反面照片")
 	public void verifyIDCard() {
@@ -1389,7 +1389,7 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "bankcard",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, maxlen=30, chs = "银行卡号", minlenErrTips="银行卡号错误", maxlenErrTips="银行卡号错误")
+	@ParamAnnotation(name = "bankcard",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, maxlen=30, chs = "银行卡号", minlenErrTips="银行卡号格式不正确", maxlenErrTips="银行卡号格式不正确")
 	@ParamAnnotation(name = "idcard",  must = false, type = ParamInterceptor.Type.STRING, minlen=18, maxlen=18, chs = "身份证号", minlenErrTips="身份证号码为18位", maxlenErrTips="身份证号码为18位")
 	@ParamAnnotation(name = "mobile",  must = false, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
 	@ParamAnnotation(name = "realname",  must = false, type = ParamInterceptor.Type.STRING, minlen=2, maxlen=4, chs = "真实姓名", minlenErrTips="姓名至少两个汉字", maxlenErrTips="姓名不超过四位")
