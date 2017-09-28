@@ -20,9 +20,18 @@ public @interface ParamAnnotation{
 	boolean must();
 	int min() default Integer.MIN_VALUE;
 	int max() default Integer.MAX_VALUE;
+	double mind() default Double.MIN_VALUE;
+	double maxd() default Double.MAX_VALUE;
 	int minlen() default 0;
 	int maxlen() default Integer.MAX_VALUE;
 	String[] allow_list() default {""};
-	String def() default "";
 	String chs();
+	
+	String typeErrTips() default "";
+	String mustErrTips() default "";
+	String minErrTips() default "";
+	String maxErrTips() default "";
+	String minlenErrTips() default "";
+	String maxlenErrTips() default "";
+	String allowListErrTips() default "";
 }

@@ -43,9 +43,9 @@ import yjt.model.query.CreditLogQuery;
 import yjt.model.query.FollowQuery;
 import yjt.model.query.MessageQuery;
 import yjt.model.query.UnionpayLogQuery;
-import yjt.verify.BankcardVerify;
-import yjt.verify.IdcardVerify;
-import yjt.verify.MobileVerify;
+//import yjt.verify.BankcardVerify;
+//import yjt.verify.IdcardVerify;
+//import yjt.verify.MobileVerify;
 import yjt.api.v1.Interceptor.*;
 import yjt.api.v1.UnionAppPay.UnionAppPay;
 import yjt.Utils;
@@ -60,16 +60,12 @@ public class IndexController extends ApiBaseController {
 	
 	private static final boolean DEBUG = true;
 	
-	//@Before(ParamInterceptor.class)　因参数检查的特殊性，手机号和密码移到里面来检查
-	//@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
-	//@ParamAnnotation(name = "password",  must = true, type = ParamInterceptor.Type.STRING, chs = "密码")
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号", mustErrTips="手机号或密码错误", typeErrTips="手机号格式错误")
+	@ParamAnnotation(name = "password",  must = true, type = ParamInterceptor.Type.STRING, chs = "密码", mustErrTips="手机号或密码错误")
 	public void login(){
 		String mobile = getPara("mobile");
 		String password = getPara("password");
-		if(!StrKit.notBlank(mobile, password)){
-			renderJson(getReturnJson(Code.ERROR, "手机号或密码错误", EMPTY_OBJECT));
-			return;
-		}
 		User user = UserQuery.me().findUserByMobile(mobile);
 		if(user == null){
 			renderJson(getReturnJson(Code.ERROR, "手机号或密码错误", EMPTY_OBJECT));
@@ -88,10 +84,10 @@ public class IndexController extends ApiBaseController {
 	}
 	
 	@Before(ParamInterceptor.class)
-	@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
+	@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号", typeErrTips="手机号格式错误")
 	@ParamAnnotation(name = "captcha", must = true, type = ParamInterceptor.Type.STRING, chs = "验证码")
-	@ParamAnnotation(name = "password",must = true, type = ParamInterceptor.Type.STRING, chs = "密码", minlen=6)
-	@ParamAnnotation(name = "avatar",  must = false, type = ParamInterceptor.Type.STRING, chs = "头像", def="")
+	@ParamAnnotation(name = "password",must = true, type = ParamInterceptor.Type.STRING, chs = "密码", minlen=6, minlenErrTips="密码至少六位")
+	@ParamAnnotation(name = "avatar",  must = false, type = ParamInterceptor.Type.STRING, chs = "头像", minlen=12, minlenErrTips="头像错误")
 	public void register(){
 		String mobile = getPara("mobile");
 		String captchaStr = getPara("captcha");
@@ -127,8 +123,8 @@ public class IndexController extends ApiBaseController {
 		
 		user = getModel(User.class);
 		user.setMobile(mobile);
-		//通过手机号注册的帐号, mobile_status为1，待认证后改成2
-		user.setMobileStatus("1");
+		//通过手机号注册的帐号, mobile_status为0，待认证后改成1
+		user.setMobileStatus("0");
 		user.setAvatar(avatar);
 		user.setPassword(EncryptUtils.encryptPassword(password, salt));
 		user.setSalt(salt);
@@ -147,8 +143,8 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "lat",  must = false, type = ParamInterceptor.Type.DOUBLE, min=1, max=90,  chs = "纬度")
-	@ParamAnnotation(name = "lng",  must = false, type = ParamInterceptor.Type.DOUBLE, min=1, max=180, chs = "经度")
+	@ParamAnnotation(name = "lat",  must = false, type = ParamInterceptor.Type.DOUBLE, mind=1.0, maxd=90.0,  chs = "纬度", minErrTips="纬度太小", maxErrTips="纬度太大")
+	@ParamAnnotation(name = "lng",  must = false, type = ParamInterceptor.Type.DOUBLE, mind=1.0, maxd=180.0, chs = "经度", minErrTips="经度太小", maxErrTips="经度太大")
 	public void index(){
 		BigInteger memberID = getParaToBigInteger("memberID");
 		String latStr = this.getPara("lat");
@@ -234,7 +230,7 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "userID",  must = true, type = ParamInterceptor.Type.INT, min=1, chs = "用户")
+	@ParamAnnotation(name = "userID",  must = true, type = ParamInterceptor.Type.INT, min=1, chs = "用户", minErrTips="用户不存在")
 	public void userDetail(){
 		BigInteger memberID = getParaToBigInteger("memberID");
 		BigInteger userID = getParaToBigInteger("userID");
@@ -280,7 +276,7 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "userID",  must = true, type = ParamInterceptor.Type.INT, chs = "关注对象")
+	@ParamAnnotation(name = "userID",  must = true, type = ParamInterceptor.Type.INT, min=1, chs = "关注对象", minErrTips="用户不存在")
 	public void followUser(){
 		BigInteger memberID = getParaToBigInteger("memberID");
 		BigInteger userID = getParaToBigInteger("userID");
@@ -338,12 +334,12 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "gender",  must = false, type = ParamInterceptor.Type.INT, min=0, max=2, chs = "性别")
-	@ParamAnnotation(name = "birthday",  must = false, type = ParamInterceptor.Type.DATE, min=0, max=2, chs = "出生年月")
-	@ParamAnnotation(name = "sysPush",  must = false, type = ParamInterceptor.Type.INT, min=0, max=1, chs = "系统消息提醒")
-	@ParamAnnotation(name = "salePush",  must = false, type = ParamInterceptor.Type.INT, min=0, max=1, chs = "交易消息提醒")
-	@ParamAnnotation(name = "inPush",  must = false, type = ParamInterceptor.Type.INT, min=0, max=1, chs = "催收消息提醒")
-	@ParamAnnotation(name = "outPush",  must = false, type = ParamInterceptor.Type.INT, min=0, max=1, chs = "借款订阅消息")
+	@ParamAnnotation(name = "gender",  must = false, type = ParamInterceptor.Type.INT, min=0, max=2, chs = "性别", minErrTips="性别错误", maxErrTips="性别错误")
+	@ParamAnnotation(name = "birthday",  must = false, type = ParamInterceptor.Type.DATE, chs = "出生年月")
+	@ParamAnnotation(name = "sysPush",  must = false, type = ParamInterceptor.Type.INT, min=0, max=1, chs = "系统消息提醒", minErrTips="系统消息提醒错误", maxErrTips="系统消息提醒错误")
+	@ParamAnnotation(name = "salePush",  must = false, type = ParamInterceptor.Type.INT, min=0, max=1, chs = "交易消息提醒", minErrTips="交易消息提醒错误", maxErrTips="交易消息提醒错误")
+	@ParamAnnotation(name = "inPush",  must = false, type = ParamInterceptor.Type.INT, min=0, max=1, chs = "催收消息提醒", minErrTips="催收消息提醒错误", maxErrTips="催收消息提醒错误")
+	@ParamAnnotation(name = "outPush",  must = false, type = ParamInterceptor.Type.INT, min=0, max=1, chs = "借款订阅消息", minErrTips="借款订阅消息错误", maxErrTips="借款订阅消息错误")
 	public void updateUser(){
 		BigInteger memberID = getParaToBigInteger("memberID");
 		String avatar = getPara("avatar");
@@ -370,7 +366,7 @@ public class IndexController extends ApiBaseController {
 		boolean flag = user.update();
 		if(flag){
 			HashMap<String, Object> profile = user.getMemberProfile();
-			renderJson(getReturnJson(Code.OK, "", profile));
+			renderJson(getReturnJson(Code.OK, "已更新", profile));
 		}else{
 			renderJson(getReturnJson(Code.ERROR, "更新失败", EMPTY_OBJECT));
 			return;
@@ -380,7 +376,7 @@ public class IndexController extends ApiBaseController {
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
 	@ParamAnnotation(name = "mobile",  must = false, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
-	@ParamAnnotation(name = "eachFollowed",  must = false, type = ParamInterceptor.Type.INT, min=0, max=2, chs = "关注参数")
+	@ParamAnnotation(name = "eachFollowed",  must = false, type = ParamInterceptor.Type.INT, min=0, max=2, chs = "关注参数", minErrTips="无效的关注选项", maxErrTips="无效的关注选项")
 	public void searchUser(){
 		BigInteger memberID = getParaToBigInteger("memberID");
 		User member = UserQuery.me().findByIdNoCache(memberID);
@@ -441,7 +437,7 @@ public class IndexController extends ApiBaseController {
 			User user = UserQuery.me().findUserByMobile(mobile);
 			if(user == null){
 				data.put("result", EMPTY_ARRAY);
-				renderJson(getReturnJson(Code.OK, "用户不存在", data));
+				renderJson(getReturnJson(Code.ERROR, "用户不存在", data));
 				return;
 			}
 			JSONObject profile = user.getUserProfile(false);
@@ -463,7 +459,7 @@ public class IndexController extends ApiBaseController {
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
 	public void validMobile(){
-		renderJson(getReturnJson(Code.OK, "", EMPTY_OBJECT));
+		renderJson(getReturnJson(Code.OK, "手机号格式正确", EMPTY_OBJECT));
 		return;
 	}
 	
@@ -473,7 +469,7 @@ public class IndexController extends ApiBaseController {
 		String mobile = getPara("mobile");
 		User user = UserQuery.me().findUserByMobile(mobile);
 		Code code =  Code.ERROR;
-		String msg = "";
+		String msg = "手机号不存在";
 		if(user != null) {
 			code = Code.OK;
 			msg = "手机号已存在";
@@ -484,8 +480,8 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "oldPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=1,  chs = "旧密码")
-	@ParamAnnotation(name = "newPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=6,  chs = "新密码")
+	@ParamAnnotation(name = "oldPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=1,  chs = "旧密码", minlenErrTips="旧密码过短")
+	@ParamAnnotation(name = "newPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=6,  chs = "新密码", minlenErrTips="新密码不少于六位")
 	public void updatePwd(){
 		BigInteger memberID = getParaToBigInteger("memberID");
 		String oldPwd = getPara("oldPwd").trim();
@@ -504,14 +500,14 @@ public class IndexController extends ApiBaseController {
 		member.setMemberToken(newMemberToken);
 		member.update();
 		profile.put("memberToken", newMemberToken);
-		renderJson(getReturnJson(Code.OK, "", profile));
+		renderJson(getReturnJson(Code.OK, "密码设置成功", profile));
 		return;
 	}
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
 	@ParamAnnotation(name = "oldPwd",  must = false, type = ParamInterceptor.Type.STRING, minlen=0,  chs = "旧交易密码")
-	@ParamAnnotation(name = "newPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=6,  chs = "新交易密码")
+	@ParamAnnotation(name = "newPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=6,  chs = "新交易密码", minlenErrTips="新交易密码至少六位")
 	public void updateDealPwd() {
 		BigInteger memberID = getParaToBigInteger("memberID");
 		String oldPwd = getPara("oldPwd");
@@ -533,14 +529,14 @@ public class IndexController extends ApiBaseController {
 		member.setMemberToken(newMemberToken);
 		member.update();
 		profile.put("memberToken", newMemberToken);
-		renderJson(getReturnJson(Code.OK, "", profile));
+		renderJson(getReturnJson(Code.OK, "交易密码设置成功", profile));
 		return;
 	}
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
-	@ParamAnnotation(name = "captcha",  must = true, type = ParamInterceptor.Type.STRING, minlen=4, chs = "验证码")
-	@ParamAnnotation(name = "newPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=6,  chs = "新密码")
+	@ParamAnnotation(name = "captcha",  must = true, type = ParamInterceptor.Type.STRING, minlen=4, chs = "验证码", minlenErrTips="验证码至少四位")
+	@ParamAnnotation(name = "newPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=6,  chs = "新密码", minlenErrTips="新密码至少六位")
 	public void findPwd(){
 		String mobile = getPara("mobile");
 		String captchaStr = getPara("captcha");
@@ -576,7 +572,7 @@ public class IndexController extends ApiBaseController {
 		member.setMemberToken(newMemberToken);
 		member.update();
 		profile.put("memberToken", newMemberToken);
-		renderJson(getReturnJson(Code.OK, "", profile));
+		renderJson(getReturnJson(Code.OK, "找回密码成功", profile));
 	}
 	
 	@Before(ParamInterceptor.class)
@@ -603,7 +599,7 @@ public class IndexController extends ApiBaseController {
 
 		JSONObject json = new JSONObject();
 		json.put("url", path);
-		renderJson(getReturnJson(Code.OK, "", json));
+		renderJson(getReturnJson(Code.OK, "文件上传成功", json));
 	}
 	
 	@Before(ParamInterceptor.class)
@@ -650,14 +646,15 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "money",  must = true, type = ParamInterceptor.Type.DOUBLE, min=1, max=100000000,chs = "借款金额")
+	@ParamAnnotation(name = "money",  must = true, type = ParamInterceptor.Type.DOUBLE, mind=1, maxd=100000000,chs = "借款金额", minErrTips="借款金额至少1元", maxErrTips="需要借这么多钱么")
 	@ParamAnnotation(name = "endDate",  must = true, type = ParamInterceptor.Type.DATE, chs = "还款日期")
-	@ParamAnnotation(name = "rate",  must = true, type = ParamInterceptor.Type.DOUBLE, min=1, max=24,chs = "年化利率")
-	@ParamAnnotation(name = "forUseType",  must = true, type = ParamInterceptor.Type.STRING, minlen=1,chs = "借款用途")
-	@ParamAnnotation(name = "toFriends",  must = true, type = ParamInterceptor.Type.STRING, minlen=1,chs = "借款人")
-	@ParamAnnotation(name = "video",  must = false, type = ParamInterceptor.Type.STRING, minlen=1,chs = "视频")
+	@ParamAnnotation(name = "rate",  must = true, type = ParamInterceptor.Type.DOUBLE, mind=1.0, maxd=24.0,chs = "年化利率", minErrTips="借款年化利率不小于1%", maxErrTips="借款年化利率不高于24%")
+	@ParamAnnotation(name = "forUseType",  must = true, type = ParamInterceptor.Type.STRING, minlen=1,chs = "借款用途", minlenErrTips="借款用途错误")
+	@ParamAnnotation(name = "toFriends",  must = true, type = ParamInterceptor.Type.STRING, minlen=1,chs = "借款人", minlenErrTips="发布对象错误")
+	@ParamAnnotation(name = "video",  must = false, type = ParamInterceptor.Type.STRING, minlen=12,chs = "视频", minlenErrTips="视频错误")
 	public void memberBorrow(){
 		BigInteger memberID = getParaToBigInteger("memberID");
+		User member = UserQuery.me().findByIdNoCache(memberID);
 		String moneyStr = getPara("money");
 		String endDateStr = getPara("endDate");
 		String rate = getPara("rate");
@@ -667,13 +664,42 @@ public class IndexController extends ApiBaseController {
 		if(video == null) video = "";
 		else video = Utils.stripMedia(video);
 		
+		int authCard = member.getAuthCard();
+		if(authCard == 0 || authCard == 2) {
+			renderJson(getReturnJson(Code.ERROR, authCard == 0 ? "您没有进行身份证认证，无法借款" : "身份证认证中，待通过后方可借款", EMPTY_OBJECT));
+			return;
+		}
+		
+		String authMobile = member.getMobileStatusLogic();
+		if("0".equals(authMobile) || "2".equals(authMobile)) {
+			renderJson(getReturnJson(Code.ERROR, "0".equals(authMobile) ? "您没有进行手机号认证，无法借款" : "手机号认证中，待通过后方可借款", EMPTY_OBJECT));
+			return;
+		}
+		
+		int authBank = member.getAuthBank();
+		if(authBank == 0 || authBank == 2) {
+			renderJson(getReturnJson(Code.ERROR, authBank == 0 ? "您没有进行银行卡认证，无法借款" : "银行卡认证中，待通过后方可借款", EMPTY_OBJECT));
+			return;
+		}
+		
+		int authFace = member.getAuthFace();
+		if(authFace == 0 || authFace == 2) {
+			renderJson(getReturnJson(Code.ERROR, authFace == 0 ? "您没有进行人脸认证，无法借款" : "人脸认证中，待通过后方可借款", EMPTY_OBJECT));
+			return;
+		}
+		
 		double amount = Double.parseDouble(moneyStr);
+		if(amount > member.getCanBorrowMoney()) {
+			renderJson(getReturnJson(Code.ERROR, "超出了您的借款额度 " + member.getCanBorrowMoney() + " 元", EMPTY_OBJECT));
+			return;
+		}
+		
 		if(amount >= 3000.0 && StrKit.isBlank(video)){
 			renderJson(getReturnJson(Code.ERROR, "请提供视频", EMPTY_OBJECT));
 			return;
 		}
 		Date maturity_date =Utils.getYmd(endDateStr);
-		if(Utils.getTodayStartTime() + 86400 * 1000 > maturity_date.getTime()){
+		if(Utils.getTodayStartTime() + 3 * 86400 * 1000 > maturity_date.getTime()){
 			renderJson(getReturnJson(Code.ERROR, "还款日太近", EMPTY_OBJECT));
 			return;
 		}
@@ -723,18 +749,18 @@ public class IndexController extends ApiBaseController {
 		apply.save();
 		JSONObject json = new JSONObject();
 		json.put("id", apply.getId().toString());
-		renderJson(getReturnJson(Code.OK, "", json));
+		renderJson(getReturnJson(Code.OK, "借款申请发布成功", json));
 		return;
 	}
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "applyID",  must = true, type = ParamInterceptor.Type.INT, min=1,chs = "申请号")
+	@ParamAnnotation(name = "applyID",  must = true, type = ParamInterceptor.Type.INT, min=1,chs = "申请号", minErrTips="借款申请不存在")
 	public void applyDetail(){
 		BigInteger applyID = getParaToBigInteger("applyID");
 		Apply apply = ApplyQuery.me().findById(applyID);
 		if(apply == null){
-			renderJson(getReturnJson(Code.ERROR, "申请不存在", EMPTY_OBJECT));
+			renderJson(getReturnJson(Code.ERROR, "借款申请不存在", EMPTY_OBJECT));
 			return;
 		}
 		renderJson(getReturnJson(Code.OK, "", apply.getProfile()));
@@ -743,9 +769,9 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "applyID",  must = true, type = ParamInterceptor.Type.INT, min=1,chs = "申请号")
-	@ParamAnnotation(name = "dealPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=6,chs = "交易密码")
-	@ParamAnnotation(name = "repaymentMethod",  must = false, type = ParamInterceptor.Type.INT, min=1, max=3,chs = "还款方式")
+	@ParamAnnotation(name = "applyID",  must = true, type = ParamInterceptor.Type.INT, min=1,chs = "申请号", minErrTips="申请号不存在")
+	@ParamAnnotation(name = "dealPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=6,chs = "交易密码", minlenErrTips="交易密码至少六位")
+	@ParamAnnotation(name = "repaymentMethod",  must = false, type = ParamInterceptor.Type.INT, min=1, max=3,chs = "还款方式", minErrTips="无法识别的还款方式", maxErrTips="无法识别的还款方式")
 	public void payApply() {
 		BigInteger memberID = getParaToBigInteger("memberID");
 		User member = UserQuery.me().findByIdNoCache(memberID);
@@ -790,11 +816,36 @@ public class IndexController extends ApiBaseController {
 			return;
 		}
 		
+		int authCard = member.getAuthCard();
+		if(authCard == 0 || authCard == 2) {
+			renderJson(getReturnJson(Code.ERROR, authCard == 0 ? "您没有进行身份证认证，无法借出" : "身份证认证中，待通过后方可借出", EMPTY_OBJECT));
+			return;
+		}
+		
+		String authMobile = member.getMobileStatusLogic();
+		if("0".equals(authMobile) || "2".equals(authMobile)) {
+			renderJson(getReturnJson(Code.ERROR, "0".equals(authMobile) ? "您没有进行手机号认证，无法借出" : "手机号认证中，待通过后方可借出", EMPTY_OBJECT));
+			return;
+		}
+		
+		int authBank = member.getAuthBank();
+		if(authBank == 0 || authBank == 2) {
+			renderJson(getReturnJson(Code.ERROR, authBank == 0 ? "您没有进行银行卡认证，无法借出" : "银行卡认证中，待通过后方可借出", EMPTY_OBJECT));
+			return;
+		}
+		
+		int authFace = member.getAuthFace();
+		if(authFace == 0 || authFace == 2) {
+			renderJson(getReturnJson(Code.ERROR, authFace == 0 ? "您没有进行人脸认证，无法借出" : "人脸认证中，待通过后方可借出", EMPTY_OBJECT));
+			return;
+		}
+		
+		/*
 		if(member.getCanLend() != 1) {
 			renderJson(getReturnJson(Code.ERROR, "您没有借出的权限", EMPTY_OBJECT));
 			return;
 		}
-		
+		*/
 		
 		int repaymentMethod = getParaToInt("repaymentMethod", Contract.getDefaultReportMethod().getIndex());
 		JSONObject result = Contract.createContract(apply, member, debitor, Contract.RepaymentMethod.getEnum(repaymentMethod));
@@ -802,7 +853,7 @@ public class IndexController extends ApiBaseController {
 			renderJson(getReturnJson(Code.ERROR, result.getString("err"), EMPTY_OBJECT));
 			return;
 		}
-		renderJson(getReturnJson(Code.OK, "", apply.getProfile())); 
+		renderJson(getReturnJson(Code.OK, "交易已成达", apply.getProfile())); 
 		return;
 	}
 	
@@ -844,9 +895,9 @@ public class IndexController extends ApiBaseController {
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
 	@ParamAnnotation(name = "type",  must = true, type = ParamInterceptor.Type.ENUM_STRING, allow_list= {"bank","weixin","alipay"},chs = "提现类型")
-	@ParamAnnotation(name = "account",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, maxlen=30, chs = "银行卡号")
-	@ParamAnnotation(name = "name",  must = true, type = ParamInterceptor.Type.STRING, minlen=2, maxlen=4, chs = "真实姓名")
-	@ParamAnnotation(name = "money",  must = true, type = ParamInterceptor.Type.INT, min=10,chs = "提现金额")
+	@ParamAnnotation(name = "account",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, maxlen=30, chs = "银行卡号", minlenErrTips="银行卡号错误", maxlenErrTips="银行卡号错误")
+	@ParamAnnotation(name = "name",  must = true, type = ParamInterceptor.Type.STRING, minlen=2, maxlen=4, chs = "真实姓名", minlenErrTips="姓名不少于两个汉字", maxlenErrTips="姓名不超过四个汉字")
+	@ParamAnnotation(name = "money",  must = true, type = ParamInterceptor.Type.INT, min=10,chs = "提现金额", minErrTips="提现金额不少于10元")
 	public void userWithdraw() {
 		BigInteger memberID = getParaToBigInteger("memberID");
 		String type = getPara("type");
@@ -940,7 +991,7 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
-	@ParamAnnotation(name = "captcha",  must = true, type = ParamInterceptor.Type.STRING, minlen=4, chs = "验证码")
+	@ParamAnnotation(name = "captcha",  must = true, type = ParamInterceptor.Type.STRING, minlen=6, maxlen=6, chs = "验证码", minlenErrTips="验证码为6位", maxlenErrTips="验证码为6位")
 	public void validCaptcha(){
 		String mobile = getPara("mobile");
 		String captchaStr = getPara("captcha");
@@ -961,13 +1012,13 @@ public class IndexController extends ApiBaseController {
 			renderJson(getReturnJson(Code.ERROR, "验证码超时，请重新获取", EMPTY_OBJECT));
 			return;
 		}
-		renderJson(getReturnJson(Code.OK, "", EMPTY_OBJECT));
+		renderJson(getReturnJson(Code.OK, "验证码正确", EMPTY_OBJECT));
 		return;
 	}
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "messageID",  must = true, type = ParamInterceptor.Type.INT, min=1,chs = "消息")
+	@ParamAnnotation(name = "messageID",  must = true, type = ParamInterceptor.Type.INT, min=1,chs = "消息", minErrTips="消息不存在")
 	public void userMsgRead() {
 		BigInteger messageID = getParaToBigInteger("messageID");
 		Message message = MessageQuery.me().findById(messageID);
@@ -983,7 +1034,7 @@ public class IndexController extends ApiBaseController {
 		message.setIsRead(1);
 		message.setReadTime(new Date());
 		message.update();
-		renderJson(getReturnJson(Code.OK, "", EMPTY_OBJECT));
+		renderJson(getReturnJson(Code.OK, "已阅读", EMPTY_OBJECT));
 		return;
 	}
 	
@@ -994,7 +1045,7 @@ public class IndexController extends ApiBaseController {
 		int count = MessageQuery.me().deleteAll(memberID);
 		JSONObject json = new JSONObject();
 		json.put("count", ""+count);
-		renderJson(getReturnJson(Code.OK, "", json));
+		renderJson(getReturnJson(Code.OK, "已清空", json));
 		return;
 	}
 	
@@ -1011,7 +1062,7 @@ public class IndexController extends ApiBaseController {
 
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "type",  must = true, type = ParamInterceptor.Type.STRING, minlen=1, chs = "消息类型")
+	@ParamAnnotation(name = "type",  must = true, type = ParamInterceptor.Type.STRING, minlen=1, chs = "消息类型", minlenErrTips="消息类型错误")
 	public void clearBadge() {
 		BigInteger memberID = getParaToBigInteger("memberID");
 		int msg = 0;
@@ -1021,15 +1072,15 @@ public class IndexController extends ApiBaseController {
 		}
 		JSONObject json = new JSONObject();
 		json.put("msg", ""+msg);
-		renderJson(getReturnJson(Code.OK, "", json));
+		renderJson(getReturnJson(Code.OK, "已清除", json));
 		return;
 	}
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = false, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "name",  must = false, type = ParamInterceptor.Type.STRING, minlen=1, chs = "联系人")
-	@ParamAnnotation(name = "tel",  must = false, type = ParamInterceptor.Type.STRING, minlen=1, chs = "联系电话")
-	@ParamAnnotation(name = "content",  must = true, type = ParamInterceptor.Type.STRING, minlen=1, chs = "反馈内容")
+	@ParamAnnotation(name = "name",  must = false, type = ParamInterceptor.Type.STRING, minlen=1, chs = "联系人", minlenErrTips="请提供联系人")
+	@ParamAnnotation(name = "tel",  must = false, type = ParamInterceptor.Type.STRING, minlen=1, chs = "联系电话", minlenErrTips="请提供联系电话")
+	@ParamAnnotation(name = "content",  must = true, type = ParamInterceptor.Type.STRING, minlen=1, chs = "反馈内容", minlenErrTips="请提供反馈内容")
 	public void feedback() {
 		BigInteger memberID = getParaToBigInteger("memberID", BigInteger.ZERO);
 		//如果带有memberID的参数，则必须要提供此用户的令牌
@@ -1051,7 +1102,7 @@ public class IndexController extends ApiBaseController {
 		if(flag) {
 			JSONObject json = new JSONObject();
 			json.put("feedbackID", feedback.getId().toString());
-			renderJson(getReturnJson(Code.OK, "", json));
+			renderJson(getReturnJson(Code.OK, "谢谢您向我们提交宝贵的反馈", json));
 			return;
 		} else {
 			renderJson(getReturnJson(Code.ERROR, "新增反馈失败", EMPTY_OBJECT));
@@ -1062,9 +1113,9 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "content",  must = true, type = ParamInterceptor.Type.STRING, minlen=3, chs = "举报内容")
+	@ParamAnnotation(name = "content",  must = true, type = ParamInterceptor.Type.STRING, minlen=3, chs = "举报内容", minlenErrTips="请提供举报内容")
 	@ParamAnnotation(name = "imgs",  must = false, type = ParamInterceptor.Type.STRING, chs = "举报图片")
-	@ParamAnnotation(name = "toUserID",  must = false, type = ParamInterceptor.Type.INT, min=1, chs = "被举报人")
+	@ParamAnnotation(name = "toUserID",  must = false, type = ParamInterceptor.Type.INT, min=1, chs = "被举报人", minlenErrTips="请提供被举报人")
 	public void report() {
 		BigInteger memberID = getParaToBigInteger("memberID");
 		String content = getPara("content");
@@ -1091,7 +1142,7 @@ public class IndexController extends ApiBaseController {
 		if(flag) {
 			JSONObject json = new JSONObject();
 			json.put("reportID", report.getId().toString());
-			renderJson(getReturnJson(Code.OK, "", json));
+			renderJson(getReturnJson(Code.OK, "举报已提交，请耐心等待我们的调查和回复", json));
 			return;
 		} else {
 			renderJson(getReturnJson(Code.ERROR, "新增举报失败", EMPTY_OBJECT));
@@ -1101,7 +1152,7 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "applyID",  must = true, type = ParamInterceptor.Type.INT, min=1, chs = "申请号")
+	@ParamAnnotation(name = "applyID",  must = true, type = ParamInterceptor.Type.INT, min=1, chs = "申请号", minErrTips="申请号不存在")
 	public void applyAgreement(){
 		BigInteger memberID = getParaToBigInteger("memberID");
 		BigInteger applyID = getParaToBigInteger("applyID");
@@ -1157,10 +1208,10 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "idcard",  must = true, type = ParamInterceptor.Type.STRING, minlen=18, maxlen=18, chs = "身份证号")
-	@ParamAnnotation(name = "realname",  must = true, type = ParamInterceptor.Type.STRING, minlen=2, maxlen=4, chs = "真实姓名")
-	@ParamAnnotation(name = "idcardimg1",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, chs = "身份证正面照片")
-	@ParamAnnotation(name = "idcardimg2",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, chs = "身份证反面照片")
+	@ParamAnnotation(name = "idcard",  must = true, type = ParamInterceptor.Type.STRING, minlen=18, maxlen=18, chs = "身份证号", minlenErrTips="身份证号码为18位", maxlenErrTips="身份证号码为18位")
+	@ParamAnnotation(name = "realname",  must = true, type = ParamInterceptor.Type.STRING, minlen=2, maxlen=4, chs = "真实姓名", minlenErrTips="真实姓名至少两个汉字", maxlenErrTips="真实姓名不超过四位")
+	@ParamAnnotation(name = "idcardimg1",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, chs = "身份证正面照片", minlenErrTips="身份证正面照片错误")
+	@ParamAnnotation(name = "idcardimg2",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, chs = "身份证反面照片", minlenErrTips="身份证反面照片错误")
 	public void verifyIDCard() {
 		BigInteger memberID = getParaToBigInteger("memberID");
 		String idcard = getPara("idcard").trim().toLowerCase();
@@ -1169,8 +1220,9 @@ public class IndexController extends ApiBaseController {
 		String idcardimg2 = getPara("idcardimg2").trim();
 		
 		User member = UserQuery.me().findByIdNoCache(memberID);
-		if(member.getAuthCard() == 1) {
-			renderJson(getReturnJson(Code.ERROR, "请勿重复认证", EMPTY_OBJECT));
+		int authCard = member.getAuthCard();
+		if(authCard == 1 || authCard == 2) {
+			renderJson(getReturnJson(Code.ERROR, authCard == 1 ? "已认证，请勿重复认证" : "认证中，请勿重复提交", EMPTY_OBJECT));
 			return;
 		}
 		
@@ -1186,6 +1238,7 @@ public class IndexController extends ApiBaseController {
 			return;
 		}
 		
+		/*
 		//开始验证
 		boolean flag = IdcardVerify.verify(realname, idcard);
 		if(flag == false) {
@@ -1202,20 +1255,34 @@ public class IndexController extends ApiBaseController {
 		
 		renderJson(getReturnJson(Code.OK, "身份证认证成功", EMPTY_OBJECT));
 		return;
+		*/
 		
+		//改成后台验证
+		member.setAuthCard(2);
+		member.setIdcard(idcard);
+		member.setRealname(realname);
+		member.setIdcardFront(Utils.stripMedia(idcardimg1));
+		member.setIdcardFront(Utils.stripMedia(idcardimg2));
+		member.update();
+		renderJson(getReturnJson(Code.OK, "身份证认证申请已提交，请耐心等待审核", EMPTY_OBJECT));
+		return;
 	}
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
 	@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
-	@ParamAnnotation(name = "idcard",  must = false, type = ParamInterceptor.Type.STRING, minlen=18, maxlen=18, chs = "身份证号")
-	@ParamAnnotation(name = "realname",  must = false, type = ParamInterceptor.Type.STRING, minlen=2, maxlen=4, chs = "真实姓名")
-	@ParamAnnotation(name = "typeid",  must = false, type = ParamInterceptor.Type.INT, min=1, max=7, chs = "证件类型")
+	@ParamAnnotation(name = "idcard",  must = false, type = ParamInterceptor.Type.STRING, minlen=18, maxlen=18, chs = "身份证号", minlenErrTips="身份证号码为18位", maxlenErrTips="身份证号码为18位")
+	@ParamAnnotation(name = "realname",  must = false, type = ParamInterceptor.Type.STRING, minlen=2, maxlen=4, chs = "真实姓名", minlenErrTips="姓名至少两个汉字", maxlenErrTips="姓名不超过四位")
+	@ParamAnnotation(name = "typeid",  must = false, type = ParamInterceptor.Type.INT, min=1, max=7, chs = "证件类型", minErrTips="证件类型错误", maxErrTips="证件类型错误")
 	public void verifyMobile(){
 		BigInteger memberID = getParaToBigInteger("memberID");
-		String idcard = getPara("idcard", "");
-		String realname = getPara("realname", "");
 		String mobile = getPara("mobile");
+		
+		@SuppressWarnings("unused")
+		String idcard = getPara("idcard", "");
+		@SuppressWarnings("unused")
+		String realname = getPara("realname", "");
+		@SuppressWarnings("unused")
 		Integer typeid = getParaToInt("typeid", 1);
 		
 		User member = UserQuery.me().findByIdNoCache(memberID);
@@ -1224,18 +1291,17 @@ public class IndexController extends ApiBaseController {
 			return;
 		}
 		
-		// 0:表示手机号码未验证; 1: 手机号码已验证但未实名认证； 2: 已通过验证和实名认证
+		// 0:未验证; 1: 已验证； 2: 验证中
 		String mobileStatus = member.getMobileStatus();
-		if("0".equals(mobileStatus)){
-			//一般不需要用到
-			renderJson(getReturnJson(Code.ERROR, "请先验证手机号码", EMPTY_OBJECT));
+		if("2".equals(mobileStatus)){
+			renderJson(getReturnJson(Code.ERROR, "请勿重复申请手机号验证", EMPTY_OBJECT));
 			return;
 		}
 		
-		if("2".equals(mobileStatus)){
+		if("1".equals(mobileStatus)){
 			String mobileStatusLogic = member.getMobileStatusLogic();
-			if("2".equals(mobileStatusLogic)) {
-				renderJson(getReturnJson(Code.ERROR, "请勿重复认证", EMPTY_OBJECT));
+			if("1".equals(mobileStatusLogic)) {
+				renderJson(getReturnJson(Code.ERROR, "已认证，请勿重复认证", EMPTY_OBJECT));
 				return;
 			} else {
 				if(member.getAmount().doubleValue() >= 10.0) {
@@ -1258,9 +1324,11 @@ public class IndexController extends ApiBaseController {
 		}
 		
 		int authCard = member.getAuthCard();
-		if(authCard == 0){
-			//renderJson(getReturnJson(Code.ERROR, "请先进行身份证认证", EMPTY_OBJECT));
-			//return;
+		if(authCard == 0 || authCard == 2){
+			renderJson(getReturnJson(Code.ERROR, authCard == 0 ? "请先进行身份证认证" : "身份证认证中，请稍后提交手机号认证", EMPTY_OBJECT));
+			return;
+			/*
+			 //如允许身份证认证和手机号认证同时进行
 			if(!StrKit.notBlank(idcard, realname)){
 				renderJson(getReturnJson(Code.ERROR, "请提供身份证号和真实姓名", EMPTY_OBJECT));
 				return;
@@ -1275,11 +1343,10 @@ public class IndexController extends ApiBaseController {
 				renderJson(getReturnJson(Code.ERROR, "请用真实姓名", EMPTY_OBJECT));
 				return;
 			}
-		} else {
-			realname = member.getRealname();
-			idcard = member.getIdcard();
+			*/
 		}
 		
+		/*
 		//开始验证
 		boolean flag = MobileVerify.verify(idcard,mobile,  realname, typeid.toString());
 		if(flag == false) {
@@ -1311,35 +1378,59 @@ public class IndexController extends ApiBaseController {
 			renderJson(getReturnJson(Code.ERROR, "余额不足，手机认证服务费10元", EMPTY_OBJECT));
 			return;
 		}
+		*/
+		
+		//改成后台认证
+		member.setMobileStatus("2");
+		member.update();
+		renderJson(getReturnJson(Code.OK, "手机号认证申请已提交，请耐心等待审核", EMPTY_OBJECT));
+		return;
 	}
 	
-
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "bankcard",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, maxlen=30, chs = "银行卡号")
-	@ParamAnnotation(name = "idcard",  must = false, type = ParamInterceptor.Type.STRING, minlen=18, maxlen=18, chs = "身份证号")
+	@ParamAnnotation(name = "bankcard",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, maxlen=30, chs = "银行卡号", minlenErrTips="银行卡号错误", maxlenErrTips="银行卡号错误")
+	@ParamAnnotation(name = "idcard",  must = false, type = ParamInterceptor.Type.STRING, minlen=18, maxlen=18, chs = "身份证号", minlenErrTips="身份证号码为18位", maxlenErrTips="身份证号码为18位")
 	@ParamAnnotation(name = "mobile",  must = false, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
-	@ParamAnnotation(name = "realname",  must = false, type = ParamInterceptor.Type.STRING, minlen=2, maxlen=4, chs = "真实姓名")
+	@ParamAnnotation(name = "realname",  must = false, type = ParamInterceptor.Type.STRING, minlen=2, maxlen=4, chs = "真实姓名", minlenErrTips="姓名至少两个汉字", maxlenErrTips="姓名不超过四位")
 	public void verifyBankCard() {
 		BigInteger memberID = getParaToBigInteger("memberID");
 		String bankcard = getPara("bankcard");
-		String idcard = getPara("idcard", "");
-		String realname = getPara("realname", "");
 		String mobile = getPara("mobile", "");
+		
+		@SuppressWarnings("unused")
+		String idcard = getPara("idcard", "");
+		@SuppressWarnings("unused")
+		String realname = getPara("realname", "");
+		
 		User member = UserQuery.me().findByIdNoCache(memberID);
 		
 		int authBank = member.getAuthBank();
-		if(authBank == 1) {
-			renderJson(getReturnJson(Code.ERROR, "请勿重复认证", EMPTY_OBJECT));
+		if(authBank == 1 || authBank == 2) {
+			renderJson(getReturnJson(Code.ERROR, authBank == 1 ? "已认证，请勿重复认证" : "请勿重复提交认证申请", EMPTY_OBJECT));
 			return;
 		}
 		
-		String mobileStatus = member.getMobileStatus();
+		int authCard = member.getAuthCard();
+		if(authCard == 0 || authCard == 2) {
+			renderJson(getReturnJson(Code.ERROR, authCard == 0 ? "请先进行身份证认证" : "身份证认证中，请稍后提交银行卡认证", EMPTY_OBJECT));
+			return;
+		}else {
+			idcard = member.getIdcard();
+			realname = member.getRealname();
+		}
+		
+		
+		String mobileStatus = member.getMobileStatusLogic();
 		if("0".equals(mobileStatus)){
-			//一般不需要用到
-			renderJson(getReturnJson(Code.ERROR, "请先验证手机号码", EMPTY_OBJECT));
+			renderJson(getReturnJson(Code.ERROR, "请先认证手机号码", EMPTY_OBJECT));
 			return;
 		}
+		if("2".equals(mobileStatus)){
+			renderJson(getReturnJson(Code.ERROR, "手机号认证中，请稍后提起银行卡认证", EMPTY_OBJECT));
+			return;
+		}
+		
 		
 		if(StrKit.notBlank(mobile) ) {
 			if(!mobile.equals(member.getMobile())) {
@@ -1350,7 +1441,8 @@ public class IndexController extends ApiBaseController {
 			mobile = member.getMobile();
 		}
 		
-		int authCard = member.getAuthCard();
+
+		/*
 		if(!StrKit.notBlank(idcard, realname)) {
 			if(authCard == 0) {
 				renderJson(getReturnJson(Code.ERROR, "请先进行身份证认证", EMPTY_OBJECT));
@@ -1380,7 +1472,9 @@ public class IndexController extends ApiBaseController {
 				}
 			}
 		}
+		*/
 		
+		/*
 		//开始验证
 		boolean flag = BankcardVerify.verify(bankcard, idcard,mobile, realname);
 		if(flag == false) {
@@ -1405,43 +1499,50 @@ public class IndexController extends ApiBaseController {
 		
 		renderJson(getReturnJson(Code.OK, "银行卡认证成功", EMPTY_OBJECT));
 		return;
-	}
-	
-	@Before(ParamInterceptor.class)
-	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "faceimg",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, chs = "人脸近照")
-	public void verifyFace() {
-		BigInteger memberID = getParaToBigInteger("memberID");
-		String faceimg = getPara("faceimg").trim();
-		User member = UserQuery.me().findByIdNoCache(memberID);
-		
-		if(member.getAuthFace() == 1) {
-			renderJson(getReturnJson(Code.ERROR, "请勿重复认证", EMPTY_OBJECT));
-			return;
-		}
-		if(member.getAuthCard() != 1) {
-			renderJson(getReturnJson(Code.ERROR, "请先完成身份证认证", EMPTY_OBJECT));
-			return;
-		}
-		
-		member.setFaceimg(Utils.stripMedia(faceimg));
+		*/
+		member.setBankcard(bankcard);
+		member.setAuthBank(2);
 		member.update();
-		//后台确认比对后，将auth_face设为1
-		renderJson(getReturnJson(Code.OK, "人脸认证已经提交，请耐心等待审核通过", EMPTY_OBJECT));
+		
+		renderJson(getReturnJson(Code.OK, "银行卡认证申请已提交，请耐心等待审核", EMPTY_OBJECT));
 		return;
 	}
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "fee",  must = true, type = ParamInterceptor.Type.DOUBLE, min=0, chs = "充值金额")
+	@ParamAnnotation(name = "faceimg",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, chs = "人脸近照", minlenErrTips="人脸近照错误")
+	public void verifyFace() {
+		BigInteger memberID = getParaToBigInteger("memberID");
+		String faceimg = getPara("faceimg").trim();
+		User member = UserQuery.me().findByIdNoCache(memberID);
+		
+		int authFace = member.getAuthFace();
+		if( authFace == 1 || authFace == 2) {
+			renderJson(getReturnJson(Code.ERROR, authFace == 1 ? "人脸已认证，请勿重复认证" : "人脸认证已提交，请勿重复提交", EMPTY_OBJECT));
+			return;
+		}
+		
+		int authCard = member.getAuthCard();
+		if(authCard == 0 || authCard == 2) {
+			renderJson(getReturnJson(Code.ERROR, authCard == 0 ? "请先完成身份证认证" : "身份证认证中，请稍后提起人脸认证", EMPTY_OBJECT));
+			return;
+		}
+		
+		member.setFaceimg(Utils.stripMedia(faceimg));
+		member.setAuthFace(2);
+		member.update();
+		//后台确认比对后，将auth_face设为1
+		renderJson(getReturnJson(Code.OK, "人脸认证已经提交，请耐心等待审核", EMPTY_OBJECT));
+		return;
+	}
+	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "fee",  must = true, type = ParamInterceptor.Type.DOUBLE, mind=0.01, chs = "充值金额", minErrTips="充值金额不少于0.01")
 	public void createOrder() {
 		BigInteger memberID = getParaToBigInteger("memberID");
 		String feeStr = getPara("fee");
 		double fee =  Double.parseDouble(feeStr);
-		if(fee < 0.01){
-			renderJson(getReturnJson(Code.ERROR, "充值金额不少于0.01元", EMPTY_OBJECT));
-			return;
-		}
 		Date now = new Date();
 		//生成一个唯一的支付序列号
 		String paySn = UnionpayLog.genUniquePaySn(now);
@@ -1489,7 +1590,7 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "orderSN",  must = true, type = ParamInterceptor.Type.STRING, minlen=10, chs = "充值订单号")
+	@ParamAnnotation(name = "orderSN",  must = true, type = ParamInterceptor.Type.STRING, minlen=10, chs = "充值订单号", minlenErrTips="充值订单号错误")
 	public void queryOrder() {
 		BigInteger memberID = getParaToBigInteger("memberID");
 		String paySn = getPara("orderSN");
@@ -1523,13 +1624,9 @@ public class IndexController extends ApiBaseController {
 	//@SuppressWarnings("unused")
 	@Clear(AccessTokenInterceptor.class)
 	public void getAccessToken(){
-		UnionpayLog payLog = UnionpayLogQuery.me().findByPaySn("PA20170915163251422484");
-		renderJson(getReturnJson(Code.OK, payLog.getFee().toString(), EMPTY_OBJECT));
-		/*
 		if(DEBUG == false) return;
 		renderJson(getReturnJson(Code.OK, AccessTokenInterceptor.getCurrentAccessToken(), EMPTY_OBJECT));
 		return;
-		*/
 	}
 	
 	@SuppressWarnings("unused")

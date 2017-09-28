@@ -96,18 +96,18 @@ public class Contract extends BaseContract<Contract>{
 		contract.setMaturityDate(apply.getMaturityDate());
 		contract.setRepaymentMethod(repaymentMethod != null ? repaymentMethod.getIndex() : getDefaultReportMethod().getIndex());
 		//确定用户是否有直接借款的权利，若无则需后台核准(经修改，没有借款权限的贷出者直接返回)
-		if(creditor.getCanLend() == 1) {
+		//if(creditor.getCanLend() == 1) {
 			contract.setLoanTerm(Utils.days(now, apply.getMaturityDate()));
 			contract.setStatus(Status.ESTABLISH.getIndex());
 			contract.setRepaymentStatus(RepaymentStatus.Pass.getIndex());
 			contract.setValueDate(now);
-		}else {
+		//}else {
 			/*
 			contract.setStatus(Status.INIT.getIndex());
 			contract.setRepaymentStatus(RepaymentStatus.NA.getIndex());
 			*/
-			return null;
-		}
+			//return null;
+		//}
 		String contractNumber = genContractNumber(now);
 		if(StrKit.isBlank(contractNumber)) {  
 			//实际上是连续10次生成的交易号都不是唯一的

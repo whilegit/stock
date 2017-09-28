@@ -156,18 +156,19 @@ public class User extends BaseUser<User> {
 		return profile;
 	}
 	
+	// 0:未验证; 1: 已验证； 2: 验证中
 	public String getMobileStatusLogic() {
 		String phy = this.getMobileStatus();
 		Date expire = this.getAuthExpire();
-		if("2".equals(phy)) {
+		if("1".equals(phy)) {
 			if(expire != null) {
 				long expire_time = expire.getTime();
 				long cur_time = System.currentTimeMillis();
 				if(expire_time < cur_time) {
-					phy = "1";
+					phy = "0";
 				}
 			} else {
-				phy = "1";
+				phy = "0";
 			}
 			return phy;
 		} else {

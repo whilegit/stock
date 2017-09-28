@@ -42,7 +42,8 @@ public class ParamInterceptor implements Interceptor{
 			String value = bc.getPara(name);
 			if(StrKit.isBlank(value)){
 				if(must){
-					err = "缺少"+chs+"参数";
+					String mustErr = anno.mustErrTips();
+					err = StrKit.notBlank(mustErr) ? mustErr : "缺少"+chs;
 					pass = false;
 					code = Code.ERROR;
 					break;
@@ -50,26 +51,32 @@ public class ParamInterceptor implements Interceptor{
 					continue;
 				}
 			}
-
+			
+			String typeErrTips = anno.typeErrTips();
+			String minErrTips = anno.minErrTips();
+			String maxErrTips = anno.maxErrTips();
+			String minlenErrTips = anno.minlenErrTips();
+			String maxlenErrTips = anno.maxlenErrTips();
+			String alllistErrTips = anno.allowListErrTips();
 			switch(type){
 				case INT:
 					Integer v = null;
 					try{
 						v = Integer.parseInt(value);
 					} catch (Exception e){
-						err = chs+"错误";
+						err = StrKit.notBlank(typeErrTips) ? typeErrTips : chs+"错误";
 						pass = false;
 						code = Code.ERROR;
 						break;
 					}
 					if(v < anno.min()){
-						err = chs + "不少于" + anno.min();
+						err = StrKit.notBlank(minErrTips) ? minErrTips :  chs + "不少于" + anno.min();
 						pass = false;
 						code = Code.ERROR;
 						break;
 					}
 					if(v > anno.max()){
-						err = chs + "不大于" + anno.max();
+						err = StrKit.notBlank(maxErrTips) ? maxErrTips :  chs + "不大于" + anno.max();
 						pass = false;
 						code = Code.ERROR;
 						break;
@@ -77,27 +84,21 @@ public class ParamInterceptor implements Interceptor{
 					break;
 				case MOBILE:
 					if(!Utils.isMobile(value)){
-						err = chs + "格式错误";
+						err = StrKit.notBlank(typeErrTips) ? typeErrTips : chs+"格式错误";
 						pass = false;
 						code = Code.ERROR;
 					}
 					break;
 				case STRING:
-					if(value != null) value = value.trim();
-					if(StrKit.isBlank(value)){
-						err = "缺少" + chs;
-						pass = false;
-						code = Code.ERROR;
-						break;
-					}
+					value = value.trim();
 					int len = value.length();
 					if(len < minlen){
-						err = chs+"至少"+minlen + "位";
+						err = StrKit.notBlank(minlenErrTips) ? minlenErrTips : chs + "至少" + minlen + "位";
 						pass = false;
 						code = Code.ERROR;
 					}
 					if(len > maxlen) {
-						err = chs+"不超过"+maxlen + "位";
+						err = StrKit.notBlank(maxlenErrTips) ? maxlenErrTips : chs + "不超过" + maxlen + "位";
 						pass = false;
 						code = Code.ERROR;
 					}
@@ -130,23 +131,30 @@ public class ParamInterceptor implements Interceptor{
 					if(Utils.getYmd(value) == null){
 						pass = false;
 						code = Code.ERROR;
-						err = chs + "错误";
+						err = StrKit.notBlank(typeErrTips) ? typeErrTips : chs+"错误";
 						break;
 					}
 					break;
 				case DOUBLE:
+					Double d = null;
 					try{
-						double d = Double.parseDouble(value);
-						if((int)d < anno.min() || (int)d > anno.max()) {
-							pass = false;
-							code = Code.ERROR;
-							err = chs + (((int)d<anno.min()) ? "过小" : "过大");
-							break;
-						}
-					} catch (Exception e){
+						d = Double.parseDouble(value);
+					} catch(Exception e) {
 						pass = false;
 						code = Code.ERROR;
-						err = chs + "错误";
+						err = StrKit.notBlank(typeErrTips) ? typeErrTips : chs+"错误";
+						break;
+					}
+					
+					if(d < anno.mind()) {
+						pass = false;
+						code = Code.ERROR;
+						err = StrKit.notBlank(minErrTips) ? minErrTips : chs + "过小";
+						break;
+					} else if(d > anno.maxd()) {
+						pass = false;
+						code = Code.ERROR;
+						err = StrKit.notBlank(maxErrTips) ? maxErrTips : chs + "过大";
 						break;
 					}
 					break;
@@ -155,7 +163,7 @@ public class ParamInterceptor implements Interceptor{
 					if(!allow_list.contains(value)) {
 						pass = false;
 						code = Code.ERROR;
-						err = chs + "错误";
+						err = StrKit.notBlank(alllistErrTips) ? alllistErrTips : chs + "错误";
 						break;
 					}
 					break;
