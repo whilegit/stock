@@ -43,7 +43,7 @@ public class ParamInterceptor implements Interceptor{
 			if(StrKit.isBlank(value)){
 				if(must){
 					String mustErr = anno.mustErrTips();
-					err = StrKit.notBlank(mustErr) ? mustErr : "缺少"+chs;
+					err = StrKit.notBlank(mustErr) ? mustErr : chs + "不能为空";
 					pass = false;
 					code = Code.ERROR;
 					break;

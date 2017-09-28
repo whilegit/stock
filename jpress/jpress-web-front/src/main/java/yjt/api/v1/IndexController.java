@@ -1210,8 +1210,8 @@ public class IndexController extends ApiBaseController {
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
 	@ParamAnnotation(name = "idcard",  must = true, type = ParamInterceptor.Type.STRING, minlen=18, maxlen=18, chs = "身份证号", minlenErrTips="身份证号码为18位", maxlenErrTips="身份证号码为18位")
 	@ParamAnnotation(name = "realname",  must = true, type = ParamInterceptor.Type.STRING, minlen=2, maxlen=4, chs = "真实姓名", minlenErrTips="真实姓名至少两个汉字", maxlenErrTips="真实姓名不超过四位")
-	@ParamAnnotation(name = "idcardimg1",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, chs = "身份证正面照片", minlenErrTips="身份证正面照片错误")
-	@ParamAnnotation(name = "idcardimg2",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, chs = "身份证反面照片", minlenErrTips="身份证反面照片错误")
+	@ParamAnnotation(name = "idcardimg1",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, chs = "身份证正面照片", minlenErrTips="请上传身份证正面照片", mustErrTips="请上传身份证正面照片")
+	@ParamAnnotation(name = "idcardimg2",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, chs = "身份证反面照片", minlenErrTips="请上传身份证反面照片", mustErrTips="请上传身份证反面照片")
 	public void verifyIDCard() {
 		BigInteger memberID = getParaToBigInteger("memberID");
 		String idcard = getPara("idcard").trim().toLowerCase();
