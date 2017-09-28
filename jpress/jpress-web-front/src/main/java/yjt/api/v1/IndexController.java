@@ -1520,12 +1520,16 @@ public class IndexController extends ApiBaseController {
 		}
 	}
 	
-	@SuppressWarnings("unused")
+	//@SuppressWarnings("unused")
 	@Clear(AccessTokenInterceptor.class)
 	public void getAccessToken(){
+		UnionpayLog payLog = UnionpayLogQuery.me().findByPaySn("PA20170915163251422484");
+		renderJson(getReturnJson(Code.OK, payLog.getFee().toString(), EMPTY_OBJECT));
+		/*
 		if(DEBUG == false) return;
 		renderJson(getReturnJson(Code.OK, AccessTokenInterceptor.getCurrentAccessToken(), EMPTY_OBJECT));
 		return;
+		*/
 	}
 	
 	@SuppressWarnings("unused")
