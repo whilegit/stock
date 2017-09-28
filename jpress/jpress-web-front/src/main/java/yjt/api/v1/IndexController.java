@@ -602,7 +602,7 @@ public class IndexController extends ApiBaseController {
 		attachment.save();
 
 		JSONObject json = new JSONObject();
-		json.put("url", Utils.toMedia(path));
+		json.put("url", path);
 		renderJson(getReturnJson(Code.OK, "", json));
 	}
 	
@@ -1223,16 +1223,38 @@ public class IndexController extends ApiBaseController {
 			renderJson(getReturnJson(Code.ERROR, "该手机号与您注册的手机号不同，如需修改请联系客服", EMPTY_OBJECT));
 			return;
 		}
-		String mobileStatus = member.getMobileStatus();
+		
 		// 0:表示手机号码未验证; 1: 手机号码已验证但未实名认证； 2: 已通过验证和实名认证
-		if("2".equals(mobileStatus)){
-			renderJson(getReturnJson(Code.ERROR, "请勿重复认证", EMPTY_OBJECT));
-			return;
-		}
+		String mobileStatus = member.getMobileStatus();
 		if("0".equals(mobileStatus)){
 			//一般不需要用到
 			renderJson(getReturnJson(Code.ERROR, "请先验证手机号码", EMPTY_OBJECT));
 			return;
+		}
+		
+		if("2".equals(mobileStatus)){
+			String mobileStatusLogic = member.getMobileStatusLogic();
+			if("2".equals(mobileStatusLogic)) {
+				renderJson(getReturnJson(Code.ERROR, "请勿重复认证", EMPTY_OBJECT));
+				return;
+			} else {
+				if(member.getAmount().doubleValue() >= 10.0) {
+					boolean flag = member.changeBalance(-10.0, "手机认证服务费", BigInteger.ZERO, CreditLog.Platfrom.JIETIAO365);
+					if(flag == false) {
+						log.error("用户 " + memberID.intValue() + " 手机认证服务费扣款失败(续期)。");
+						renderJson(getReturnJson(Code.ERROR, "扣款失败，请稍后重试", EMPTY_OBJECT));
+						return;
+					} else {
+						member.setAuthExpire(Utils.getNextMonthDay());
+						member.update();
+						renderJson(getReturnJson(Code.OK, "手机号认证成功", EMPTY_OBJECT));
+						return;
+					}
+				} else {
+					renderJson(getReturnJson(Code.ERROR, "余额不足，手机认证服务费10元", EMPTY_OBJECT));
+					return;
+				}
+			}
 		}
 		
 		int authCard = member.getAuthCard();
@@ -1271,11 +1293,24 @@ public class IndexController extends ApiBaseController {
 			member.setRealname(realname);
 			member.setAuthCard(1);
 		}
-		member.setMobileStatus("2");
-		member.update();
 		
-		renderJson(getReturnJson(Code.OK, "手机号码认证成功", EMPTY_OBJECT));
-		return;
+		//扣款操作
+		if(member.getAmount().doubleValue() >= 10.0) {
+			boolean flagChange = member.changeBalance(-10.0, "手机认证服务费", BigInteger.ZERO, CreditLog.Platfrom.JIETIAO365);
+			if(flagChange == false) {
+				log.error("用户 " + memberID.intValue() + " 手机认证服务费扣款失败");
+				renderJson(getReturnJson(Code.ERROR, "扣款失败，请稍后重试", EMPTY_OBJECT));
+				return;
+			}
+			member.setMobileStatus("2");
+			member.setAuthExpire(Utils.getNextMonthDay());
+			member.update();
+			renderJson(getReturnJson(Code.OK, "手机号认证成功", EMPTY_OBJECT));
+			return;
+		} else {
+			renderJson(getReturnJson(Code.ERROR, "余额不足，手机认证服务费10元", EMPTY_OBJECT));
+			return;
+		}
 	}
 	
 
@@ -1360,7 +1395,6 @@ public class IndexController extends ApiBaseController {
 		}
 		
 		//更新手机号码的认证情况
-		
 		if(! "2".equals(mobileStatus)) {
 			member.setMobileStatus("2");
 		}
@@ -1517,8 +1551,9 @@ public class IndexController extends ApiBaseController {
 	public void uploadFileTest(){
 		User member = UserQuery.me().findById(BigInteger.ONE);
 		this.renderHtml("<html><head></head><body>"+
-							"<form action='/v1/uploadFile?memberID=1&memberToken="+member.getMemberToken()+"&accessToken=" + AccessTokenInterceptor.getCurrentAccessToken() + "' method='post' enctype='multipart/form-data'>"+
+							"<form action='/v1/uploadFile?memberToken="+member.getMemberToken()+"&accessToken=" + AccessTokenInterceptor.getCurrentAccessToken() + "' method='post' enctype='multipart/form-data'>"+
 				                 "<input type='file' name='file'>" +
+				                 "<input type='hidden' name='memberID' value='1'>" + 
 							     "<input type='submit' value='submit'>"+
 				            "</form>"
 				          +"</body></html>");

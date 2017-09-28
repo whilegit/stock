@@ -12,6 +12,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -148,6 +149,14 @@ public class Utils {
 	public static int days(Date fromDate, Date toDate) {
 		long internal = (getDayStartTime(toDate) - getDayStartTime(fromDate)) / 1000;
 		return (int) (internal / 86400);
+	}
+	
+	public static Date getNextMonthDay() {
+		 Calendar cal = Calendar.getInstance();
+	     cal.add(Calendar.MONTH, 1);
+	     Date d = cal.getTime();
+	     long stamp = getDayStartTime(d);
+	     return new Date(stamp);
 	}
 	
 	public static String getFileExtention(String path){

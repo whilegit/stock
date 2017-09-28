@@ -618,6 +618,14 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 		return get("zhima_score");
 	}
 	
+	public void setAuthExpire(java.util.Date authExpire) {
+		set("auth_expire", authExpire);
+	}
+
+	public java.util.Date getAuthExpire() {
+		return get("auth_expire");
+	}
+	
 	public void setAuthBank(java.lang.Integer authBank){
 		set("auth_bank", authBank);
 	}

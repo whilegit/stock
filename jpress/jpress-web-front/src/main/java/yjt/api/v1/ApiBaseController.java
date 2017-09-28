@@ -2,6 +2,7 @@ package yjt.api.v1;
 
 import java.io.File;
 import java.lang.reflect.Method;
+import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,6 +28,7 @@ import com.aliyuncs.exceptions.ClientException;
 import com.aliyuncs.profile.DefaultProfile;
 import com.aliyuncs.profile.IClientProfile;
 import com.jfinal.aop.Invocation;
+import com.jfinal.core.ActionException;
 import com.jfinal.kit.PathKit;
 import com.jfinal.kit.StrKit;
 import com.jfinal.log.Log;
@@ -148,6 +150,22 @@ public class ApiBaseController extends BaseFrontController{
 		@SuppressWarnings("unchecked")
 		HashMap<String, String> formFields = (HashMap<String, String>) request.getAttribute("MUTLIPART_FORM_FIELDS");
 		return formFields.get(field);
+	}
+	
+	@Override
+	public BigInteger getParaToBigInteger(String field) {
+		String value = getPara(field);
+		try {
+			if (value == null || "".equals(value.trim()))
+				return null;
+			value = value.trim();
+			if (value.startsWith("N") || value.startsWith("n"))
+				return new BigInteger(value).negate();
+			return new BigInteger(value);
+		} catch (Exception e) {
+			throw new ActionException(404, "Can not parse the parameter \"" + value + "\" to BigInteger value.");
+		}
+	
 	}
 	
 	protected void parseMultipartRequest(){

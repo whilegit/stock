@@ -102,7 +102,7 @@ public class User extends BaseUser<User> {
 		profile.put("outcome", String.format("%.2f", outcome));
 		profile.put("balance", yjt.Utils.bigDecimalRound2(getAmount()));
 		profile.put("interest", yjt.Utils.bigDecimalRound2(getInterest()));
-		profile.put("canBorrowMoney", ""+getCanBorrowMoney());
+		profile.put("canBorrowMoney", ""+getCanBorrowMoney() + ".00");
 		profile.put("canLend", "" + getCanLend());
 		profile.put("sysPush", ""+getSysPush());
 		profile.put("salePush", ""+getSalePush());
@@ -115,7 +115,7 @@ public class User extends BaseUser<User> {
 		profile.put("authCard", "" + getAuthCard());
 		profile.put("authFace", "" + getAuthFace());
 		profile.put("authGjj", "" + getAuthGjj());
-		profile.put("authMobile", "" + getMobileStatus());
+		profile.put("authMobile", "" + getMobileStatusLogic());
 		profile.put("authXuexing", "" + getAuthXuexing());
 		profile.put("authZhima", "" + getAuthZhima());
 		profile.put("issetDealPassword", StrKit.notBlank(getDealPassword()) ? "1" : "0");
@@ -156,6 +156,24 @@ public class User extends BaseUser<User> {
 		return profile;
 	}
 	
+	public String getMobileStatusLogic() {
+		String phy = this.getMobileStatus();
+		Date expire = this.getAuthExpire();
+		if("2".equals(phy)) {
+			if(expire != null) {
+				long expire_time = expire.getTime();
+				long cur_time = System.currentTimeMillis();
+				if(expire_time < cur_time) {
+					phy = "1";
+				}
+			} else {
+				phy = "1";
+			}
+			return phy;
+		} else {
+			return phy;
+		}
+	}
 	
 	//获取地理位置使用高德地图接口，暂时放一下
 	public String getUserLocation(){

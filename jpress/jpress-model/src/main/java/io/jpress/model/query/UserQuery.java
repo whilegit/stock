@@ -200,7 +200,9 @@ public class UserQuery extends JBaseQuery {
 		else if ("activated".equals(orderBy)) {
 			fromBuilder.append(" ORDER BY u.activated DESC");
 		}
-
+		else if("id".equals(orderBy)) {
+			fromBuilder.append(" ORDER BY u.id DESC");
+		}
 		else {
 			fromBuilder.append(" ORDER BY u.created DESC");
 		}
