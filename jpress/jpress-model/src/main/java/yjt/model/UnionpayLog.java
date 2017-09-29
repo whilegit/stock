@@ -17,11 +17,30 @@ public class UnionpayLog extends BaseUnionpayLog<UnionpayLog>{
 		return "PA" + ymdhms + String.format("%06d", Utils.random(1, 999999));
 	}
 	
+	protected static String genUniqueVerifyMobilePaySn_phy(Date now) {
+		String ymdhms = Utils.getDayNumber(now);
+		return "PM" + ymdhms + String.format("%06d", Utils.random(1, 999999));
+	}
+	
+	
 	public static String genUniquePaySn(Date now) {
 		String paySnTmp = "";
 		String paySn = null;
 		for(int i = 0; i<10; i++) {
 			paySnTmp = genUniquePaySn_phy(now);
+			if(UnionpayLogQuery.me().isPaySnExists(paySnTmp) == false) {
+				paySn = paySnTmp;
+				break;
+			}
+		}
+		return paySn;
+	}
+	
+	public static String genVerifyMobilePaySn(Date now) {
+		String paySnTmp = "";
+		String paySn = null;
+		for(int i = 0; i<10; i++) {
+			paySnTmp = genUniqueVerifyMobilePaySn_phy(now);
 			if(UnionpayLogQuery.me().isPaySnExists(paySnTmp) == false) {
 				paySn = paySnTmp;
 				break;

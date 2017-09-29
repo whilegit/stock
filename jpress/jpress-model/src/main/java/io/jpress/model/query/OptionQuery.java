@@ -44,7 +44,14 @@ public class OptionQuery extends JBaseQuery {
 
 		return "".equals(value) ? null : value;
 	}
-
+	
+	public String findValueNoCache(final String key) {
+		Option option = DAO.doFindFirst("option_key =  ?", key);
+		if (null != option && option.getOptionValue() != null) {
+			return option.getOptionValue();
+		}
+		return "";
+	}
 
 	public boolean saveOrUpdate(String key, String value) {
 		Option option = DAO.doFindFirst("option_key =  ?", key);

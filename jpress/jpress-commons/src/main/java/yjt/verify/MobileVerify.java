@@ -40,6 +40,7 @@ public class MobileVerify {
 			
 		try {
 			String html = Utils.get(url, params, headers);
+			System.out.println(html);
 			if(StrKit.notBlank(html)){
 				MobileVerify verifier = JSON.parseObject(html, MobileVerify.class);
 				if(verifier != null && verifier.getStatus() == 0){

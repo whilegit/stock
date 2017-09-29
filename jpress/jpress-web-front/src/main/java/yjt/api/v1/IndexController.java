@@ -1,12 +1,17 @@
 package yjt.api.v1;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+
+import org.bouncycastle.util.encoders.Base64;
 
 import com.alibaba.fastjson.JSONObject;
 import com.aliyuncs.exceptions.ClientException;
@@ -19,6 +24,7 @@ import com.jfinal.upload.UploadFile;
 
 import io.jpress.core.interceptor.JI18nInterceptor;
 import io.jpress.model.Attachment;
+import io.jpress.model.Option;
 import io.jpress.model.User;
 import io.jpress.model.query.UserQuery;
 import io.jpress.router.RouterMapping;
@@ -43,11 +49,15 @@ import yjt.model.query.CreditLogQuery;
 import yjt.model.query.FollowQuery;
 import yjt.model.query.MessageQuery;
 import yjt.model.query.UnionpayLogQuery;
+import yjt.verify.BankcardVerify;
+import yjt.verify.IdcardVerify;
+import yjt.verify.MobileVerify;
 //import yjt.verify.BankcardVerify;
 //import yjt.verify.IdcardVerify;
 //import yjt.verify.MobileVerify;
 import yjt.api.v1.Interceptor.*;
 import yjt.api.v1.UnionAppPay.UnionAppPay;
+import yjt.api.v1.UnionAppPay.UnionAppPayMethod;
 import yjt.Utils;
 import yjt.api.v1.Annotation.*;
 
@@ -666,7 +676,7 @@ public class IndexController extends ApiBaseController {
 		
 		int authCard = member.getAuthCard();
 		if(authCard == 0 || authCard == 2) {
-			renderJson(getReturnJson(Code.ERROR, authCard == 0 ? "您没有进行身份证认证，无法借款" : "身份证认证中，待通过后方可借款", EMPTY_OBJECT));
+			renderJson(getReturnJson(Code.ERROR, authCard == 0 ? "您没有进行名实认证，无法借款" : "实名认证中，待通过后方可借款", EMPTY_OBJECT));
 			return;
 		}
 		
@@ -682,11 +692,11 @@ public class IndexController extends ApiBaseController {
 			return;
 		}
 		
-		int authFace = member.getAuthFace();
+		/*int authFace = member.getAuthFace();
 		if(authFace == 0 || authFace == 2) {
 			renderJson(getReturnJson(Code.ERROR, authFace == 0 ? "您没有进行人脸认证，无法借款" : "人脸认证中，待通过后方可借款", EMPTY_OBJECT));
 			return;
-		}
+		}*/
 		
 		double amount = Double.parseDouble(moneyStr);
 		if(amount > member.getCanBorrowMoney()) {
@@ -818,7 +828,7 @@ public class IndexController extends ApiBaseController {
 		
 		int authCard = member.getAuthCard();
 		if(authCard == 0 || authCard == 2) {
-			renderJson(getReturnJson(Code.ERROR, authCard == 0 ? "您没有进行身份证认证，无法借出" : "身份证认证中，待通过后方可借出", EMPTY_OBJECT));
+			renderJson(getReturnJson(Code.ERROR, authCard == 0 ? "您没有进行实名认证，无法借出" : "实名认证中，待通过后方可借出", EMPTY_OBJECT));
 			return;
 		}
 		
@@ -834,15 +844,10 @@ public class IndexController extends ApiBaseController {
 			return;
 		}
 		
+		/*
 		int authFace = member.getAuthFace();
 		if(authFace == 0 || authFace == 2) {
 			renderJson(getReturnJson(Code.ERROR, authFace == 0 ? "您没有进行人脸认证，无法借出" : "人脸认证中，待通过后方可借出", EMPTY_OBJECT));
-			return;
-		}
-		
-		/*
-		if(member.getCanLend() != 1) {
-			renderJson(getReturnJson(Code.ERROR, "您没有借出的权限", EMPTY_OBJECT));
 			return;
 		}
 		*/
@@ -911,7 +916,6 @@ public class IndexController extends ApiBaseController {
 			return;
 		}
 		//银行卡号就不检测了
-		
 		int balance = member.getAmount().intValue();
 		if(balance < money) {
 			renderJson(getReturnJson(Code.ERROR, "余额不足", EMPTY_OBJECT));
@@ -1238,33 +1242,35 @@ public class IndexController extends ApiBaseController {
 			return;
 		}
 		
-		/*
 		//开始验证
 		boolean flag = IdcardVerify.verify(realname, idcard);
 		if(flag == false) {
-			renderJson(getReturnJson(Code.ERROR, "身份证认证失败", EMPTY_OBJECT));
+			renderJson(getReturnJson(Code.ERROR, "实名认证失败", EMPTY_OBJECT));
 			return;
+		}
+		
+		try {
+			//获取生日
+			SimpleDateFormat sdfYmd = new SimpleDateFormat("yyyyMMdd");
+			sdfYmd.setLenient(false);
+			Date birthday = sdfYmd.parse(idcard.substring(6, 14));
+			member.setBirthday(birthday);
+			double canBorrow = Option.calCanBorrowMoney(birthday);
+			member.setCanBorrowMoney((int) canBorrow);
+		} catch (ParseException e) {
+			//renderJson(getReturnJson(Code.ERROR, "实名认证失败", EMPTY_OBJECT));
+			//return;
 		}
 		
 		member.setAuthCard(1);
 		member.setIdcard(idcard);
 		member.setRealname(realname);
+		
 		member.setIdcardFront(Utils.stripMedia(idcardimg1));
 		member.setIdcardFront(Utils.stripMedia(idcardimg2));
 		member.update();
 		
-		renderJson(getReturnJson(Code.OK, "身份证认证成功", EMPTY_OBJECT));
-		return;
-		*/
-		
-		//改成后台验证
-		member.setAuthCard(2);
-		member.setIdcard(idcard);
-		member.setRealname(realname);
-		member.setIdcardFront(Utils.stripMedia(idcardimg1));
-		member.setIdcardFront(Utils.stripMedia(idcardimg2));
-		member.update();
-		renderJson(getReturnJson(Code.OK, "身份证认证申请已提交，请耐心等待审核", EMPTY_OBJECT));
+		renderJson(getReturnJson(Code.OK, "实名认证成功", EMPTY_OBJECT));
 		return;
 	}
 	
@@ -1274,6 +1280,7 @@ public class IndexController extends ApiBaseController {
 	@ParamAnnotation(name = "idcard",  must = false, type = ParamInterceptor.Type.STRING, minlen=18, maxlen=18, chs = "身份证号", minlenErrTips="身份证号码为18位", maxlenErrTips="身份证号码为18位")
 	@ParamAnnotation(name = "realname",  must = false, type = ParamInterceptor.Type.STRING, minlen=2, maxlen=4, chs = "真实姓名", minlenErrTips="姓名至少两个汉字", maxlenErrTips="姓名不超过四位")
 	@ParamAnnotation(name = "typeid",  must = false, type = ParamInterceptor.Type.INT, min=1, max=7, chs = "证件类型", minErrTips="证件类型错误", maxErrTips="证件类型错误")
+	@ParamAnnotation(name = "payType",  must = true, type = ParamInterceptor.Type.ENUM_STRING, chs = "支付方式", allow_list={"unionPay","balancePay"}, allowListErrTips="不支持该支付方式")
 	public void verifyMobile(){
 		BigInteger memberID = getParaToBigInteger("memberID");
 		String mobile = getPara("mobile");
@@ -1285,114 +1292,129 @@ public class IndexController extends ApiBaseController {
 		@SuppressWarnings("unused")
 		Integer typeid = getParaToInt("typeid", 1);
 		
+		String payType = getPara("payType");
+		
+		JSONObject json = new JSONObject();
+		json.put("payType", payType);
+		json.put("orderSN", "");
+		json.put("tn", "");
+		
 		User member = UserQuery.me().findByIdNoCache(memberID);
 		if(!mobile.equals(member.getMobile())){
-			renderJson(getReturnJson(Code.ERROR, "该手机号与您注册的手机号不同，如需修改请联系客服", EMPTY_OBJECT));
+			renderJson(getReturnJson(Code.ERROR, "该手机号与您注册的手机号不同，如需修改请联系客服", json));
 			return;
 		}
 		
 		// 0:未验证; 1: 已验证； 2: 验证中
 		String mobileStatus = member.getMobileStatus();
 		if("2".equals(mobileStatus)){
-			renderJson(getReturnJson(Code.ERROR, "请勿重复申请手机号验证", EMPTY_OBJECT));
+			renderJson(getReturnJson(Code.ERROR, "请勿重复申请手机号认证", json));
 			return;
 		}
 		
 		if("1".equals(mobileStatus)){
 			String mobileStatusLogic = member.getMobileStatusLogic();
 			if("1".equals(mobileStatusLogic)) {
-				renderJson(getReturnJson(Code.ERROR, "已认证，请勿重复认证", EMPTY_OBJECT));
+				renderJson(getReturnJson(Code.ERROR, "已认证，请勿重复认证", json));
 				return;
 			} else {
-				if(member.getAmount().doubleValue() >= 10.0) {
-					boolean flag = member.changeBalance(-10.0, "手机认证服务费", BigInteger.ZERO, CreditLog.Platfrom.JIETIAO365);
-					if(flag == false) {
-						log.error("用户 " + memberID.intValue() + " 手机认证服务费扣款失败(续期)。");
-						renderJson(getReturnJson(Code.ERROR, "扣款失败，请稍后重试", EMPTY_OBJECT));
-						return;
+				//续期认证
+				if("balancePay".equals(payType)) {
+					if(member.getAmount().doubleValue() >= 10.0) {
+						boolean flag = member.changeBalance(-10.0, "手机认证服务费", BigInteger.ZERO, CreditLog.Platfrom.JIETIAO365);
+						if(flag == false) {
+							log.error("用户 " + memberID.intValue() + " 手机认证服务费扣款失败");
+							renderJson(getReturnJson(Code.ERROR, "扣款失败，请稍后重试", json));
+							return;
+						} else {
+							member.setAuthExpire(Utils.getNextMonthDay());
+							member.update();
+							renderJson(getReturnJson(Code.OK, "手机号认证成功", json));
+							return;
+						}
 					} else {
-						member.setAuthExpire(Utils.getNextMonthDay());
-						member.update();
-						renderJson(getReturnJson(Code.OK, "手机号认证成功", EMPTY_OBJECT));
+						renderJson(getReturnJson(Code.ERROR, "余额不足，手机号认证服务费10元", json));
 						return;
 					}
 				} else {
-					renderJson(getReturnJson(Code.ERROR, "余额不足，手机认证服务费10元", EMPTY_OBJECT));
-					return;
+					//银联支付
+					UnionAppPayMethod.Result result = UnionAppPayMethod.chargePay(memberID, 10.0, UnionAppPayMethod.PayType.MOBILE_VERIFY);
+					UnionpayLog unionpayLog = result.getUnionpayLog();
+					String err = result.getErr();
+					if(unionpayLog != null) {
+						//返回给前端，前端凭tn码完成具体的支付操作
+						json.put("payType", payType);
+						json.put("orderSN", unionpayLog.getPaySn());
+						json.put("tn", unionpayLog.getTn());
+						renderJson(getReturnJson(Code.OK, "", json));
+						return;
+					} else {
+						renderJson(getReturnJson(Code.ERROR, err != null ? err : "服务暂时不可用，请稍后重试", json));
+						return;
+					}
 				}
 			}
 		}
 		
 		int authCard = member.getAuthCard();
 		if(authCard == 0 || authCard == 2){
-			renderJson(getReturnJson(Code.ERROR, authCard == 0 ? "请先进行身份证认证" : "身份证认证中，请稍后提交手机号认证", EMPTY_OBJECT));
+			renderJson(getReturnJson(Code.ERROR, authCard == 0 ? "请先进行实名认证" : "实名认证中，请稍后提交手机号认证", json));
 			return;
-			/*
-			 //如允许身份证认证和手机号认证同时进行
-			if(!StrKit.notBlank(idcard, realname)){
-				renderJson(getReturnJson(Code.ERROR, "请提供身份证号和真实姓名", EMPTY_OBJECT));
-				return;
-			}
-			//检查身份证号码的编码是否合法
-			if(!Utils.isValidIdcard(idcard)) {
-				renderJson(getReturnJson(Code.ERROR, "身份证号码格式错误", EMPTY_OBJECT));
-				return;
-			}
-			//检测名字是否有英文
-			if(Utils.hasAlphaBeta(realname)) {
-				renderJson(getReturnJson(Code.ERROR, "请用真实姓名", EMPTY_OBJECT));
-				return;
-			}
-			*/
 		}
+		realname = member.getRealname();
+		idcard = member.getIdcard();
 		
-		/*
 		//开始验证
 		boolean flag = MobileVerify.verify(idcard,mobile,  realname, typeid.toString());
 		if(flag == false) {
-			renderJson(getReturnJson(Code.ERROR, "手机号码认证失败", EMPTY_OBJECT));
+			renderJson(getReturnJson(Code.ERROR, "手机号与实名认证信息不匹配", json));
 			return;
 		}
+		member.setMobileStatus("1");
+		member.update();
 		
-		//如该用户未进行过身份证认证，顺便把身份证也一并设为认证了(安全性?)
-		if(authCard == 0){
-			member.setIdcard(idcard);
-			member.setRealname(realname);
-			member.setAuthCard(1);
-		}
-		
-		//扣款操作
-		if(member.getAmount().doubleValue() >= 10.0) {
-			boolean flagChange = member.changeBalance(-10.0, "手机认证服务费", BigInteger.ZERO, CreditLog.Platfrom.JIETIAO365);
-			if(flagChange == false) {
-				log.error("用户 " + memberID.intValue() + " 手机认证服务费扣款失败");
-				renderJson(getReturnJson(Code.ERROR, "扣款失败，请稍后重试", EMPTY_OBJECT));
+		if("balancePay".equals(payType)) {
+			if(member.getAmount().doubleValue() >= 10.0) {
+				flag = member.changeBalance(-10.0, "手机认证服务费", BigInteger.ZERO, CreditLog.Platfrom.JIETIAO365);
+				if(flag == false) {
+					log.error("用户 " + memberID.intValue() + " 手机认证服务费扣款失败");
+					renderJson(getReturnJson(Code.ERROR, "扣款失败，请稍后重试", json));
+					return;
+				} else {
+					member.setAuthExpire(Utils.getNextMonthDay());
+					member.update();
+					renderJson(getReturnJson(Code.OK, "手机号认证成功", json));
+					return;
+				}
+			} else {
+				renderJson(getReturnJson(Code.ERROR, "余额不足，手机号认证服务费10元", json));
 				return;
 			}
-			member.setMobileStatus("2");
-			member.setAuthExpire(Utils.getNextMonthDay());
-			member.update();
-			renderJson(getReturnJson(Code.OK, "手机号认证成功", EMPTY_OBJECT));
-			return;
 		} else {
-			renderJson(getReturnJson(Code.ERROR, "余额不足，手机认证服务费10元", EMPTY_OBJECT));
-			return;
+			//银联支付
+			UnionAppPayMethod.Result result = UnionAppPayMethod.chargePay(memberID, 10.0, UnionAppPayMethod.PayType.MOBILE_VERIFY);
+			UnionpayLog unionpayLog = result.getUnionpayLog();
+			String err = result.getErr();
+			if(unionpayLog != null) {
+				//返回给前端，前端凭tn码完成具体的支付操作
+				json.put("payType", payType);
+				json.put("orderSN", unionpayLog.getPaySn());
+				json.put("tn", unionpayLog.getTn());
+				renderJson(getReturnJson(Code.OK, "", json));
+				return;
+			} else {
+				renderJson(getReturnJson(Code.ERROR, err != null ? err : "服务暂时不可用，请稍后重试", json));
+				return;
+			}
 		}
-		*/
-		
-		//改成后台认证
-		member.setMobileStatus("2");
-		member.update();
-		renderJson(getReturnJson(Code.OK, "手机号认证申请已提交，请耐心等待审核", EMPTY_OBJECT));
-		return;
 	}
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "bankcard",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, maxlen=30, chs = "银行卡号", minlenErrTips="银行卡号格式不正确", maxlenErrTips="银行卡号格式不正确")
-	@ParamAnnotation(name = "idcard",  must = false, type = ParamInterceptor.Type.STRING, minlen=18, maxlen=18, chs = "身份证号", minlenErrTips="身份证号码为18位", maxlenErrTips="身份证号码为18位")
-	@ParamAnnotation(name = "mobile",  must = false, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
 	@ParamAnnotation(name = "realname",  must = false, type = ParamInterceptor.Type.STRING, minlen=2, maxlen=4, chs = "真实姓名", minlenErrTips="姓名至少两个汉字", maxlenErrTips="姓名不超过四位")
+	@ParamAnnotation(name = "idcard",  must = false, type = ParamInterceptor.Type.STRING, minlen=18, maxlen=18, chs = "身份证号", minlenErrTips="身份证号码为18位", maxlenErrTips="身份证号码为18位")
+	@ParamAnnotation(name = "bankcard",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, maxlen=30, chs = "银行卡号", minlenErrTips="银行卡号格式不正确", maxlenErrTips="银行卡号格式不正确")
+	@ParamAnnotation(name = "mobile",  must = false, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
 	public void verifyBankCard() {
 		BigInteger memberID = getParaToBigInteger("memberID");
 		String bankcard = getPara("bankcard");
@@ -1413,14 +1435,14 @@ public class IndexController extends ApiBaseController {
 		
 		int authCard = member.getAuthCard();
 		if(authCard == 0 || authCard == 2) {
-			renderJson(getReturnJson(Code.ERROR, authCard == 0 ? "请先进行身份证认证" : "身份证认证中，请稍后提交银行卡认证", EMPTY_OBJECT));
+			renderJson(getReturnJson(Code.ERROR, authCard == 0 ? "请先进行实名认证" : "实名认证中，请稍后提交银行卡认证", EMPTY_OBJECT));
 			return;
 		}else {
 			idcard = member.getIdcard();
 			realname = member.getRealname();
 		}
 		
-		
+		/*
 		String mobileStatus = member.getMobileStatusLogic();
 		if("0".equals(mobileStatus)){
 			renderJson(getReturnJson(Code.ERROR, "请先认证手机号码", EMPTY_OBJECT));
@@ -1430,8 +1452,7 @@ public class IndexController extends ApiBaseController {
 			renderJson(getReturnJson(Code.ERROR, "手机号认证中，请稍后提起银行卡认证", EMPTY_OBJECT));
 			return;
 		}
-		
-		
+		*/
 		if(StrKit.notBlank(mobile) ) {
 			if(!mobile.equals(member.getMobile())) {
 				renderJson(getReturnJson(Code.ERROR, "该手机号与您注册的手机号不同，如需修改请联系客服", EMPTY_OBJECT));
@@ -1441,56 +1462,11 @@ public class IndexController extends ApiBaseController {
 			mobile = member.getMobile();
 		}
 		
-
-		/*
-		if(!StrKit.notBlank(idcard, realname)) {
-			if(authCard == 0) {
-				renderJson(getReturnJson(Code.ERROR, "请先进行身份证认证", EMPTY_OBJECT));
-				return;
-			}else {
-				idcard = member.getIdcard();
-				realname = member.getRealname();
-			}
-		} else {
-			if(authCard == 0) {
-				//检查身份证号码的编码是否合法
-				if(!Utils.isValidIdcard(idcard)) {
-					renderJson(getReturnJson(Code.ERROR, "身份证号码格式错误", EMPTY_OBJECT));
-					return;
-				}
-				//检测名字是否有英文
-				if(Utils.hasAlphaBeta(realname)) {
-					renderJson(getReturnJson(Code.ERROR, "请用真实姓名", EMPTY_OBJECT));
-					return;
-				}
-			} else {
-				String saved_idcard = member.getIdcard();
-				String saved_realname = member.getRealname();
-				if(!idcard.equals(saved_idcard) || !realname.equals(saved_realname)) {
-					renderJson(getReturnJson(Code.ERROR, "当前提供的姓名或身份证号与之前认证的不符", EMPTY_OBJECT));
-					return;
-				}
-			}
-		}
-		*/
-		
-		/*
 		//开始验证
 		boolean flag = BankcardVerify.verify(bankcard, idcard,mobile, realname);
 		if(flag == false) {
 			renderJson(getReturnJson(Code.ERROR, "银行卡认证失败", EMPTY_OBJECT));
 			return;
-		}
-		//更新身份证的认证情况
-		if(authCard == 0) {
-			member.setIdcard(idcard);
-			member.setRealname(realname);
-			member.setAuthCard(1);
-		}
-		
-		//更新手机号码的认证情况
-		if(! "2".equals(mobileStatus)) {
-			member.setMobileStatus("2");
 		}
 		//更新银行卡的认证情况
 		member.setBankcard(bankcard);
@@ -1498,13 +1474,6 @@ public class IndexController extends ApiBaseController {
 		member.update();
 		
 		renderJson(getReturnJson(Code.OK, "银行卡认证成功", EMPTY_OBJECT));
-		return;
-		*/
-		member.setBankcard(bankcard);
-		member.setAuthBank(2);
-		member.update();
-		
-		renderJson(getReturnJson(Code.OK, "银行卡认证申请已提交，请耐心等待审核", EMPTY_OBJECT));
 		return;
 	}
 	
@@ -1524,15 +1493,41 @@ public class IndexController extends ApiBaseController {
 		
 		int authCard = member.getAuthCard();
 		if(authCard == 0 || authCard == 2) {
-			renderJson(getReturnJson(Code.ERROR, authCard == 0 ? "请先完成身份证认证" : "身份证认证中，请稍后提起人脸认证", EMPTY_OBJECT));
+			renderJson(getReturnJson(Code.ERROR, authCard == 0 ? "请先完成实名认证" : "实名认证中，请稍后提起人脸认证", EMPTY_OBJECT));
 			return;
 		}
 		
 		member.setFaceimg(Utils.stripMedia(faceimg));
-		member.setAuthFace(2);
+		member.setAuthFace(1);
 		member.update();
 		//后台确认比对后，将auth_face设为1
-		renderJson(getReturnJson(Code.OK, "人脸认证已经提交，请耐心等待审核", EMPTY_OBJECT));
+		renderJson(getReturnJson(Code.OK, "肖像认证已经通过", EMPTY_OBJECT));
+		return;
+	}
+	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "books",  must = true, type = ParamInterceptor.Type.STRING, minlen=1, chs = "通讯录", minlenErrTips="通讯录不为空")
+	public void verifyBook() {
+		BigInteger memberID = getParaToBigInteger("memberID");
+		String booksBase64 = getPara("books").trim();
+		byte[] booksBytes = null;
+		try {
+			booksBytes = Base64.decode(booksBase64.getBytes("UTF-8"));
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+		}
+		String books = "";
+		if(booksBytes != null) {
+			books = new String(booksBytes);
+		}
+		
+		User member = UserQuery.me().findByIdNoCache(memberID);
+		member.setBooks(books);
+		member.setAuthBook(1);
+		member.update();
+		renderJson(getReturnJson(Code.OK, "通讯录认证已经通过", EMPTY_OBJECT));
 		return;
 	}
 	
@@ -1543,49 +1538,21 @@ public class IndexController extends ApiBaseController {
 		BigInteger memberID = getParaToBigInteger("memberID");
 		String feeStr = getPara("fee");
 		double fee =  Double.parseDouble(feeStr);
-		Date now = new Date();
-		//生成一个唯一的支付序列号
-		String paySn = UnionpayLog.genUniquePaySn(now);
-		if(StrKit.isBlank(paySn)) {
-			//实际上是连续十次无法生成一个唯一的序列化，只能放弃
-			renderJson(getReturnJson(Code.ERROR, "服务暂时不可用，请稍后重试", EMPTY_OBJECT));
-			return;
-		}
-		UnionAppPay pay = new UnionAppPay();
-		HashMap<String, String> params = new HashMap<String, String>();
-		params.put("txnAmt", String.format("%d", (int)(fee * 100)));  //银联接口单位是分
-		params.put("orderId", paySn);
-		params.put("txnTime", Utils.getDayNumber(now));
-		HashMap<String, String> result = (HashMap<String, String>) pay.comsume(params);
-		if(result == null) {
-			//无法获取到预支付的tn码，应查看log
-			renderJson(getReturnJson(Code.ERROR, "服务暂时不可用，请稍后重试", EMPTY_OBJECT));
-			return;
-		}
-		String tn = result.get("tn");
 		
-		//插入充值记录表
-		UnionpayLog unionpayLog = getModel(UnionpayLog.class);
-		unionpayLog.setFee(fee);
-		unionpayLog.setCreateTime(now);
-		unionpayLog.setPaySn(paySn);
-		unionpayLog.setStatus(0);  //表示未支付
-		unionpayLog.setTn(tn);
-		unionpayLog.setUserId(memberID);
-		unionpayLog.setUpdateTime(now);
-		boolean flag = unionpayLog.save();
-		if(flag == false) {
-			//无法插入支付记录表中，可能表不存在
-			renderJson(getReturnJson(Code.ERROR, "服务暂时不可用，请稍后重试", EMPTY_OBJECT));
+		UnionAppPayMethod.Result result = UnionAppPayMethod.chargePay(memberID, fee, UnionAppPayMethod.PayType.CHARGE);
+		UnionpayLog unionpayLog = result.getUnionpayLog();
+		String err = result.getErr();
+		if(unionpayLog != null) {
+			//返回给前端，前端凭tn码完成具体的支付操作
+			JSONObject json = new JSONObject();
+			json.put("orderSN", unionpayLog.getPaySn());
+			json.put("tn", unionpayLog.getTn());
+			renderJson(getReturnJson(Code.OK, "", json));
+			return;
+		} else {
+			renderJson(getReturnJson(Code.ERROR, err != null ? err : "服务暂时不可用，请稍后重试", EMPTY_OBJECT));
 			return;
 		}
-		
-		//返回给前端，前端凭tn码完成具体的支付操作
-		JSONObject json = new JSONObject();
-		json.put("orderSN", paySn);
-		json.put("tn", tn);
-		renderJson(getReturnJson(Code.OK, "", json));
-		return;
 	}
 	
 	@Before(ParamInterceptor.class)

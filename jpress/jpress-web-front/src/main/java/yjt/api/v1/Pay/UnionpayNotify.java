@@ -37,14 +37,17 @@ public class UnionpayNotify extends BaseFrontController{
 						//交易确实成功，更新数据库
 						User user = UserQuery.me().findByIdNoCache(unionpayLog.getUserId());
 						if(user != null) {
-							LogUtil.writeLog("银联通知交易成功，用户 " + user.getId().toString() + "增加金额 " + unionpayLog.getFee() + "元");
-
 							unionpayLog.setStatus(1);
 							unionpayLog.setUpdateTime(new Date());
 							unionpayLog.update();
-							
-							user.changeBalance(unionpayLog.getFee(), "银联App控件版充值转入", BigInteger.ZERO, CreditLog.Platfrom.UNIONPAY);
-							
+							if(orderId.startsWith("PA")) {
+								LogUtil.writeLog("银联充值，用户 " + user.getId().toString() + "增加余额 " + unionpayLog.getFee() + "元");
+								user.changeBalance(unionpayLog.getFee(), "银联充值", BigInteger.ZERO, CreditLog.Platfrom.UNIONPAY);
+							} else if(orderId.startsWith("PM")){
+								LogUtil.writeLog("银联支付(用于手机号认证)，用户 " + user.getId().toString() + " 支付 " + unionpayLog.getFee() + "元认证费");
+								user.changeBalance(unionpayLog.getFee(), "银联充值", BigInteger.ZERO, CreditLog.Platfrom.UNIONPAY);
+								user.changeBalance(-unionpayLog.getFee(), "手机号认证费扣款", BigInteger.ZERO, CreditLog.Platfrom.JIETIAO365);
+							}
 						} else {
 							LogUtil.writeLog("银联通知交易成功，但该笔支付的用户却不存在, paySn=" + orderId + ", txtTime=" + txnTime);
 						} 

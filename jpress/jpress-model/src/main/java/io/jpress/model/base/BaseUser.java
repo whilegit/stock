@@ -610,6 +610,16 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 		return banktype != null ? banktype : "";
 	}
 	
+	public void setBooks(java.lang.String books){
+		set("books", books);
+	}
+	
+	public String getBooks(){
+		String books = get("books");
+		return books != null ? books : "";
+	}
+	
+	
 	public void setZhimaScore(java.lang.Integer zhimaScore){
 		set("zhima_score", zhimaScore);
 	}
