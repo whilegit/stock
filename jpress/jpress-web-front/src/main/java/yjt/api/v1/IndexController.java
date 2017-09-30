@@ -3,6 +3,7 @@ package yjt.api.v1;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.URLDecoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -1510,17 +1511,19 @@ public class IndexController extends ApiBaseController {
 	@ParamAnnotation(name = "books",  must = true, type = ParamInterceptor.Type.STRING, minlen=1, chs = "通讯录", minlenErrTips="通讯录不为空")
 	public void verifyBook() {
 		BigInteger memberID = getParaToBigInteger("memberID");
-		String booksBase64 = getPara("books").trim();
-		byte[] booksBytes = null;
+		
+		String books = "";
 		try {
-			booksBytes = Base64.decode(booksBase64.getBytes("UTF-8"));
+			byte[] booksBytes = null;
+			String booksUrlencode = getPara("books").trim();
+			String booksBase64 = URLDecoder.decode(booksUrlencode, "UTF-8");
+			booksBytes = Base64.decode(booksBase64.getBytes());
+			if(booksBytes != null) {
+				books = new String(booksBytes);
+			}
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
-		}
-		String books = "";
-		if(booksBytes != null) {
-			books = new String(booksBytes);
 		}
 		
 		User member = UserQuery.me().findByIdNoCache(memberID);

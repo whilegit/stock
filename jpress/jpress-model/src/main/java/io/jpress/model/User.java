@@ -92,6 +92,10 @@ public class User extends BaseUser<User> {
 		Date birthday = getBirthday();
 		String birthdayStr = (birthday != null) ? sdfYmd.format(birthday) : "";
 
+		int canBollowMoney = getCanBorrowMoney();
+		if("1".equals(getMobileStatus()) == false || this.getAuthBank() != 1 || this.getAuthCard() != 1) {
+			canBollowMoney = 0;
+		}
 		profile.put("memberID", id.toString());
 		profile.put("avatar", Utils.toMedia(getAvatar()));
 		profile.put("mobile", getMobile());
@@ -104,7 +108,7 @@ public class User extends BaseUser<User> {
 		profile.put("outcome", String.format("%.2f", outcome));
 		profile.put("balance", yjt.Utils.bigDecimalRound2(getAmount()));
 		profile.put("interest", yjt.Utils.bigDecimalRound2(getInterest()));
-		profile.put("canBorrowMoney", ""+getCanBorrowMoney() + ".00");
+		profile.put("canBorrowMoney", canBollowMoney + ".00");
 		profile.put("canLend", "" + getCanLend());
 		profile.put("sysPush", ""+getSysPush());
 		profile.put("salePush", ""+getSalePush());
