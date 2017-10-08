@@ -171,14 +171,18 @@ public class BaseContract<M extends BaseContract<M>> extends JModel<M> implement
 		set("amount", amount);
 	}
 	public BigDecimal getAmount(){
-		return get("amount");
+		Object obj = get("amount");
+		if(obj instanceof Double) obj = BigDecimal.valueOf((Double)obj);
+		return (BigDecimal)obj;
 	}
 	
 	public void setAnnualRate(double annualRate ){
 		set("annual_rate", annualRate);
 	}
 	public BigDecimal getAnnualRate(){
-		return get("annual_rate");
+		Object obj = get("annual_rate");
+		if(obj instanceof Double) obj = BigDecimal.valueOf((Double)obj);
+		return (BigDecimal)obj;
 	}
 	
 	public void setRepaymentMethod(int repaymentMethod){

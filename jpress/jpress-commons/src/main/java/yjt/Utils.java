@@ -30,6 +30,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
@@ -159,6 +160,15 @@ public class Utils {
 	     return new Date(stamp);
 	}
 	
+	public static Date getPrevMonthDay(Date td) {
+		 Calendar cal = Calendar.getInstance();
+		 cal.setTime(td);
+	     cal.add(Calendar.MONTH, -1);
+	     Date d = cal.getTime();
+	     long stamp = getDayStartTime(d);
+	     return new Date(stamp);
+	}
+	
 	public static String getFileExtention(String path){
 		int len = path.length();
 		int last_slash = path.lastIndexOf('/');
@@ -225,6 +235,42 @@ public class Utils {
 		}
 		
 		httpPost.setEntity(new UrlEncodedFormEntity(params));
+		CloseableHttpResponse response = httpclient.execute(httpPost);
+
+		try {
+			StatusLine status = response.getStatusLine();
+			int code = status.getStatusCode();
+			HttpEntity entity = response.getEntity();
+			
+			if(code == 200){
+				if(entity != null){
+					Charset charset = getContentTypeCharset(response);
+					if(charset == null) charset = Charset.forName("UTF-8");
+					result = IOUtils.toString(entity.getContent(), charset.name());
+				}
+			} else if(entity != null) {
+				EntityUtils.consume(entity);
+			}
+		} finally {
+			response.close();
+		}
+		return result;
+	}
+	
+	public static String post(String url, String params, List<NameValuePair> headers) throws ClientProtocolException, IOException {
+		String result = null;
+		
+		CloseableHttpClient httpclient = HttpClients.createDefault();
+		HttpPost httpPost = new HttpPost(url);
+		if(headers != null && headers.size() > 0) {
+			Iterator<NameValuePair> it = headers.iterator();
+			while(it.hasNext()) {
+				NameValuePair entry = it.next();
+				httpPost.setHeader(entry.getName(), entry.getValue());
+			}
+		}
+		
+		httpPost.setEntity(new StringEntity(params));
 		CloseableHttpResponse response = httpclient.execute(httpPost);
 
 		try {

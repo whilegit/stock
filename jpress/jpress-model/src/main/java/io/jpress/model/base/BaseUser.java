@@ -502,6 +502,13 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 		return get("member_token");
 	}
 	
+	public void setDeviceToken(String deviceToken){
+		set("device_token", deviceToken);
+	}
+	public String getDeviceToken(){
+		return get("device_token");
+	}
+	
 	public void setScore(java.lang.Integer score){
 		set("score", score);
 	}

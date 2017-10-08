@@ -27,7 +27,7 @@ public class Apply extends BaseApply<Apply>{
 	public JSONObject getProfile() {
 		JSONObject json = new JSONObject();
 		User user = getApplyUser();
-		json.put("id", getApplyUid().toString());
+		json.put("id", getId().toString());
 		json.put("userID", user.getId().toString());
 		json.put("userName", user.getRealname());
 		json.put("userAvatar", Utils.toMedia(user.getAvatar()));
@@ -37,10 +37,10 @@ public class Apply extends BaseApply<Apply>{
 		json.put("money", Utils.bigDecimalRound2(getAmount()));
 		json.put("rate", Utils.bigDecimalRound2(getAnnualRate()) + "%");
 		json.put("endDate", Utils.toYmd(getMaturityDate()));
-		json.put("retType", "" + getRepaymentMethod());
+		json.put("retType", "到期一次性还本付息");
 		json.put("fromUserCount", ""+getToFriends().size());
 		json.put("forUse", Apply.Purpose.getEnum(getPurpose()).getName());
-		json.put("video",getVideo());
+		json.put("video",Utils.toMedia(getVideo()));
 		json.put("status", ""+getStatus());
 		return json;
 	}

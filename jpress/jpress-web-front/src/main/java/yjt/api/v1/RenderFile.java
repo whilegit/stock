@@ -3,11 +3,13 @@ package yjt.api.v1;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.jfinal.kit.StrKit;
 import com.jfinal.render.Render;
 
 public class RenderFile extends Render{
@@ -15,6 +17,7 @@ public class RenderFile extends Render{
 	protected boolean deleteFlag = false;
 	protected String filepath;
 	protected String mime;
+	protected String download_filename;
 
 	public RenderFile () {
 		super();
@@ -32,6 +35,8 @@ public class RenderFile extends Render{
 			
 			response.setContentType(mime); 
 			response.setContentLength(byt.length);
+			if(StrKit.notBlank(download_filename))
+				response.setHeader("Content-Disposition", "attachment; filename=" +download_filename);
 			sos = response.getOutputStream();
 			sos.write(byt);
 			sos.flush();
@@ -52,11 +57,12 @@ public class RenderFile extends Render{
 		}
 	}
 	
-	public Render setContext(HttpServletRequest request, HttpServletResponse response, String filepath, String mime, boolean deleteFlag) {
+	public Render setContext(HttpServletRequest request, HttpServletResponse response, String filepath, String mime, String download_filename, boolean deleteFlag) {
 		this.request = request;
 		this.response = response;
 		this.filepath = filepath;
 		this.mime = mime;
+		this.download_filename = download_filename;
 		this.deleteFlag = deleteFlag;
 		return this;
 	}

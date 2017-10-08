@@ -69,8 +69,6 @@ public class ApiBaseController extends BaseFrontController{
 		this.renderJson(art);
 	}
 	
-	
-	
 	public void memberTokenFail(){
 		ApiReturnType art = getReturnJson(Code.TIMEOUT, "memberToken失效", EMPTY_OBJECT);
 		this.renderJson(art);
@@ -201,7 +199,7 @@ public class ApiBaseController extends BaseFrontController{
 							    
 						long sizeInBytes = item.getSize();
 						String suffix = FileUtils.getSuffix(originalFileName);
-						if(sizeInBytes > 1024 * 1024 || (suffix != null && suffix.toLowerCase().contains("jsp"))){
+						if(/*sizeInBytes > 1024 * 1024 || */(suffix != null && suffix.toLowerCase().contains("jsp"))){
 							 item.delete();
 							 continue;
 						}

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.jfinal.kit.StrKit;
 import com.jfinal.log.Log;
@@ -34,6 +35,7 @@ import yjt.location.Amap;
 import yjt.model.CreditLog;
 import yjt.model.query.ContractQuery;
 import yjt.model.query.FollowQuery;
+import yjt.verify.BankcardDetail;
 
 @Table(tableName = "user", primaryKey = "id")
 public class User extends BaseUser<User> {
@@ -96,11 +98,27 @@ public class User extends BaseUser<User> {
 		if("1".equals(getMobileStatus()) == false || this.getAuthBank() != 1 || this.getAuthCard() != 1) {
 			canBollowMoney = 0;
 		}
+		
+		BankcardDetail bankcardDetail = null;
+		String bankTypeJson = this.getBanktype();
+		if(bankTypeJson != null){
+			bankcardDetail = JSON.parseObject(bankTypeJson, BankcardDetail.class);
+		}
+		
+		String authMobileStart = "", authMobileEnd = "";
+		Date auth_expire = this.getAuthExpire();
+		if(auth_expire != null){
+			authMobileEnd = Utils.toYmd(auth_expire);
+			authMobileStart = Utils.toYmd(Utils.getPrevMonthDay(auth_expire));
+		}
+		
 		profile.put("memberID", id.toString());
 		profile.put("avatar", Utils.toMedia(getAvatar()));
 		profile.put("mobile", getMobile());
 		profile.put("nickname", getNickname());
 		profile.put("name", getAuthCard() == 1 ? getRealname() : "未认证");
+		profile.put("bankType", bankcardDetail != null ? bankcardDetail.getResult().getBankname() : "");
+		profile.put("bankNum", getBankcard());
 		profile.put("gender", getGender());
 		profile.put("birthday", birthdayStr);
 		profile.put("score", ""+getScore());
@@ -125,6 +143,8 @@ public class User extends BaseUser<User> {
 		profile.put("authXuexing", "" + getAuthXuexing());
 		profile.put("authZhima", "" + getAuthZhima());
 		profile.put("issetDealPassword", StrKit.notBlank(getDealPassword()) ? "1" : "0");
+		profile.put("authMobileStart", authMobileStart);
+		profile.put("authMobileEnd", authMobileEnd);
 		return profile;
 	}
 	

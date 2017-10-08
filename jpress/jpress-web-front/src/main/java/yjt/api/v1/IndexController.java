@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-import org.bouncycastle.util.encoders.Base64;
+import org.apache.commons.codec.binary.Base64;
 
 import com.alibaba.fastjson.JSONObject;
 import com.aliyuncs.exceptions.ClientException;
@@ -50,15 +51,15 @@ import yjt.model.query.CreditLogQuery;
 import yjt.model.query.FollowQuery;
 import yjt.model.query.MessageQuery;
 import yjt.model.query.UnionpayLogQuery;
+import yjt.verify.BankcardDetail;
 import yjt.verify.BankcardVerify;
 import yjt.verify.IdcardVerify;
 import yjt.verify.MobileVerify;
-//import yjt.verify.BankcardVerify;
-//import yjt.verify.IdcardVerify;
-//import yjt.verify.MobileVerify;
 import yjt.api.v1.Interceptor.*;
+import yjt.api.v1.UnionAppPay.ChinapayUtils;
 import yjt.api.v1.UnionAppPay.UnionAppPay;
 import yjt.api.v1.UnionAppPay.UnionAppPayMethod;
+import yjt.core.push.Push;
 import yjt.Utils;
 import yjt.api.v1.Annotation.*;
 
@@ -517,6 +518,34 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "oldPwd",  must = false, type = ParamInterceptor.Type.STRING, minlen=1,  chs = "旧密码", minlenErrTips="旧密码过短")
+	@ParamAnnotation(name = "newPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=6,  chs = "新密码", minlenErrTips="新密码不少于六位")
+	public void updateLoginPwd(){
+		BigInteger memberID = getParaToBigInteger("memberID");
+		String oldPwd = getPara("oldPwd").trim();
+		String newPwd = getPara("newPwd").trim();
+		User member = UserQuery.me().findByIdNoCache(memberID);
+		if(StrKit.notBlank(member.getPassword()) &&  !EncryptUtils.verlifyUser(member.getPassword(), member.getSalt(), oldPwd)){
+			renderJson(getReturnJson(Code.ERROR, "原密码错误", EMPTY_OBJECT));
+			return;
+		}
+		HashMap<String, Object> profile = member.getMemberProfile();
+		
+		String salt = EncryptUtils.salt();
+		member.setPassword(EncryptUtils.encryptPassword(newPwd, salt));
+		member.setSalt(salt);
+		String newMemberToken = getRandomString(32);
+		member.setMemberToken(newMemberToken);
+		member.update();
+		profile.put("memberToken", newMemberToken);
+		renderJson(getReturnJson(Code.OK, "密码设置成功", profile));
+		return;
+	}
+	
+	
+	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
 	@ParamAnnotation(name = "oldPwd",  must = false, type = ParamInterceptor.Type.STRING, minlen=0,  chs = "旧交易密码")
 	@ParamAnnotation(name = "newPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=6,  chs = "新交易密码", minlenErrTips="新交易密码至少六位")
 	public void updateDealPwd() {
@@ -542,6 +571,51 @@ public class IndexController extends ApiBaseController {
 		profile.put("memberToken", newMemberToken);
 		renderJson(getReturnJson(Code.OK, "交易密码设置成功", profile));
 		return;
+	}
+	
+	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
+	@ParamAnnotation(name = "captcha",  must = true, type = ParamInterceptor.Type.STRING, minlen=6, chs = "验证码", minlenErrTips="验证码为6位")
+	public void updateMobile(){
+		BigInteger memberID = getParaToBigInteger("memberID");
+		User member = UserQuery.me().findByIdNoCache(memberID);
+		String mobile = getPara("mobile");
+		String captchaStr = getPara("captcha");
+
+		String oldMobile = member.getMobile();
+		if(mobile.equals(oldMobile)){
+			renderJson(getReturnJson(Code.ERROR, "手机号与原手机号一样", EMPTY_OBJECT));
+			return;
+		}
+		
+		Captcha captcha = CaptchaQuery.me().getCaptcha(mobile);
+		if(captcha == null){
+			renderJson(getReturnJson(Code.ERROR, "验证码不存在", EMPTY_OBJECT));
+			return;
+		}
+		if(captchaStr.equals(captcha.getCode()) == false){
+			renderJson(getReturnJson(Code.ERROR, "验证码错误", EMPTY_OBJECT));
+			return;
+		}
+		
+		long sendTime = captcha.getCreateTime().getTime();
+		if(sendTime + 30 * 60 * 1000 < System.currentTimeMillis()){
+			renderJson(getReturnJson(Code.ERROR, "验证码超时，请重新获取", EMPTY_OBJECT));
+			return;
+		}
+		
+		//String newMemberToken = getRandomString(32);
+		//member.setMemberToken(newMemberToken);
+		member.setMobile(mobile);
+		member.update();
+		
+		JSONObject json = new JSONObject();
+		//json.put("memberToken", newMemberToken);
+		json.put("mobile", mobile);
+		
+		renderJson(getReturnJson(Code.OK, "更换手机号成功", json));
 	}
 	
 	@Before(ParamInterceptor.class)
@@ -658,10 +732,56 @@ public class IndexController extends ApiBaseController {
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
 	@ParamAnnotation(name = "money",  must = true, type = ParamInterceptor.Type.DOUBLE, mind=1, maxd=100000000,chs = "借款金额", minErrTips="借款金额至少1元", maxErrTips="需要借这么多钱么")
+	@ParamAnnotation(name = "startDate",  must = false, type = ParamInterceptor.Type.DATE, chs = "起息日期")
+	@ParamAnnotation(name = "endDate",  must = true, type = ParamInterceptor.Type.DATE, chs = "还款日期")
+	@ParamAnnotation(name = "rate",  must = true, type = ParamInterceptor.Type.DOUBLE, mind=1.0, maxd=24.0,chs = "年化利率", minErrTips="借款年化利率不小于1%", maxErrTips="借款年化利率不高于24%")
+	public void calcBorrow(){
+		String moneyStr = getPara("money");
+		String startDateStr = getPara("startDate");
+		String endDateStr = getPara("endDate");
+		String rate = getPara("rate");
+		
+		Date valueDate = null;
+		if(StrKit.isBlank(startDateStr)){
+			valueDate = new Date();
+		} else {
+			valueDate = Utils.getYmd(startDateStr);
+		}
+		
+		double amount = Double.parseDouble(moneyStr);
+		double annual_rate = Double.parseDouble(rate);
+		Date maturity_date =Utils.getYmd(endDateStr);
+		
+		if(Utils.getTodayStartTime() + 3L * 86400 * 1000 > maturity_date.getTime()){
+			renderJson(getReturnJson(Code.ERROR, "还款日期不能早于三天之内", EMPTY_OBJECT));
+			return;
+		}
+
+		if(Utils.getTodayStartTime() + 365L * 86400 * 1000 < maturity_date.getTime()){
+			renderJson(getReturnJson(Code.ERROR, "借款周期不得超过1年", EMPTY_OBJECT));
+			return;
+		}
+		
+		Contract contract = new Contract();
+		contract.setValueDate(valueDate);
+		contract.setMaturityDate(maturity_date);
+		contract.setAmount(amount);
+		contract.setAnnualRate(annual_rate);
+		double interest = contract.calcInterest();
+		JSONObject json = new JSONObject();
+		json.put("money", String.format("%.2f", interest + amount));
+		renderJson(getReturnJson(Code.OK, "", json));
+		return;
+
+	}
+	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "money",  must = true, type = ParamInterceptor.Type.DOUBLE, mind=1, maxd=100000000,chs = "借款金额", minErrTips="借款金额至少1元", maxErrTips="需要借这么多钱么")
 	@ParamAnnotation(name = "endDate",  must = true, type = ParamInterceptor.Type.DATE, chs = "还款日期")
 	@ParamAnnotation(name = "rate",  must = true, type = ParamInterceptor.Type.DOUBLE, mind=1.0, maxd=24.0,chs = "年化利率", minErrTips="借款年化利率不小于1%", maxErrTips="借款年化利率不高于24%")
 	@ParamAnnotation(name = "forUseType",  must = true, type = ParamInterceptor.Type.STRING, minlen=1,chs = "借款用途", minlenErrTips="借款用途错误")
-	@ParamAnnotation(name = "toFriends",  must = true, type = ParamInterceptor.Type.STRING, minlen=1,chs = "借款人", minlenErrTips="发布对象错误")
+	@ParamAnnotation(name = "toFriends",  must = true, type = ParamInterceptor.Type.STRING, minlen=1,chs = "发布对象", minlenErrTips="发布对象错误")
 	@ParamAnnotation(name = "video",  must = false, type = ParamInterceptor.Type.STRING, minlen=12,chs = "视频", minlenErrTips="视频错误")
 	public void memberBorrow(){
 		BigInteger memberID = getParaToBigInteger("memberID");
@@ -705,15 +825,26 @@ public class IndexController extends ApiBaseController {
 			return;
 		}
 		
+		int amountInt = (int)amount;
+		if(amountInt % 10 != 0){
+			renderJson(getReturnJson(Code.ERROR, "借款金额应是10的倍数", EMPTY_OBJECT));
+			return;
+		}
+		
 		if(amount >= 3000.0 && StrKit.isBlank(video)){
 			renderJson(getReturnJson(Code.ERROR, "请提供视频", EMPTY_OBJECT));
 			return;
 		}
 		Date maturity_date =Utils.getYmd(endDateStr);
-		if(Utils.getTodayStartTime() + 3 * 86400 * 1000 > maturity_date.getTime()){
-			renderJson(getReturnJson(Code.ERROR, "还款日太近", EMPTY_OBJECT));
+		if(Utils.getTodayStartTime() + 3L * 86400 * 1000 > maturity_date.getTime()){
+			renderJson(getReturnJson(Code.ERROR, "还款日期不能早于三天之内", EMPTY_OBJECT));
 			return;
 		}
+		if(Utils.getTodayStartTime() + 365L * 86400 * 1000 < maturity_date.getTime()){
+			renderJson(getReturnJson(Code.ERROR, "借款周期不得超过1年", EMPTY_OBJECT));
+			return;
+		}
+		
 		double annual_rate = Double.parseDouble(rate);
 		Apply.Purpose purpose = Apply.Purpose.getEnum(forUseType);
 		if(purpose == null){
@@ -781,14 +912,23 @@ public class IndexController extends ApiBaseController {
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
 	@ParamAnnotation(name = "applyID",  must = true, type = ParamInterceptor.Type.INT, min=1,chs = "申请号", minErrTips="申请号不存在")
-	@ParamAnnotation(name = "dealPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=6,chs = "交易密码", minlenErrTips="交易密码至少六位")
+	@ParamAnnotation(name = "dealPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=1,chs = "交易密码", minlenErrTips="交易密码错误")
 	@ParamAnnotation(name = "repaymentMethod",  must = false, type = ParamInterceptor.Type.INT, min=1, max=3,chs = "还款方式", minErrTips="无法识别的还款方式", maxErrTips="无法识别的还款方式")
 	public void payApply() {
 		BigInteger memberID = getParaToBigInteger("memberID");
 		User member = UserQuery.me().findByIdNoCache(memberID);
-		String dealPwd = getPara("dealPwd").trim();
-		if(!EncryptUtils.verlifyUser(member.getDealPassword(), member.getDealSalt(), dealPwd)){
-			renderJson(getReturnJson(Code.ERROR, "交易密码错误", EMPTY_OBJECT));
+		String dealPwd = getPara("dealPwd", "");
+		if(StrKit.notBlank(member.getDealPassword())){
+			if(StrKit.isBlank(dealPwd)){
+				renderJson(getReturnJson(Code.ERROR, "交易密码不能为空", EMPTY_OBJECT));
+				return;
+			}
+			if(!EncryptUtils.verlifyUser(member.getDealPassword(), member.getDealSalt(), dealPwd)){
+				renderJson(getReturnJson(Code.ERROR, "交易密码错误", EMPTY_OBJECT));
+				return;
+			}
+		} else {
+			renderJson(getReturnJson(Code.ERROR, "请先设置交易密码", EMPTY_OBJECT));
 			return;
 		}
 		
@@ -812,7 +952,7 @@ public class IndexController extends ApiBaseController {
 		}
 		
 		if(member.getAmount().compareTo(apply.getAmount()) < 0) {
-			renderJson(getReturnJson(Code.ERROR, "余额不足", EMPTY_OBJECT));
+			renderJson(getReturnJson(Code.TIMEOUT, "余额不足", EMPTY_OBJECT));
 			return;
 		}
 		
@@ -957,7 +1097,7 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "mobile",  must = true, type = ParamInterceptor.Type.MOBILE, chs = "手机号")
-	@ParamAnnotation(name = "type",  must = true, type = ParamInterceptor.Type.ENUM_STRING, allow_list= {"reg","findPwd","validMobile"},chs = "类型")
+	@ParamAnnotation(name = "type",  must = true, type = ParamInterceptor.Type.ENUM_STRING, allow_list= {"reg","findPwd","validMobile","chgMobile"},chs = "类型")
 	public void sendCaptcha(){
 		String mobile = getPara("mobile");
 		String code = String.format("%06d", (int) (Math.random() * 1000000));
@@ -966,6 +1106,14 @@ public class IndexController extends ApiBaseController {
 		if(type.equals("reg")) template = "SMS_94665102";
 		else if(type.equals("findPwd")) template = "SMS_94665102";
 		else if(type.equals("validMobile"))  template = "SMS_94665102";
+		else if(type.equals("chgMobile")){
+			User user = UserQuery.me().findUserByMobile(mobile);
+			if(user != null){
+				renderJson(getReturnJson(Code.ERROR, "该手机已经注册帐号", EMPTY_OBJECT));
+				return;
+			}
+			template = "SMS_94665102";
+		}
 		else {
 			return;
 		}
@@ -1163,16 +1311,19 @@ public class IndexController extends ApiBaseController {
 		BigInteger applyID = getParaToBigInteger("applyID");
 		Apply apply = ApplyQuery.me().findById(applyID);
 		if(apply == null){
-			renderJson(getReturnJson(Code.ERROR, "申请不存在", EMPTY_OBJECT));
+			String html = "<html><head><meta charset=\"utf8\"></head><body>申请不存在</body></html>";
+			this.renderHtml(html);
 			return;
 		}
 		Apply.Status apply_status = Apply.Status.getEnum(apply.getStatus());
 		if(apply_status == Apply.Status.INVALID){
-			renderJson(getReturnJson(Code.ERROR, "申请已无效", EMPTY_OBJECT));
+			String html = "<html><head><meta charset=\"utf8\"></head><body>申请已无效</body></html>";
+			this.renderHtml(html);
 			return;
 		}
 		if(apply.getMaturityDate().getTime() < Utils.getTodayStartTime()){
-			renderJson(getReturnJson(Code.ERROR, "申请已过期", EMPTY_OBJECT));
+			String html = "<html><head><meta charset=\"utf8\"></head><body>申请已过期</body></html>";
+			this.renderHtml(html);
 			return;
 		}
 		User creditor = null;
@@ -1184,12 +1335,14 @@ public class IndexController extends ApiBaseController {
 			contract = ContractQuery.me().findById(contractId);
 			if(contract == null) {
 				log.info("apply.id(" + applyID.toString() + ") 已经成交但无对应的合约记录");
-				renderJson(getReturnJson(Code.ERROR, "内部错误", EMPTY_OBJECT));
+				String html = "<html><head><meta charset=\"utf8\"></head><body>内部错误</body></html>";
+				this.renderHtml(html);
 				return;
 			}
 			creditor = contract.getCreditUser();
 			if(memberID.equals(creditor.getId()) == false && memberID.equals(debitor.getId()) == false) {
-				renderJson(getReturnJson(Code.ERROR, "您不是当事方无权查看", EMPTY_OBJECT));
+				String html = "<html><head><meta charset=\"utf8\"></head><body>您不是当事方无权查看</body></html>";
+				this.renderHtml(html);
 				return;
 			}
 		} else {
@@ -1201,15 +1354,44 @@ public class IndexController extends ApiBaseController {
 		
 		String agreement = Contract.getAgreementFilePath(contract, apply, debitor, creditor, apply.getCreateTime(), creditorSign);
 		if(agreement == null) {
-			renderJson(getReturnJson(Code.ERROR, "协议生成失败", EMPTY_OBJECT));
+			String html = "<html><head><meta charset=\"utf8\"></head><body>协议生成失败</body></html>";
+			this.renderHtml(html);
 			return;
 		}
-
+		
+		String webRoot = PathKit.getWebRootPath();
+		agreement = agreement.substring(webRoot.length());
+		String html = "<html><head><meta charset=\"utf8\"></head><body><img src=\""+Utils.toMedia(agreement)+"\">"+
+				      "<a href=\"/v1/downloadAgreement?source="+agreement+"&deleted="+(contract != null ? "0" : "1")+"\">下载</a>" + 
+				"</body></html>";
+		this.renderHtml(html);
+		return;
+		
+		/*
 		RenderFile render = new RenderFile();
-		String mime = "image/" + Utils.getFileExtention(agreement);
+		String mime = "application/octet-stream";
 		render.setContext(this.getRequest(), this.getResponse(), agreement, mime, (contract == null));
 		this.render(render);
+		 */
 	}
+	
+	@Clear(AccessTokenInterceptor.class)
+	public void downloadAgreement(){
+		String source = getPara("source", "");
+		if(StrKit.isBlank(source)){
+			String html = "<html><head><meta charset=\"utf8\"></head><body>未指定资源</body></html>";
+			this.renderHtml(html);
+			return;
+		}
+		String deleted = getPara("deleted", "0");
+		String webRoot = PathKit.getWebRootPath();
+
+		RenderFile render = new RenderFile();
+		String mime = "application/octet-stream";
+		render.setContext(this.getRequest(), this.getResponse(), webRoot + source, mime, "agreement.png", "1".equals(deleted));
+		this.render(render);
+	}
+	
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
@@ -1465,9 +1647,15 @@ public class IndexController extends ApiBaseController {
 		
 		//开始验证
 		boolean flag = BankcardVerify.verify(bankcard, idcard,mobile, realname);
+		//boolean flag = true;
 		if(flag == false) {
 			renderJson(getReturnJson(Code.ERROR, "银行卡认证失败", EMPTY_OBJECT));
 			return;
+		}
+		
+		BankcardDetail bankcardDetail = BankcardDetail.verify(bankcard);
+		if(bankcardDetail != null){
+			member.setBanktype(bankcardDetail.getHtml());
 		}
 		//更新银行卡的认证情况
 		member.setBankcard(bankcard);
@@ -1511,17 +1699,13 @@ public class IndexController extends ApiBaseController {
 	@ParamAnnotation(name = "books",  must = true, type = ParamInterceptor.Type.STRING, minlen=1, chs = "通讯录", minlenErrTips="通讯录不为空")
 	public void verifyBook() {
 		BigInteger memberID = getParaToBigInteger("memberID");
-		
 		String books = "";
 		try {
-			byte[] booksBytes = null;
 			String booksUrlencode = getPara("books").trim();
-			String booksBase64 = URLDecoder.decode(booksUrlencode, "UTF-8");
-			booksBytes = Base64.decode(booksBase64.getBytes());
-			if(booksBytes != null) {
-				books = new String(booksBytes);
-			}
-		} catch (UnsupportedEncodingException e) {
+			String cc = URLDecoder.decode(booksUrlencode, "UTF-8").replace(" ", "+");
+			String _books = new String(Base64.decodeBase64(cc), "UTF-8");
+			if(_books != null) books = _books;
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
 		}
@@ -1591,12 +1775,31 @@ public class IndexController extends ApiBaseController {
 		}
 	}
 	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "deviceToken",  must = true, type = ParamInterceptor.Type.STRING, minlen=1, chs = "DeviceToken", minlenErrTips="DeviceToken错误")
+	public void uploadDeviceToken(){
+		BigInteger memberID = getParaToBigInteger("memberID");
+		String deviceToken = getPara("deviceToken");
+		User member = UserQuery.me().findByIdNoCache(memberID);
+		member.setDeviceToken(deviceToken);
+		member.update();
+		renderJson(getReturnJson(Code.OK, "设置成功", EMPTY_OBJECT));
+		return;
+	}
+	
 	//@SuppressWarnings("unused")
 	@Clear(AccessTokenInterceptor.class)
 	public void getAccessToken(){
-		if(DEBUG == false) return;
+		//String sign = ChinapayUtils.test();
+		//renderHtml(sign);
+		Push.test();
+		renderJson(getReturnJson(Code.OK, "OK", EMPTY_OBJECT));
+		return;
+		/*if(DEBUG == false) return;
 		renderJson(getReturnJson(Code.OK, AccessTokenInterceptor.getCurrentAccessToken(), EMPTY_OBJECT));
 		return;
+		*/
 	}
 	
 	@SuppressWarnings("unused")
