@@ -18,7 +18,6 @@ package io.jpress.model;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -29,7 +28,6 @@ import com.jfinal.log.Log;
 
 import io.jpress.model.base.BaseUser;
 import io.jpress.model.core.Table;
-import io.jpress.model.query.OptionQuery;
 import yjt.Utils;
 import yjt.location.Amap;
 import yjt.model.CreditLog;
@@ -86,6 +84,23 @@ public class User extends BaseUser<User> {
 		return "/user/" + getId();
 	}
 	
+	@Override
+	public Integer getCanBorrowMoney() {
+		int canBollowMoney = 0;
+		
+		//canBollowMoney = super.getCanBorrowMoney();
+		Date birthday = this.getBirthday();
+		if(birthday != null) {
+			canBollowMoney = (int)Option.calCanBorrowMoney(birthday);
+		}
+		
+		if("1".equals(getMobileStatus()) == false || this.getAuthBank() != 1 || this.getAuthCard() != 1) {
+			canBollowMoney = 0;
+		}
+		
+		return canBollowMoney;
+	}
+	
 	public HashMap<String, Object> getMemberProfile(){
 		HashMap<String, Object> profile = new HashMap<String, Object>();
 		BigInteger id = getId();
@@ -95,10 +110,6 @@ public class User extends BaseUser<User> {
 		String birthdayStr = (birthday != null) ? sdfYmd.format(birthday) : "";
 
 		int canBollowMoney = getCanBorrowMoney();
-		if("1".equals(getMobileStatus()) == false || this.getAuthBank() != 1 || this.getAuthCard() != 1) {
-			canBollowMoney = 0;
-		}
-		
 		BankcardDetail bankcardDetail = null;
 		String bankTypeJson = this.getBanktype();
 		if(bankTypeJson != null){

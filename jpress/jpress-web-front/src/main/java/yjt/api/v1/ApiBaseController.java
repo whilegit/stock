@@ -274,7 +274,12 @@ public class ApiBaseController extends BaseFrontController{
         //request.setOutId("yourOutId");
 
         //hint 此处可能会抛出异常，注意catch
-        SendSmsResponse sendSmsResponse = acsClient.getAcsResponse(request);
+        SendSmsResponse sendSmsResponse = null;
+        try {
+        	sendSmsResponse = acsClient.getAcsResponse(request);
+        } catch(Exception e) {
+        	
+        }
         return sendSmsResponse;
     }
 	

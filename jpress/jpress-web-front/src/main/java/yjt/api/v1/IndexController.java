@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -56,11 +58,11 @@ import yjt.verify.BankcardVerify;
 import yjt.verify.IdcardVerify;
 import yjt.verify.MobileVerify;
 import yjt.api.v1.Interceptor.*;
-import yjt.api.v1.UnionAppPay.ChinapayUtils;
 import yjt.api.v1.UnionAppPay.UnionAppPay;
 import yjt.api.v1.UnionAppPay.UnionAppPayMethod;
 import yjt.core.push.Push;
 import yjt.Utils;
+import yjt.ChinaPay.ChinapayUtils;
 import yjt.api.v1.Annotation.*;
 
 
@@ -180,7 +182,7 @@ public class IndexController extends ApiBaseController {
 		}
 		
 		Apply.Status[] stats = {Apply.Status.VALID};
-		List<Apply> applies = ApplyQuery.me().findList(null,null, stats, null, memberID);
+		List<Apply> applies = ApplyQuery.me().findList(null,null, stats, null, memberID, 1);
 		JSONObject[] applyList = new JSONObject[applies.size()];
 		for(int i = 0; i<applies.size(); i++){
 			applyList[i] = applies.get(i).getProfile();
@@ -820,11 +822,11 @@ public class IndexController extends ApiBaseController {
 		}*/
 		
 		double amount = Double.parseDouble(moneyStr);
-		if(amount > member.getCanBorrowMoney()) {
+		if(amount > member.getCanBorrowMoney() || ApplyQuery.me().checkExceedCredit(member, amount)) {
 			renderJson(getReturnJson(Code.ERROR, "超出了您的借款额度 " + member.getCanBorrowMoney() + " 元", EMPTY_OBJECT));
 			return;
 		}
-		
+				
 		int amountInt = (int)amount;
 		if(amountInt % 10 != 0){
 			renderJson(getReturnJson(Code.ERROR, "借款金额应是10的倍数", EMPTY_OBJECT));
@@ -1002,6 +1004,72 @@ public class IndexController extends ApiBaseController {
 		renderJson(getReturnJson(Code.OK, "交易已成达", apply.getProfile())); 
 		return;
 	}
+	
+	@Before(ParamInterceptor.class)
+	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
+	@ParamAnnotation(name = "applyID",  must = true, type = ParamInterceptor.Type.INT, min=1,chs = "申请号", minErrTips="申请号不存在")
+	@ParamAnnotation(name = "dealPwd",  must = true, type = ParamInterceptor.Type.STRING, minlen=1,chs = "交易密码", minlenErrTips="交易密码错误")
+	public void repayApply() {
+		BigInteger memberID = getParaToBigInteger("memberID");
+		User member = UserQuery.me().findByIdNoCache(memberID);
+		String dealPwd = getPara("dealPwd", "");
+		if(StrKit.notBlank(member.getDealPassword())){
+			if(StrKit.isBlank(dealPwd)){
+				renderJson(getReturnJson(Code.ERROR, "交易密码不能为空", EMPTY_OBJECT));
+				return;
+			}
+			if(!EncryptUtils.verlifyUser(member.getDealPassword(), member.getDealSalt(), dealPwd)){
+				renderJson(getReturnJson(Code.ERROR, "交易密码错误", EMPTY_OBJECT));
+				return;
+			}
+		} else {
+			renderJson(getReturnJson(Code.ERROR, "请先设置交易密码", EMPTY_OBJECT));
+			return;
+		}
+		
+		BigInteger applyID = getParaToBigInteger("applyID");
+		Apply apply = ApplyQuery.me().findById(applyID);
+		if(apply == null){
+			renderJson(getReturnJson(Code.ERROR, "交易不存在", EMPTY_OBJECT));
+			return;
+		}
+		Contract contract = ContractQuery.me().findByApplyId(applyID);
+		if(contract == null) {
+			renderJson(getReturnJson(Code.ERROR, "交易不存在", EMPTY_OBJECT));
+			return;
+		}
+		
+		if(memberID.equals(apply.getApplyUid()) == false) {
+			renderJson(getReturnJson(Code.ERROR, "您不是借款方，无权操作", EMPTY_OBJECT));
+			return;
+		}
+		
+		double change = contract.getAmount().doubleValue() + contract.calcInterest();
+		if(member.getAmount().doubleValue() - change  < 0) {
+			renderJson(getReturnJson(Code.TIMEOUT, "余额不足", EMPTY_OBJECT));
+			return;
+		}
+		
+		boolean flag = member.changeBalance(-change, "主动还款", BigInteger.ZERO, CreditLog.Platfrom.JIETIAO365);
+		if(flag == false) {
+			renderJson(getReturnJson(Code.ERROR, "还款失败", EMPTY_OBJECT));
+			log.error("用户 ("+memberID.toString()+") 主动还款失败(余额充足)。合约号：" + contract.getContractNumber());
+			return;
+		}
+		contract.setStatus(Contract.Status.FINISH.getIndex());
+		contract.setUpdateTime(new Date());
+		contract.update();
+		
+		User creditor = contract.getCreditUser();
+		if(creditor != null) {
+			flag = creditor.changeBalance(change, "收到还款", memberID, CreditLog.Platfrom.JIETIAO365);
+			log.error("用户 ("+creditor.getId().toString()+") 收款失败。合约号：" + contract.getContractNumber());
+		}
+		
+		renderJson(getReturnJson(Code.ERROR, "还款成功", apply.getProfile()));
+		return;
+	}
+	
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
@@ -1305,7 +1373,6 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "applyID",  must = true, type = ParamInterceptor.Type.INT, min=1, chs = "申请号", minErrTips="申请号不存在")
 	public void applyAgreement(){
 		BigInteger memberID = getParaToBigInteger("memberID");
 		BigInteger applyID = getParaToBigInteger("applyID");
@@ -1321,11 +1388,7 @@ public class IndexController extends ApiBaseController {
 			this.renderHtml(html);
 			return;
 		}
-		if(apply.getMaturityDate().getTime() < Utils.getTodayStartTime()){
-			String html = "<html><head><meta charset=\"utf8\"></head><body>申请已过期</body></html>";
-			this.renderHtml(html);
-			return;
-		}
+
 		User creditor = null;
 		User debitor = apply.getApplyUser();
 		Contract contract = null;
@@ -1377,15 +1440,23 @@ public class IndexController extends ApiBaseController {
 	
 	@Clear(AccessTokenInterceptor.class)
 	public void downloadAgreement(){
-		String source = getPara("source", "");
-		if(StrKit.isBlank(source)){
-			String html = "<html><head><meta charset=\"utf8\"></head><body>未指定资源</body></html>";
-			this.renderHtml(html);
-			return;
-		}
 		String deleted = getPara("deleted", "0");
 		String webRoot = PathKit.getWebRootPath();
-
+		
+		String source = getPara("source", "");
+		if(StrKit.isBlank(source)){
+			source = "/attachment/agreement/static/borrow-agreement.png";
+			deleted = "0";
+		} else {
+			//attachment/agreement/201710/09/90a5640788e64d75bf9e121ac0c32091.png
+			Pattern p = Pattern.compile("^attachment\\/agreement\\/20[12][0-9]{3}\\/[0-9]{2}\\/[0-9a-z]{10,}\\.png$");
+			Matcher m = p.matcher(source);
+			if(! m.find()){
+				source = "/attachment/agreement/static/borrow-agreement.png";
+				deleted = "0";
+			}
+		}
+		
 		RenderFile render = new RenderFile();
 		String mime = "application/octet-stream";
 		render.setContext(this.getRequest(), this.getResponse(), webRoot + source, mime, "agreement.png", "1".equals(deleted));
@@ -1791,10 +1862,10 @@ public class IndexController extends ApiBaseController {
 	//@SuppressWarnings("unused")
 	@Clear(AccessTokenInterceptor.class)
 	public void getAccessToken(){
-		//String sign = ChinapayUtils.test();
-		//renderHtml(sign);
-		Push.test();
-		renderJson(getReturnJson(Code.OK, "OK", EMPTY_OBJECT));
+		String sign = ChinapayUtils.test();
+		renderHtml(sign);
+		//Push.test();
+		//renderJson(getReturnJson(Code.OK, "OK", EMPTY_OBJECT));
 		return;
 		/*if(DEBUG == false) return;
 		renderJson(getReturnJson(Code.OK, AccessTokenInterceptor.getCurrentAccessToken(), EMPTY_OBJECT));

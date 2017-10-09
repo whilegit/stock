@@ -233,7 +233,7 @@ public class Utils {
 				httpPost.setHeader(entry.getName(), entry.getValue());
 			}
 		}
-		
+		httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded"); //Content-Type:
 		httpPost.setEntity(new UrlEncodedFormEntity(params));
 		CloseableHttpResponse response = httpclient.execute(httpPost);
 
@@ -257,41 +257,7 @@ public class Utils {
 		return result;
 	}
 	
-	public static String post(String url, String params, List<NameValuePair> headers) throws ClientProtocolException, IOException {
-		String result = null;
-		
-		CloseableHttpClient httpclient = HttpClients.createDefault();
-		HttpPost httpPost = new HttpPost(url);
-		if(headers != null && headers.size() > 0) {
-			Iterator<NameValuePair> it = headers.iterator();
-			while(it.hasNext()) {
-				NameValuePair entry = it.next();
-				httpPost.setHeader(entry.getName(), entry.getValue());
-			}
-		}
-		
-		httpPost.setEntity(new StringEntity(params));
-		CloseableHttpResponse response = httpclient.execute(httpPost);
 
-		try {
-			StatusLine status = response.getStatusLine();
-			int code = status.getStatusCode();
-			HttpEntity entity = response.getEntity();
-			
-			if(code == 200){
-				if(entity != null){
-					Charset charset = getContentTypeCharset(response);
-					if(charset == null) charset = Charset.forName("UTF-8");
-					result = IOUtils.toString(entity.getContent(), charset.name());
-				}
-			} else if(entity != null) {
-				EntityUtils.consume(entity);
-			}
-		} finally {
-			response.close();
-		}
-		return result;
-	}
 	
 	/**
 	 * HTTP Get方法加载页面
@@ -369,7 +335,7 @@ public class Utils {
 	 * @param response
 	 * @return
 	 */
-	protected static Charset getContentTypeCharset(CloseableHttpResponse response){
+	public static Charset getContentTypeCharset(CloseableHttpResponse response){
 		Charset charset = null;
 		Header contentType = response.getFirstHeader("Content-Type");
 		if(contentType != null){

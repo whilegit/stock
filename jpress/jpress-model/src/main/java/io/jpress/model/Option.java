@@ -89,7 +89,7 @@ public class Option extends BaseOption<Option> {
 		Collections.sort(ary);
 		
 		double amount = 0.0;
-		long age = (System.currentTimeMillis() - birthday.getTime()) / (86400 / 365);
+		long age = (System.currentTimeMillis() - birthday.getTime()) / (365L * 86400 * 1000 );
 		for(int i = 0; i<ary.size(); i++) {
 			CanBorrowMoneyItem item = ary.get(i);
 			if(age >= item.getAge()) {

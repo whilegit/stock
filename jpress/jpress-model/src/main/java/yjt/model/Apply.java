@@ -16,6 +16,7 @@ import yjt.model.base.BaseApply;
 @Table(tableName = "apply", primaryKey = "id")
 public class Apply extends BaseApply<Apply>{
 
+	public static final int applyValidExpire = 1; 
 	private static final long serialVersionUID = 1L;
 	protected static final Log log = Log.getLog(Apply.class);
 	
@@ -67,6 +68,13 @@ public class Apply extends BaseApply<Apply>{
 				default:
 					err = "不能识别的申请状态";
 					break;
+			}
+		}
+		if(err == null) {
+			Date create_time = this.getCreateTime();
+			long validTime = System.currentTimeMillis() - 86400L * 1000 * applyValidExpire;
+			if(create_time.getTime() < validTime ){
+				err = "该申请已过期";
 			}
 		}
 		return err;

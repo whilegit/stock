@@ -307,8 +307,10 @@ public class ContractQuery extends JBaseQuery{
 			JSONObject js = new JSONObject();
 			js.put("id", contract.getId().toString());
 			js.put("sn", contract.getContractNumber());
-			js.put("toUser", contract.getDebitId().toString());
-			js.put("fromUser", contract.getCreditId().toString());
+			js.put("toUserID", contract.getDebitId().toString());
+			js.put("toUser", contract.getDebitUser().getRealname());
+			js.put("fromUserID", contract.getCreditId().toString());
+			js.put("fromUser", contract.getCreditUser().getRealname());
 			js.put("money", Utils.bigDecimalRound2(contract.getAmount()));
 			js.put("rate", Utils.bigDecimalRound2(contract.getAnnualRate()));
 			String interest = "-";

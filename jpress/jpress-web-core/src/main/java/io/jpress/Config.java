@@ -35,6 +35,7 @@ import io.jpress.ui.freemarker.tag.TagsTag;
 import io.jpress.ui.freemarker.tag.TaxonomyTag;
 import io.jpress.ui.freemarker.tag.TaxonomysTag;
 import io.jpress.ui.freemarker.tag.UsersTag;
+import yjt.ChinaPay.ChinapayUtils;
 import yjt.core.perm.PermKit;
 
 public class Config extends JpressConfig {
@@ -63,6 +64,9 @@ public class Config extends JpressConfig {
 		
 		// 加载银联支付初始化参数
 		SDKConfig.getConfig().loadPropertiesFromSrc(); 
+		
+		// 加载ChinaPay的初始化参数
+		ChinapayUtils.init();
 		
 		MessageKit.sendMessage(Actions.JPRESS_STARTED);
 
