@@ -172,6 +172,7 @@ public class Contract extends BaseContract<Contract>{
 			ret.put("err", e.getMessage());
 			return ret;
 		}
+		
 		log.info("交易成功, 交易编号 " +  contract.getContractNumber() + ", 申请号 " + apply.getId().toString());
 		ret.put("contract", contract);
 		return ret;
@@ -272,7 +273,8 @@ public class Contract extends BaseContract<Contract>{
 		String font = webRoot + "/attachment/agreement/static/msyh.ttf";
 		String suffix = FileUtils.getSuffix(source);
 		String uuid = UUID.randomUUID().toString().replace("-", "");
-		String path = webRoot + "/attachment/agreement/" + Utils.toYm_d(new Date()) + "/" + uuid + suffix;
+		String validDir = contract != null ? "permenant/" : "";
+		String path = webRoot + "/attachment/agreement/" + validDir + Utils.toYm_d(new Date()) + "/" + uuid + suffix;
 		File newFile = new File(path);
 		if (!newFile.getParentFile().exists()) {
 			newFile.getParentFile().mkdirs();

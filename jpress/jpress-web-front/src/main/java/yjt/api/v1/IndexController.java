@@ -1,10 +1,8 @@
 package yjt.api.v1;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -58,6 +56,9 @@ import yjt.verify.BankcardVerify;
 import yjt.verify.IdcardVerify;
 import yjt.verify.MobileVerify;
 import yjt.api.v1.Interceptor.*;
+import yjt.api.v1.Push.BalanceAddPush;
+import yjt.api.v1.Push.ChargeFailPush;
+import yjt.api.v1.Push.LendoutPush;
 import yjt.api.v1.UnionAppPay.UnionAppPay;
 import yjt.api.v1.UnionAppPay.UnionAppPayMethod;
 import yjt.core.push.Push;
@@ -755,7 +756,7 @@ public class IndexController extends ApiBaseController {
 		Date maturity_date =Utils.getYmd(endDateStr);
 		
 		if(Utils.getTodayStartTime() + 3L * 86400 * 1000 > maturity_date.getTime()){
-			renderJson(getReturnJson(Code.ERROR, "还款日期不能早于三天之内", EMPTY_OBJECT));
+			renderJson(getReturnJson(Code.ERROR, "还款日期至少在1天之后", EMPTY_OBJECT));
 			return;
 		}
 
@@ -838,8 +839,8 @@ public class IndexController extends ApiBaseController {
 			return;
 		}
 		Date maturity_date =Utils.getYmd(endDateStr);
-		if(Utils.getTodayStartTime() + 3L * 86400 * 1000 > maturity_date.getTime()){
-			renderJson(getReturnJson(Code.ERROR, "还款日期不能早于三天之内", EMPTY_OBJECT));
+		if(Utils.getTodayStartTime() + 1L * 86400 * 1000 > maturity_date.getTime()){
+			renderJson(getReturnJson(Code.ERROR, "还款日期到少在1天之后", EMPTY_OBJECT));
 			return;
 		}
 		if(Utils.getTodayStartTime() + 365L * 86400 * 1000 < maturity_date.getTime()){
@@ -1001,6 +1002,19 @@ public class IndexController extends ApiBaseController {
 			renderJson(getReturnJson(Code.ERROR, result.getString("err"), EMPTY_OBJECT));
 			return;
 		}
+		
+		//发送推送
+		String debitorDeviceToken = debitor.getDeviceToken();
+		if(StrKit.notBlank(debitorDeviceToken)) {
+			BalanceAddPush bap = new BalanceAddPush(debitorDeviceToken, member.getRealname(), apply.getAmount().doubleValue());
+			Push.send(bap);
+		}
+		String creditorDeviceToken = member.getDeviceToken();
+		if(StrKit.notBlank(creditorDeviceToken)) {
+			LendoutPush lop = new LendoutPush(creditorDeviceToken, debitor.getRealname(), apply.getAmount().doubleValue());
+			Push.send(lop);
+		}
+		
 		renderJson(getReturnJson(Code.OK, "交易已成达", apply.getProfile())); 
 		return;
 	}
@@ -1064,6 +1078,18 @@ public class IndexController extends ApiBaseController {
 		if(creditor != null) {
 			flag = creditor.changeBalance(change, "收到还款", memberID, CreditLog.Platfrom.JIETIAO365);
 			log.error("用户 ("+creditor.getId().toString()+") 收款失败。合约号：" + contract.getContractNumber());
+		}
+		
+		//发送推送
+		String creditorDeviceToken = creditor.getDeviceToken();
+		if(StrKit.notBlank(creditorDeviceToken)) {
+			BalanceAddPush bap = new BalanceAddPush(creditorDeviceToken, member.getRealname(), apply.getAmount().doubleValue());
+			Push.send(bap);
+		}
+		String debitorDeviceToken = member.getDeviceToken();
+		if(StrKit.notBlank(debitorDeviceToken)) {
+			LendoutPush lop = new LendoutPush(debitorDeviceToken, creditor.getRealname(), apply.getAmount().doubleValue());
+			Push.send(lop);
 		}
 		
 		renderJson(getReturnJson(Code.ERROR, "还款成功", apply.getProfile()));
@@ -1378,13 +1404,15 @@ public class IndexController extends ApiBaseController {
 		BigInteger applyID = getParaToBigInteger("applyID");
 		Apply apply = ApplyQuery.me().findById(applyID);
 		if(apply == null){
-			String html = "<html><head><meta charset=\"utf8\"></head><body>申请不存在</body></html>";
+			String html = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>\r\n" + 
+					"<body>申请不存在</body></html>";
 			this.renderHtml(html);
 			return;
 		}
 		Apply.Status apply_status = Apply.Status.getEnum(apply.getStatus());
 		if(apply_status == Apply.Status.INVALID){
-			String html = "<html><head><meta charset=\"utf8\"></head><body>申请已无效</body></html>";
+			String html = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>\r\n" + 
+					"<body>申请已无效</body></html>";
 			this.renderHtml(html);
 			return;
 		}
@@ -1398,13 +1426,15 @@ public class IndexController extends ApiBaseController {
 			contract = ContractQuery.me().findById(contractId);
 			if(contract == null) {
 				log.info("apply.id(" + applyID.toString() + ") 已经成交但无对应的合约记录");
-				String html = "<html><head><meta charset=\"utf8\"></head><body>内部错误</body></html>";
+				String html = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>\r\n" + 
+						"<body>内部错误</body></html>";
 				this.renderHtml(html);
 				return;
 			}
 			creditor = contract.getCreditUser();
 			if(memberID.equals(creditor.getId()) == false && memberID.equals(debitor.getId()) == false) {
-				String html = "<html><head><meta charset=\"utf8\"></head><body>您不是当事方无权查看</body></html>";
+				String html = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>\r\n" + 
+						"<body>您不是当事方无权查看</body></html>";
 				this.renderHtml(html);
 				return;
 			}
@@ -1417,14 +1447,16 @@ public class IndexController extends ApiBaseController {
 		
 		String agreement = Contract.getAgreementFilePath(contract, apply, debitor, creditor, apply.getCreateTime(), creditorSign);
 		if(agreement == null) {
-			String html = "<html><head><meta charset=\"utf8\"></head><body>协议生成失败</body></html>";
+			String html = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>\r\n" + 
+					"<body>协议生成失败</body></html>";
 			this.renderHtml(html);
 			return;
 		}
 		
 		String webRoot = PathKit.getWebRootPath();
 		agreement = agreement.substring(webRoot.length());
-		String html = "<html><head><meta charset=\"utf8\"></head><body><img src=\""+Utils.toMedia(agreement)+"\">"+
+		String html = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>\r\n" + 
+				"<body><img src=\""+Utils.toMedia(agreement)+"\">"+
 				      "<a href=\"/v1/downloadAgreement?source="+agreement+"&deleted="+(contract != null ? "0" : "1")+"\">下载</a>" + 
 				"</body></html>";
 		this.renderHtml(html);
@@ -1449,10 +1481,13 @@ public class IndexController extends ApiBaseController {
 			deleted = "0";
 		} else {
 			//attachment/agreement/201710/09/90a5640788e64d75bf9e121ac0c32091.png
-			Pattern p = Pattern.compile("^attachment\\/agreement\\/20[12][0-9]{3}\\/[0-9]{2}\\/[0-9a-z]{10,}\\.png$");
+			Pattern p = Pattern.compile("^attachment\\/agreement\\/(permenant\\/)?20[12][0-9]{3}\\/[0-9]{2}\\/[0-9a-z]{10,}\\.png$");
 			Matcher m = p.matcher(source);
 			if(! m.find()){
 				source = "/attachment/agreement/static/borrow-agreement.png";
+				deleted = "0";
+			}
+			if(source.contains("permenant")) {
 				deleted = "0";
 			}
 		}
@@ -1862,10 +1897,18 @@ public class IndexController extends ApiBaseController {
 	//@SuppressWarnings("unused")
 	@Clear(AccessTokenInterceptor.class)
 	public void getAccessToken(){
-		String sign = ChinapayUtils.test();
-		renderHtml(sign);
+		//String sign = ChinapayUtils.test();
+		//renderHtml(sign);
 		//Push.test();
-		//renderJson(getReturnJson(Code.OK, "OK", EMPTY_OBJECT));
+		User user = UserQuery.me().findByIdNoCache(BigInteger.valueOf(8L));
+		BalanceAddPush bap = new BalanceAddPush(user.getDeviceToken(), "林忠仁", 100.0);
+		Push.send(bap);
+		ChargeFailPush cfp = new ChargeFailPush(user.getDeviceToken(), new Date(), 200.00);
+		Push.send(cfp);
+		LendoutPush lop = new LendoutPush(user.getDeviceToken(), "林忠仁", 300.0);
+		Push.send(lop);
+		
+		renderJson(getReturnJson(Code.OK, "OK", EMPTY_OBJECT));
 		return;
 		/*if(DEBUG == false) return;
 		renderJson(getReturnJson(Code.OK, AccessTokenInterceptor.getCurrentAccessToken(), EMPTY_OBJECT));
