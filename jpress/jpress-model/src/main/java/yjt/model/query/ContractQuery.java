@@ -10,11 +10,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.jfinal.kit.StrKit;
+import com.jfinal.plugin.activerecord.Page;
 
+import io.jpress.model.Content;
+import io.jpress.model.User;
 import io.jpress.model.core.Jdb;
 import io.jpress.model.query.JBaseQuery;
+import io.jpress.model.query.UserQuery;
+import io.jpress.utils.StringUtils;
 import yjt.Utils;
 import yjt.model.Contract;
 import yjt.model.Contract.Status;
@@ -78,6 +84,43 @@ public class ContractQuery extends JBaseQuery{
 		}else{
 			return DAO.find(sqlBuilder.toString(), params.toArray());
 		}
+	}
+	
+	public Page<Contract> paginateBySearch(int page, int pagesize, String keyword, String status) {
+		return paginate(page, pagesize, keyword, status);
+	}
+	
+	public Page<Contract> paginate(int page, int pagesize, String keyword, String status) {
+
+		String select = "select c.*";
+
+		StringBuilder sql = new StringBuilder(" from contract c");
+		sql.append(" left join user mc on c.credit_id = mc.`id`");
+		sql.append(" left join user md on c.`debit_id` = md.`id`");
+
+		LinkedList<Object> params = new LinkedList<Object>();
+
+		boolean needWhere = true;
+		if(StrKit.notBlank(status))
+			needWhere = appendIfNotEmpty(sql, "c.status", status, params, needWhere);
+		
+		if (StringUtils.isNotBlank(keyword)) {
+			needWhere = appendWhereOrAnd(sql, needWhere);
+			sql.append(" (c.`contract_number` like ? Or mc.`realname` like ? Or md.`realname` like ?)");
+			params.add("%" + keyword + "%");
+			params.add("%" + keyword + "%");
+			params.add("%" + keyword + "%");
+		}
+		
+		sql.append(" group by c.id");
+		sql.append(" ORDER BY c.id DESC");
+
+		if (params.isEmpty()) {
+			return DAO.paginate(page, pagesize, true, select, sql.toString());
+		}
+
+		System.out.println(JSON.toJSONString(params));
+		return DAO.paginate(page, pagesize, true, select, sql.toString(), params.toArray());
 	}
 	
 	public List<Contract> queryContracts(BigInteger debitor, BigInteger creditor, Contract.Status[] stats){
@@ -149,7 +192,12 @@ public class ContractQuery extends JBaseQuery{
 	}
 	
 	public long findCount(Contract.Status stat, String contractNumber, BigInteger debitUid, BigInteger creditUid) {
-		Contract.Status[] stats = { stat };
+		Contract.Status[] stats;
+		if(stat == null || stat == Contract.Status.ALL) {
+			stats = new Contract.Status[] {Status.ESTABLISH, Status.EXTEND, Status.FINISH, Status.LOST};
+		} else {
+			stats = new Contract.Status[] {stat};
+		}
 		return findCount(stats, contractNumber, debitUid, creditUid);
 	}
 	

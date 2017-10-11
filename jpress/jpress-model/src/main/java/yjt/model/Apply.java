@@ -25,6 +25,10 @@ public class Apply extends BaseApply<Apply>{
 		return UserQuery.me().findById(userId);
 	}
 	
+	public String getApplyUserRealname() {
+		return getApplyUser().getRealname();
+	}
+	
 	public JSONObject getProfile() {
 		JSONObject json = new JSONObject();
 		User user = getApplyUser();

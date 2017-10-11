@@ -103,6 +103,7 @@ public class _ContentController extends JBaseCRUDController<Content> {
 		setAttr("page", page);
 
 		String templateHtml = String.format("admin_content_index_%s.html", module.getName());
+
 		for (int i = 0; i < 2; i++) {
 			if (TemplateManager.me().existsFile(templateHtml)) {
 				setAttr("include", TemplateManager.me().currentTemplatePath() + "/" + templateHtml);
@@ -111,7 +112,6 @@ public class _ContentController extends JBaseCRUDController<Content> {
 			templateHtml = templateHtml.substring(0, templateHtml.lastIndexOf("_")) + ".html";
 		}
 		setAttr("include", "_index_include.html");
-
 	}
 
 	private void filterUI(BigInteger[] tids) {

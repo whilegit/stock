@@ -1899,7 +1899,6 @@ public class IndexController extends ApiBaseController {
 	public void getAccessToken(){
 		//String sign = ChinapayUtils.test();
 		//renderHtml(sign);
-		//Push.test();
 		User user = UserQuery.me().findByIdNoCache(BigInteger.valueOf(8L));
 		BalanceAddPush bap = new BalanceAddPush(user.getDeviceToken(), "林忠仁", 100.0);
 		Push.send(bap);

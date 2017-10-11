@@ -11,10 +11,12 @@ import com.aliyuncs.push.model.v20160801.PushRequest;
 import com.aliyuncs.push.model.v20160801.PushResponse;
 import com.aliyuncs.utils.ParameterHelper;
 import com.jfinal.kit.PropKit;
-
+import com.jfinal.log.Log;
 
 public class Push {
 
+	protected static final Log log = Log.getLog(Push.class);
+	
 	//AppKey：<br>24618912<br>应用名称：<br>365借条<br>应用类型：<br>不分端<br>AppSecret：<br>8839f54dd3b9b7e015e6be5f0e1aeaab
 	protected static String accessKeyId;
 	protected static String accessKeySecret;
@@ -29,7 +31,7 @@ public class Push {
 	}
 	
 	public static void send(PushMessage message) {
-
+		
         IClientProfile profile = DefaultProfile.getProfile("cn-hangzhou", accessKeyId, accessKeySecret);
         DefaultAcsClient client = new DefaultAcsClient(profile);
         PushRequest pushRequest = new PushRequest();
@@ -50,14 +52,14 @@ public class Push {
         // 推送配置: iOS
         pushRequest.setIOSBadge(message.getiOSBadge()); // iOS应用图标右上角角标
         pushRequest.setIOSMusic("default"); // iOS通知声音
-        pushRequest.setIOSSubtitle("iOS10 subtitle");//iOS10通知副标题的内容
+        pushRequest.setIOSSubtitle("");//iOS10通知副标题的内容
         pushRequest.setIOSNotificationCategory("iOS10 Notification Category");//指定iOS10通知Category
-        /*pushRequest.setIOSMutableContent(true);//是否允许扩展iOS通知内容
+        pushRequest.setIOSMutableContent(true);//是否允许扩展iOS通知内容
         pushRequest.setIOSApnsEnv("DEV");//iOS的通知是通过APNs中心来发送的，需要填写对应的环境信息。"DEV" : 表示开发环境 "PRODUCT" : 表示生产环境
         pushRequest.setIOSRemind(true); // 消息推送时设备不在线（既与移动推送的服务端的长连接通道不通），则这条推送会做为通知，通过苹果的APNs通道送达一次。注意：离线消息转通知仅适用于生产环境
         pushRequest.setIOSRemindBody("iOSRemindBody");//iOS消息转通知时使用的iOS通知内容，仅当iOSApnsEnv=PRODUCT && iOSRemind为true时有效
         pushRequest.setIOSExtParameters("{\"_ENV_\":\"DEV\",\"k2\":\"v2\"}"); //通知的扩展属性(注意 : 该参数要以json map的格式传入,否则会解析出错)
-        */
+        /* */
         
         // 推送配置: Android
         pushRequest.setAndroidNotifyType(message.getAndroidNotifyType());//通知的提醒方式 "VIBRATE" : 震动 "SOUND" : 声音 "BOTH" : 声音和震动 NONE : 静音
@@ -82,13 +84,11 @@ public class Push {
         PushResponse pushResponse;
 		try {
 			pushResponse = client.getAcsResponse(pushRequest);
-			System.out.printf("RequestId: %s, MessageID: %s\n",
-			pushResponse.getRequestId(), pushResponse.getMessageId());
-		} catch (ServerException e) {
+			String result = String.format("RequestId: %s, MessageID: %s\n",pushResponse.getRequestId(), pushResponse.getMessageId());
+			log.info(result);
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ClientException e) {
-			// TODO Auto-generated catch block
+			log.info("Push失败");
 			e.printStackTrace();
 		}
        
