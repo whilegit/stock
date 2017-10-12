@@ -1,0 +1,110 @@
+<section class="content-header">
+	<h1>
+		所有申请
+	</h1>
+</section>
+
+<!-- Main content -->
+<section class="content">
+
+	<div class="row content-row">
+		<ul class="list-inline" style="float: left">
+			<li class="all">
+				<a class="current" href="${CPATH}/admin/apply?m=${m!}&p=${p!}&c=${c!}">
+					全部 <span class="count">(${count!"0"})</span>
+				</a>
+				|
+			</li>
+			<li class="publish">
+				<a href="${CPATH}/admin/apply?m=${m!}&p=${p!}&c=${c!}&s=${StatusDealedCode!}">
+					已达成合约 <span class="count">(${dealed_count!"0"})</span>
+				</a>
+				|
+			</li>
+			<li class="publish">
+				<a href="${CPATH}/admin/apply?m=${m!}&p=${p!}&c=${c!}&s=${StatusValidCode!}">
+					等待成交 <span class="count">(${valid_count!"0"})</span>
+				</a>
+				|
+			</li>
+			<li class="trash">
+				<a href="${CPATH}/admin/apply?m=${m!}&p=${p!}&c=${c!}&s=${StatusTimeoutCode!}">
+					过期 <span class="count">(${timeout_count!"0"})</span>
+				</a>
+			</li>
+			<li class="trash">
+				<a href="${CPATH}/admin/apply?m=${m!}&p=${p!}&c=${c!}&s=${StatusInvalidCode!}">
+					无效 <span class="count">(${invalid_count!"0"})</span>
+				</a>
+			</li>
+		</ul>
+
+
+		<form class="form-horizontal" method="POST" style="float: right" action="${CPATH}/admin/apply?m=${m!}&p=${p!}&c=${c!}&s=${s!}">
+			<div class="input-group input-group-sm">
+				<input id="post-search-input" class="form-control" type="search" value="${k!}" name="k" placeholder="借款人姓名">&nbsp;&nbsp;
+				<input id="search-submit" class="btn btn-default btn-sm" type="submit" value="搜索">
+			</div>
+		</form>
+	</div>
+					
+	<div class="box">
+		<!-- /.box-header -->
+		<div class="box-body">
+			<form action="" method="POST" id="form">
+				<input type="hidden" name="ucode" value="${ucode}">
+				<table class="table table-striped" style="word-break:break-all">
+					<thead>
+						<tr>
+							<th style="width:20px;"><input name="dataItem" onclick="checkAll(this)" type="checkbox" value="0"></th>
+							<th style="width:8%">申请人</th>
+							<th style="width:8%">金额</th>
+							<th style="width:8%">年化利率</th> 
+							<th>还款日期</th>
+							<th>用途</th>
+							<th>发布对象</th>
+							<th>视频</th>
+							<th>创建日期</th>
+							<th>当前状态</th>
+						</tr>
+					</thead>
+					<tbody>
+						<#if page??> 
+							<#list page.getList() as bean>
+								<tr class="jp-onmouse">
+									<td><input name="dataItem" type="checkbox" value="${bean.id}"></td>
+									<td>${bean.applyUser.realname!}</td>
+									<td>${bean.amount?string("0.00")}</td>
+									<td>${bean.annual_rate?string("0.00")}%</td>
+									<td>${bean.maturity_date?string("yyyy-MM-dd")}</td>
+									<td>${bean.purposeChs}</td>
+									<td>${bean.toFriendsList!}</td>
+									<td>${bean.videoMedia}</td>
+									<td>${bean.create_time?string("yyyy-MM-dd HH:mm")}</td>
+									<td>
+										<#if bean.status == 0>无效<#elseif bean.status == 1><#if bean.timeoutStatus == 1>过期<#else>等待交易</#if><#elseif bean.status == 2>已达成交易<#elseif bean.status == 3>等待审核</#if>
+									</td>
+								</tr>
+							</#list> 
+						</#if>
+					</tbody>
+				</table>
+				</form>
+		</div>
+		<!-- /.box-body -->
+	</div>
+	
+	<div class="cf">
+		<div class="pull-right " >
+			
+			<#if page??> 
+			<#include "../_inc/_paginate.html" /> 
+			<@paginate currentPage=page.pageNumber totalPage=page.totalPage actionUrl="?p="+(p!)+"&c="+(c!)+"&m="+(m!)+"&t="+(t!)+"&s="+(s!)+"&k="+(k!)+"&tids="+(tids!)+"&page="/> 
+			</#if>
+
+		</div>
+	</div>
+		
+	<!-- /.row -->
+</section>
+<!-- /.content -->

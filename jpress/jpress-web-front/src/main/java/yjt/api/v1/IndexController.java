@@ -1041,17 +1041,26 @@ public class IndexController extends ApiBaseController {
 			return;
 		}
 		
+		
 		BigInteger applyID = getParaToBigInteger("applyID");
+		
 		Apply apply = ApplyQuery.me().findById(applyID);
 		if(apply == null){
 			renderJson(getReturnJson(Code.ERROR, "交易不存在", EMPTY_OBJECT));
 			return;
 		}
-		Contract contract = ContractQuery.me().findByApplyId(applyID);
+		Contract contract = ContractQuery.me().findById(apply.getContractId());
 		if(contract == null) {
 			renderJson(getReturnJson(Code.ERROR, "交易不存在", EMPTY_OBJECT));
 			return;
 		}
+		
+		
+		if(Contract.Status.getEnum(contract.getStatus()) == Contract.Status.FINISH) {
+			renderJson(getReturnJson(Code.ERROR, "已经还款，不要重复还款", EMPTY_OBJECT));
+			return;
+		}
+		
 		
 		if(memberID.equals(apply.getApplyUid()) == false) {
 			renderJson(getReturnJson(Code.ERROR, "您不是借款方，无权操作", EMPTY_OBJECT));
@@ -1059,8 +1068,14 @@ public class IndexController extends ApiBaseController {
 		}
 		
 		double change = contract.getAmount().doubleValue() + contract.calcInterest();
+		log.info("apply.id" + applyID.toString());
+		log.info("contract.id" + contract.getId().toString());
+		log.info("contract.getAmount().doubleValue() = " + contract.getAmount().doubleValue());
+		log.info("contract.calcInterest() = " + contract.calcInterest());
+		log.info("member.getAmount().doubleValue() " + member.getAmount().doubleValue());
+		
 		if(member.getAmount().doubleValue() - change  < 0) {
-			renderJson(getReturnJson(Code.TIMEOUT, "余额不足", EMPTY_OBJECT));
+			renderJson(getReturnJson(Code.ERROR, "余额不足，请充值", EMPTY_OBJECT));
 			return;
 		}
 		
@@ -1092,7 +1107,7 @@ public class IndexController extends ApiBaseController {
 			Push.send(lop);
 		}
 		
-		renderJson(getReturnJson(Code.ERROR, "还款成功", apply.getProfile()));
+		renderJson(getReturnJson(Code.OK, "还款成功", apply.getProfile()));
 		return;
 	}
 	

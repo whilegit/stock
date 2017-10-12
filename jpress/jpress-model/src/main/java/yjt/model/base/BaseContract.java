@@ -5,6 +5,7 @@ package yjt.model.base;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Date;
 
 import com.jfinal.plugin.activerecord.IBean;
 import com.jfinal.plugin.ehcache.CacheKit;
@@ -14,6 +15,8 @@ import io.jpress.message.MessageKit;
 import io.jpress.model.Metadata;
 import io.jpress.model.core.JModel;
 import io.jpress.model.query.MetaDataQuery;
+import yjt.Utils;
+import yjt.model.Contract;
 
 @SuppressWarnings("serial")
 public class BaseContract<M extends BaseContract<M>> extends JModel<M> implements IBean {
@@ -278,13 +281,15 @@ public class BaseContract<M extends BaseContract<M>> extends JModel<M> implement
 		return get("approval_time3");
 	}
 	
+	public Integer getStatus(){		
+		return get("status");
+	}
 	
 	public void setStatus(int status){
 		set("status", status);
 	}
-	public int getStatus(){
-		return get("status");
-	}
+	
+
 	
 	public void setRepaymentStatus(int repaymentStatus){
 		set("repayment_status", repaymentStatus);
@@ -297,7 +302,10 @@ public class BaseContract<M extends BaseContract<M>> extends JModel<M> implement
 		set("apply_id", applyId);
 	}
 	public BigInteger getApplyId(){
-		return get("apply_id");
+		Object obj = get("apply_id");
+		if(obj instanceof Long) obj = BigInteger.valueOf((long) obj);
+		else if(obj instanceof Integer) obj = BigInteger.valueOf((Integer)obj);
+		return (BigInteger)obj;
 	}
 	
 	

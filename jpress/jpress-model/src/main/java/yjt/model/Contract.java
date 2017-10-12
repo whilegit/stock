@@ -203,9 +203,33 @@ public class Contract extends BaseContract<Contract>{
 		return json;
 	}
 	
+	public Integer getStatus() {
+		Integer phy = super.getStatus();
+		Date maturityDate = getMaturityDate();
+		if(phy == Contract.Status.ESTABLISH.getIndex()) {
+			Date today = new Date(Utils.getTodayStartTime());
+			if(maturityDate.getTime() < today.getTime()) {
+				phy = Contract.Status.EXTEND.getIndex();
+			}
+		}
+		return phy;
+	}
+	
+	
 	public double calcInterest() {
 		double insteret = 0.0;
-		int loan_term = Utils.days(getValueDate(), getMaturityDate());
+		
+		Date maturityDate = getMaturityDate();
+		if(this.getStatus() == Contract.Status.ESTABLISH.getIndex() 
+				|| this.getStatus() == Contract.Status.EXTEND.getIndex()
+				|| this.getStatus() == Contract.Status.LOST.getIndex()) {
+			Date today = new Date(Utils.getTodayStartTime());
+			if(maturityDate.getTime() < today.getTime()) {
+				maturityDate = today;
+			}
+		}
+		
+		int loan_term = Utils.days(getValueDate(), maturityDate);
 		insteret = getAmount().doubleValue() * (Math.pow(getAnnualRate().doubleValue() / 100.0 + 1.00, ((double)loan_term) / 365.0) - 1.0);
 		return insteret;
 	}
@@ -348,8 +372,8 @@ public class Contract extends BaseContract<Contract>{
 	
 	public static enum Status{
 		//状态，0合约初订立（贷方资金冻结），1风控一批准，2风控二批准，3风控三批准，4资金划转前关闭，5资金划转成功贷款正式进入还款期，6正常结束，7展期, 8损失,
-		INIT("合约初订立", 0), RISK1("风控1", 1), RISK2("风控2", 2), RISK3("风控3", 3), CLOSE("合约关闭", 4), 
-		ESTABLISH("还款期", 5), FINISH("还款结束", 6), EXTEND("展期中", 7), LOST("已损失", 8),ALL("全部",100);
+		INIT("初订立", 0), RISK1("风控1", 1), RISK2("风控2", 2), RISK3("风控3", 3), CLOSE("合约关闭", 4), 
+		ESTABLISH("使用中", 5), FINISH("已还完", 6), EXTEND("已逾期", 7), LOST("已损失", 8),ALL("全部",100);
 		private String name;
 		private int index;
 	    private Status(String name, int index) {  

@@ -204,19 +204,21 @@ public class ContractQuery extends JBaseQuery{
 	
 	public boolean isContractNumberExists(String contractNumber) {
 		LinkedList<Object> params = new LinkedList<Object>();
-		StringBuilder sqlBuilder = new StringBuilder("Select id From contract Where contract_number = ? Order By id Desc Limit 1");
+		StringBuilder sqlBuilder = new StringBuilder("Select * From contract Where contract_number = ? Order By id Desc Limit 1");
 		params.add(contractNumber);
 		Contract contract = DAO.findFirst(sqlBuilder.toString(), params);
 		return contract != null;
 	}
 	
+	/*
 	public Contract findByApplyId(final BigInteger applyId){
 		LinkedList<Object> params = new LinkedList<Object>();
-		StringBuilder sqlBuilder = new StringBuilder("Select id From contract Where apply_id = ? And status>=5 Order By id Desc Limit 1");
+		StringBuilder sqlBuilder = new StringBuilder("Select * From contract Where apply_id = ? And status>=5 Order By id Desc Limit 1");
 		params.add(applyId.toString());
 		Contract contract = DAO.findFirst(sqlBuilder.toString(), params);
 		return contract;
 	}
+	*/
 	
 	/**
 	 * 查询借入或贷出的总金额，仅统计正处于还款期或展期的金额
@@ -340,7 +342,7 @@ public class ContractQuery extends JBaseQuery{
 	
 	public JSONObject inOutList(BigInteger uid, String type, int page, int pageSize) {
 		JSONObject  ret = new JSONObject();
-		Contract.Status[] curStats = {Status.ESTABLISH, Status.EXTEND};
+		Contract.Status[] curStats = {Status.ESTABLISH, Status.EXTEND, Status.FINISH, Status.LOST};
 		List<Contract> list = null;
 		long totalItems = 0;
 		if(type.equals("in")) {
@@ -353,7 +355,7 @@ public class ContractQuery extends JBaseQuery{
 		List<JSONObject>  result = new ArrayList<JSONObject>();
 		for(Contract contract : list) {
 			JSONObject js = new JSONObject();
-			js.put("id", contract.getId().toString());
+			js.put("id", contract.getApplyId().toString());
 			js.put("sn", contract.getContractNumber());
 			js.put("toUserID", contract.getDebitId().toString());
 			js.put("toUser", contract.getDebitUser().getRealname());
@@ -372,6 +374,8 @@ public class ContractQuery extends JBaseQuery{
 			js.put("startDate", Utils.toYmd(contract.getValueDate()));
 			js.put("endDate", Utils.toYmd(contract.getMaturityDate()));
 			js.put("day", ""+Utils.days(new Date(), contract.getMaturityDate()));
+			js.put("status", "" + contract.getStatus());
+			js.put("statusStr", Contract.Status.getEnum(contract.getStatus()).getName());
 			result.add(js);
 		}
 		ret.put("page", "" + page);

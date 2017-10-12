@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.alibaba.fastjson.JSONObject;
+import com.jfinal.kit.StrKit;
 import com.jfinal.log.Log;
 
 import io.jpress.model.User;
@@ -74,15 +75,48 @@ public class Apply extends BaseApply<Apply>{
 					break;
 			}
 		}
-		if(err == null) {
-			Date create_time = this.getCreateTime();
-			long validTime = System.currentTimeMillis() - 86400L * 1000 * applyValidExpire;
-			if(create_time.getTime() < validTime ){
-				err = "该申请已过期";
-			}
+		if(err == null && isTimeout()) {
+			err = "该申请已过期";
 		}
 		return err;
 	}
+	
+	public boolean isTimeout() {
+		boolean ret = false;
+		Date create_time = this.getCreateTime();
+		long validTime = System.currentTimeMillis() - 86400L * 1000 * applyValidExpire;
+		if(create_time.getTime() < validTime ){
+			ret = true;
+		}
+		return ret;
+	}
+	
+	public int getTimeoutStatus() {
+		return isTimeout() ? 1 : 0;
+	}
+	public String getPurposeChs() {
+		return Apply.Purpose.getEnum(this.getPurpose()).getName();
+	}
+	public String getVideoMedia() {
+		return StrKit.notBlank(getVideo()) ? "<a href='"+Utils.toMedia(getVideo())+"'>查看</a>" : "无";
+	}
+	public String getToFriendsList() {
+		String ret = "";
+		List<BigInteger> toFriends = getToFriends();
+		if(toFriends == null || toFriends.size() == 0) return ret;
+		List<User> usrs = UserQuery.me().findList(toFriends);
+		if(usrs == null || usrs.size() == 0) return ret;
+		
+		StringBuffer sb = new StringBuffer();
+		for(User u : usrs) {
+			String href = "/admin/user/edit?id=" + u.getId().toString() + "&c=list&p=user";
+			sb.append("<a href='"+Utils.toMedia(href) + "'>"+u.getRealname()+"</a>,");
+		}
+		ret = sb.toString();
+		ret = ret.substring(0, ret.length() - 1);
+		return ret;
+	}
+	
 	
 	public static enum Status{
 		//WAIT状态表示：贷方无can_lend权限，其所达成的交易必须要经过后台核准。
