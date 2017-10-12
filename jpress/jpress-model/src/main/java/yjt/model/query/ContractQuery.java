@@ -149,7 +149,7 @@ public class ContractQuery extends JBaseQuery{
 			params.add(debitor.toString());
 		}
 		if(creditor != null) {
-			sqlBuilder.append(" And debit_id = ? ");
+			sqlBuilder.append(" And credit_id = ? ");
 			params.add(creditor.toString());
 		}
 		
@@ -289,7 +289,20 @@ public class ContractQuery extends JBaseQuery{
 		return queryAmount(null, creditUid, stats);
 	}
 	
-
+	/**
+	 * 统计用户可以收到的所有利息（包括未还款的利息)
+	 * @param uid
+	 * @return
+	 */
+	public double queryInterest(BigInteger creditor){
+		double interest = 0.0;
+		Contract.Status[] stats = {Contract.Status.FINISH, Contract.Status.ESTABLISH, Contract.Status.EXTEND};
+		List<Contract> list = queryContracts(null, creditor, stats);
+		for(Contract c : list){
+			interest += c.calcInterest();
+		}
+		return interest;
+	}
 
 	
 	public long queryDiffOppositors(BigInteger uid){

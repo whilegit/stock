@@ -755,7 +755,7 @@ public class IndexController extends ApiBaseController {
 		double annual_rate = Double.parseDouble(rate);
 		Date maturity_date =Utils.getYmd(endDateStr);
 		
-		if(Utils.getTodayStartTime() + 3L * 86400 * 1000 > maturity_date.getTime()){
+		if(Utils.getTodayStartTime() + 1L * 86400 * 1000 > maturity_date.getTime()){
 			renderJson(getReturnJson(Code.ERROR, "还款日期至少在1天之后", EMPTY_OBJECT));
 			return;
 		}
@@ -770,6 +770,7 @@ public class IndexController extends ApiBaseController {
 		contract.setMaturityDate(maturity_date);
 		contract.setAmount(amount);
 		contract.setAnnualRate(annual_rate);
+		contract.setStatus(Contract.Status.ESTABLISH.getIndex());
 		double interest = contract.calcInterest();
 		JSONObject json = new JSONObject();
 		json.put("money", String.format("%.2f", interest + amount));
@@ -1098,12 +1099,12 @@ public class IndexController extends ApiBaseController {
 		//发送推送
 		String creditorDeviceToken = creditor.getDeviceToken();
 		if(StrKit.notBlank(creditorDeviceToken)) {
-			BalanceAddPush bap = new BalanceAddPush(creditorDeviceToken, member.getRealname(), apply.getAmount().doubleValue());
+			BalanceAddPush bap = new BalanceAddPush(creditorDeviceToken, member.getRealname(), change);
 			Push.send(bap);
 		}
 		String debitorDeviceToken = member.getDeviceToken();
 		if(StrKit.notBlank(debitorDeviceToken)) {
-			LendoutPush lop = new LendoutPush(debitorDeviceToken, creditor.getRealname(), apply.getAmount().doubleValue());
+			LendoutPush lop = new LendoutPush(debitorDeviceToken, creditor.getRealname(), change);
 			Push.send(lop);
 		}
 		
@@ -1152,13 +1153,15 @@ public class IndexController extends ApiBaseController {
 	@ParamAnnotation(name = "type",  must = true, type = ParamInterceptor.Type.ENUM_STRING, allow_list= {"bank","weixin","alipay"},chs = "提现类型")
 	@ParamAnnotation(name = "account",  must = true, type = ParamInterceptor.Type.STRING, minlen=12, maxlen=30, chs = "银行卡号", minlenErrTips="银行卡号错误", maxlenErrTips="银行卡号错误")
 	@ParamAnnotation(name = "name",  must = true, type = ParamInterceptor.Type.STRING, minlen=2, maxlen=4, chs = "真实姓名", minlenErrTips="姓名不少于两个汉字", maxlenErrTips="姓名不超过四个汉字")
-	@ParamAnnotation(name = "money",  must = true, type = ParamInterceptor.Type.INT, min=10,chs = "提现金额", minErrTips="提现金额不少于10元")
+	@ParamAnnotation(name = "money",  must = true, type = ParamInterceptor.Type.DOUBLE, mind=10.0,chs = "提现金额", minErrTips="提现金额不少于10元")
 	public void userWithdraw() {
 		BigInteger memberID = getParaToBigInteger("memberID");
 		String type = getPara("type");
 		String account = getPara("account");
 		String realname = getPara("name");
-		int money = getParaToInt("money");
+		String moneyStr = getPara("money");
+		double money =  Double.parseDouble(moneyStr);
+		
 		
 		User member = UserQuery.me().findByIdNoCache(memberID);
 		if(!realname.equals(member.getRealname())) {
@@ -1470,9 +1473,9 @@ public class IndexController extends ApiBaseController {
 		
 		String webRoot = PathKit.getWebRootPath();
 		agreement = agreement.substring(webRoot.length());
-		String html = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>\r\n" + 
-				"<body><img src=\""+Utils.toMedia(agreement)+"\">"+
-				      "<a href=\"/v1/downloadAgreement?source="+agreement+"&deleted="+(contract != null ? "0" : "1")+"\">下载</a>" + 
+		String html = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=2, user-scalable=yes\"></head>\r\n" + 
+				"<body　style=\"padding:0px;margin:0px;\"><div　style=\"padding:0px;margin:0px;\"><img width=\"100%\" src=\""+Utils.toMedia(agreement)+"\"></div>"+
+				      "<a style=\"position:fixed;bottom:2%;right:2%;padding:0px;margin:0px;\" href=\"/v1/downloadAgreement?source="+agreement+"&deleted="+(contract != null ? "0" : "1")+"\">下载</a>" + 
 				"</body></html>";
 		this.renderHtml(html);
 		return;
@@ -1496,7 +1499,7 @@ public class IndexController extends ApiBaseController {
 			deleted = "0";
 		} else {
 			//attachment/agreement/201710/09/90a5640788e64d75bf9e121ac0c32091.png
-			Pattern p = Pattern.compile("^attachment\\/agreement\\/(permenant\\/)?20[12][0-9]{3}\\/[0-9]{2}\\/[0-9a-z]{10,}\\.png$");
+			Pattern p = Pattern.compile("^\\/attachment\\/agreement\\/(permenant\\/)?20[12][0-9]{3}\\/[0-9]{2}\\/[0-9a-z]{10,}\\.png$");
 			Matcher m = p.matcher(source);
 			if(! m.find()){
 				source = "/attachment/agreement/static/borrow-agreement.png";

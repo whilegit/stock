@@ -144,11 +144,11 @@ public class BaseWithdraw<M extends BaseWithdraw<M>> extends JModel<M> implement
 		return get("type");
 	}
 	
-	public void setMoney(int money) {
+	public void setMoney(Double money) {
 		set("money", money);
 	}
 	
-	public int getMoney() {
+	public Double getMoney() {
 		return get("money");
 	}
 	

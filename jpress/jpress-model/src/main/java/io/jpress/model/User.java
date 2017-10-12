@@ -28,6 +28,7 @@ import com.jfinal.log.Log;
 
 import io.jpress.model.base.BaseUser;
 import io.jpress.model.core.Table;
+import io.jpress.model.query.UserQuery;
 import yjt.Utils;
 import yjt.location.Amap;
 import yjt.model.CreditLog;
@@ -136,7 +137,7 @@ public class User extends BaseUser<User> {
 		profile.put("income", String.format("%.2f", income));
 		profile.put("outcome", String.format("%.2f", outcome));
 		profile.put("balance", yjt.Utils.bigDecimalRound2(getAmount()));
-		profile.put("interest", yjt.Utils.bigDecimalRound2(getInterest()));
+		profile.put("interest", String.format("%.2f", ContractQuery.me().queryInterest(getId())));
 		profile.put("canBorrowMoney", canBollowMoney + ".00");
 		profile.put("canLend", "" + getCanLend());
 		profile.put("sysPush", ""+getSysPush());
