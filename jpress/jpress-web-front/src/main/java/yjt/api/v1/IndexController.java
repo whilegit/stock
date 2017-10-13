@@ -158,21 +158,8 @@ public class IndexController extends ApiBaseController {
 	
 	@Before(ParamInterceptor.class)
 	@ParamAnnotation(name = "memberToken",  must = true, type = ParamInterceptor.Type.MEMBER_TOKEN, chs = "用户令牌")
-	@ParamAnnotation(name = "lat",  must = false, type = ParamInterceptor.Type.DOUBLE, mind=1.0, maxd=90.0,  chs = "纬度", minErrTips="纬度太小", maxErrTips="纬度太大")
-	@ParamAnnotation(name = "lng",  must = false, type = ParamInterceptor.Type.DOUBLE, mind=1.0, maxd=180.0, chs = "经度", minErrTips="经度太小", maxErrTips="经度太大")
 	public void index(){
-		BigInteger memberID = getParaToBigInteger("memberID");
-		String latStr = this.getPara("lat");
-		String lngStr = this.getPara("lng");
-		if(StrKit.notBlank(latStr, lngStr)){
-			double lat = Double.valueOf(latStr);
-			double lng = Double.valueOf(lngStr);
-			User member = UserQuery.me().findById(memberID);
-			member.setLat(lat);
-			member.setLng(lng);
-			member.update();
-		}
-		
+		BigInteger memberID = getParaToBigInteger("memberID");		
 		List<Ad> ads = AdQuery.me().findList();
 		JSONObject[] adList = new JSONObject[ads.size()];
 		for(int i = 0; i<ads.size(); i++){
@@ -1422,14 +1409,14 @@ public class IndexController extends ApiBaseController {
 		BigInteger applyID = getParaToBigInteger("applyID");
 		Apply apply = ApplyQuery.me().findById(applyID);
 		if(apply == null){
-			String html = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>\r\n" + 
+			String html = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>借款服务协议</title></head>\r\n" + 
 					"<body>申请不存在</body></html>";
 			this.renderHtml(html);
 			return;
 		}
 		Apply.Status apply_status = Apply.Status.getEnum(apply.getStatus());
 		if(apply_status == Apply.Status.INVALID){
-			String html = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>\r\n" + 
+			String html = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>借款服务协议</title></head>\r\n" + 
 					"<body>申请已无效</body></html>";
 			this.renderHtml(html);
 			return;
@@ -1444,14 +1431,14 @@ public class IndexController extends ApiBaseController {
 			contract = ContractQuery.me().findById(contractId);
 			if(contract == null) {
 				log.info("apply.id(" + applyID.toString() + ") 已经成交但无对应的合约记录");
-				String html = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>\r\n" + 
+				String html = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>借款服务协议</title></head>\r\n" + 
 						"<body>内部错误</body></html>";
 				this.renderHtml(html);
 				return;
 			}
 			creditor = contract.getCreditUser();
 			if(memberID.equals(creditor.getId()) == false && memberID.equals(debitor.getId()) == false) {
-				String html = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>\r\n" + 
+				String html = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>借款服务协议</title></head>\r\n" + 
 						"<body>您不是当事方无权查看</body></html>";
 				this.renderHtml(html);
 				return;
@@ -1465,7 +1452,7 @@ public class IndexController extends ApiBaseController {
 		
 		String agreement = Contract.getAgreementFilePath(contract, apply, debitor, creditor, apply.getCreateTime(), creditorSign);
 		if(agreement == null) {
-			String html = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head>\r\n" + 
+			String html = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>借款服务协议</title></head>\r\n" + 
 					"<body>协议生成失败</body></html>";
 			this.renderHtml(html);
 			return;
@@ -1473,19 +1460,12 @@ public class IndexController extends ApiBaseController {
 		
 		String webRoot = PathKit.getWebRootPath();
 		agreement = agreement.substring(webRoot.length());
-		String html = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=2, user-scalable=yes\"></head>\r\n" + 
+		String html = "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=2, user-scalable=yes\"><title>借款服务协议</title></head>\r\n" + 
 				"<body　style=\"padding:0px;margin:0px;\"><div　style=\"padding:0px;margin:0px;\"><img width=\"100%\" src=\""+Utils.toMedia(agreement)+"\"></div>"+
-				      "<a style=\"position:fixed;bottom:2%;right:2%;padding:0px;margin:0px;\" href=\"/v1/downloadAgreement?source="+agreement+"&deleted="+(contract != null ? "0" : "1")+"\">下载</a>" + 
+				      "<a style=\"position:fixed;bottom:2%;right:2%;padding:0px;margin:0px;\" href=\"/v1/downloadAgreement?source="+agreement+"&deleted=0\">下载</a>" + 
 				"</body></html>";
 		this.renderHtml(html);
 		return;
-		
-		/*
-		RenderFile render = new RenderFile();
-		String mime = "application/octet-stream";
-		render.setContext(this.getRequest(), this.getResponse(), agreement, mime, (contract == null));
-		this.render(render);
-		 */
 	}
 	
 	@Clear(AccessTokenInterceptor.class)
@@ -1511,7 +1491,7 @@ public class IndexController extends ApiBaseController {
 		}
 		
 		RenderFile render = new RenderFile();
-		String mime = "application/octet-stream";
+		String mime = "application/pdf";
 		render.setContext(this.getRequest(), this.getResponse(), webRoot + source, mime, "agreement.png", "1".equals(deleted));
 		this.render(render);
 	}

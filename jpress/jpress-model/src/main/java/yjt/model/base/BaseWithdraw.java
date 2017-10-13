@@ -1,5 +1,6 @@
 package yjt.model.base;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.jfinal.plugin.activerecord.IBean;
@@ -149,7 +150,9 @@ public class BaseWithdraw<M extends BaseWithdraw<M>> extends JModel<M> implement
 	}
 	
 	public Double getMoney() {
-		return get("money");
+		Object obj = get("money");
+		if(obj instanceof BigDecimal) obj = ((BigDecimal)obj).doubleValue();
+		return (Double)obj;
 	}
 	
 	public void setBankAccount(String bankAccount) {

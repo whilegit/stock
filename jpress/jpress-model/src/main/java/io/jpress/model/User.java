@@ -234,6 +234,25 @@ public class User extends BaseUser<User> {
 		return location;
 	}
 	
+	public void uploadUserLocation(String latStr, String lngStr) {
+		if(StrKit.notBlank(latStr, lngStr)){
+			double lat = 0.00, lng = 0.00;
+			
+			try {
+			    lat = Double.valueOf(latStr);
+			    lng = Double.valueOf(lngStr);
+			    if(lat > 1.00 && lat < 90.0 && lng > 1.0 && lng < 180.0 ) {
+			    	setLat(lat);
+					setLng(lng);
+					update();
+			    }
+			} catch(Exception e) {
+				
+			}
+			
+		}
+	}
+	
 	public boolean changeBalance(double change, String reason, BigInteger clerk, CreditLog.Platfrom platform) {
 		double amount = getAmount().doubleValue();
 		setAmount(BigDecimal.valueOf(amount + change));

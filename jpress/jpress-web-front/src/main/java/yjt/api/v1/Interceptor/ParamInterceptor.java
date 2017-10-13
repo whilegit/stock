@@ -126,6 +126,7 @@ public class ParamInterceptor implements Interceptor{
 						err = "登录已失效，请重新登录";
 						break;
 					}
+					user.uploadUserLocation(bc.getPara("lat"), bc.getPara("lng"));
 					break;
 				case DATE:
 					if(Utils.getYmd(value) == null){

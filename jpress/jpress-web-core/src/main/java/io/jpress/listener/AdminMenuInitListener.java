@@ -161,7 +161,7 @@ public class AdminMenuInitListener implements MessageListener {
 	private MenuGroup createDrawMenuGroup(){
 		MenuGroup group = new MenuGroup("draw", "fa fa-file-text-o", "提现管理");
 		{
-			group.addMenuItem(new MenuItem("list", "/admin/draw", "提现列表"));
+			group.addMenuItem(new MenuItem("list", "/admin/withdraw", "提现列表"));
 		}
 		return group;
 	}

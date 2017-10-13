@@ -110,7 +110,7 @@ public class Apply extends BaseApply<Apply>{
 		StringBuffer sb = new StringBuffer();
 		for(User u : usrs) {
 			String href = "/admin/user/edit?id=" + u.getId().toString() + "&c=list&p=user";
-			sb.append("<a href='"+Utils.toMedia(href) + "'>"+u.getRealname()+"</a>,");
+			sb.append("<a target=\"_blank\" href='"+Utils.toMedia(href) + "'>"+u.getRealname()+"</a>,");
 		}
 		ret = sb.toString();
 		ret = ret.substring(0, ret.length() - 1);
