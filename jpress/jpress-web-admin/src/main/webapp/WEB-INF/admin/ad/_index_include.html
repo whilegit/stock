@@ -1,0 +1,86 @@
+<section class="content-header">
+	<h1>
+		所有广告
+	</h1>
+</section>
+
+<!-- Main content -->
+<section class="content">
+
+	<div class="row content-row">
+		<ul class="list-inline" style="float: left">
+			<li class="all">
+				<a class="current" href="${CPATH}/admin/ad?m=${m!}&p=${p!}&c=${c!}">
+					全部 <span class="count">(${count!"0"})</span>
+				</a>
+				|
+			</li>
+			<li class="publish">
+				<a href="${CPATH}/admin/ad?m=${m!}&p=${p!}&c=${c!}&s=${StatusValidCode}">
+					有效 <span class="count">(${valid_count!"0"})</span>
+				</a>
+				|
+			</li>
+			<li class="publish">
+				<a href="${CPATH}/admin/ad?m=${m!}&p=${p!}&c=${c!}&s=${StatusInvalidCode}">
+					失效 <span class="count">(${invalid_count!"0"})</span>
+				</a>
+				|
+			</li>
+		</ul>
+	</div>
+					
+	<div class="box">
+		<!-- /.box-header -->
+		<div class="box-body">
+			<form action="" method="POST" id="form">
+				<input type="hidden" name="ucode" value="${ucode}">
+				<table class="table table-striped" style="word-break:break-all">
+					<thead>
+						<tr>
+							<th style="width:20px;"><input name="dataItem" onclick="checkAll(this)" type="checkbox" value="0"></th>
+							<th style="width:15%">标题</th>
+							<th style="width:15%">图片</th>
+							<th style="width:15%">链接</th>
+							<th style="width:15%">说明</th>
+							<th style="width:10%" title="越大越排在前面">排序</th>
+							<th style="width:10%">状态</th>
+							<th style="width:20%">更新日期</th>
+						</tr>
+					</thead>
+					<tbody>
+						<#if page??> 
+							<#list page.getList() as bean>
+								<tr class="jp-onmouse">
+									<td><input name="dataItem" type="checkbox" value="${bean.id}"></td>
+									<td>${bean.title!}</td>
+									<td><a href="${bean.imgMedia!}" target="_blank">${bean.imgMedia!}</a></td>
+									<td><a href="${bean.urlMedia!}" target="_blank">${bean.urlMedia!}</a></td>
+									<td>${bean.dscrpt!}</td>
+									<td>${bean.order_num!}</td>
+									<td><#if bean.status==1><span style="color:#0b0;">有效</span><#else><span style="color:#b00;">失效</span></#if></td>
+									<td>${bean.create_time?string("yyyy-MM-dd HH:mm")}</td>
+								</tr>
+							</#list> 
+						</#if>
+					</tbody>
+				</table>
+				</form>
+		</div>
+		<!-- /.box-body -->
+	</div>
+	
+	<div class="cf">
+		<div class="pull-right " >
+			
+			<#if page??> 
+			<#include "../_inc/_paginate.html" /> 
+			<@paginate currentPage=page.pageNumber totalPage=page.totalPage actionUrl="?p="+(p!)+"&c="+(c!)+"&m="+(m!)+"&t="+(t!)+"&s="+(s!)+"&k="+(k!)+"&tids="+(tids!)+"&page="/> 
+			</#if>
+
+		</div>
+	</div>
+		
+	<!-- /.row -->
+</section>
+<!-- /.content -->

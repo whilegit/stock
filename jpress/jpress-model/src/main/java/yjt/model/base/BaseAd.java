@@ -127,6 +127,14 @@ public class BaseAd<M extends BaseAd<M>> extends JModel<M> implements IBean {
 		return id instanceof BigInteger ? (BigInteger)id : new BigInteger(id.toString());
 	}
 	
+	public void setTitle(String title){
+		set("title", title);
+	}
+	public String getTitle(){
+		String title =  get("title");
+		return StrKit.notBlank(title) ? title : "";
+	}
+	
 	public void setImg(String img){
 		set("img", img);
 	}
@@ -165,6 +173,13 @@ public class BaseAd<M extends BaseAd<M>> extends JModel<M> implements IBean {
 	public Integer getStatus(){
 		Integer status =  get("status");
 		return status != null ? status : 0;
+	}
+	
+	public void setCreateTime(java.util.Date createTime ){
+		set("create_time", createTime);
+	}
+	public java.util.Date getCreateTime(){
+		return get("create_time");
 	}
 
 }
