@@ -13,8 +13,6 @@ import io.jpress.model.User;
 import io.jpress.model.query.JBaseQuery;
 import io.jpress.utils.StringUtils;
 import yjt.model.Apply;
-import yjt.model.Contract;
-import yjt.model.Apply.Status;
 
 public class ApplyQuery extends JBaseQuery{
 	protected static final Apply DAO = new Apply();

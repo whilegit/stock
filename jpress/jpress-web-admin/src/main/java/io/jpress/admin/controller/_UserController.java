@@ -92,12 +92,13 @@ public class _UserController extends JBaseCRUDController<User> {
 
 		final User user = getModel(User.class);
 		String password = user.getPassword();
-
+		String deal_password = user.getDealPassword();
+		/*
 		if (StringUtils.isBlank(user.getUsername())) {
 			renderAjaxResultForError("用户名不能为空。");
 			return;
 		}
-
+		*/
 		if (user.getId() == null) {
 
 			User dbUser = UserQuery.me().findUserByUsername(user.getUsername());
@@ -146,7 +147,7 @@ public class _UserController extends JBaseCRUDController<User> {
 				}
 			}
 
-			// 用户修改了密码
+			// 修改了登入密码
 			if (StringUtils.isNotEmpty(password)) {
 				User dbUser = UserQuery.me().findById(user.getId());
 				user.setSalt(dbUser.getSalt());
@@ -155,6 +156,17 @@ public class _UserController extends JBaseCRUDController<User> {
 			} else {
 				// 清除password，防止密码被置空
 				user.remove("password");
+			}
+			
+			// 修改了交易密码
+			if (StringUtils.isNotEmpty(deal_password)) {
+				User dbUser = UserQuery.me().findById(user.getId());
+				user.setDealSalt(dbUser.getDealSalt());
+				deal_password = EncryptUtils.encryptPassword(deal_password, dbUser.getDealSalt());
+				user.setDealPassword(deal_password);
+			} else {
+				// 清除password，防止密码被置空
+				user.remove("deal_password");
 			}
 		}
 

@@ -8,15 +8,13 @@ import io.jpress.core.interceptor.ActionCacheClearInterceptor;
 import io.jpress.router.RouterMapping;
 import io.jpress.router.RouterNotAllowConvert;
 import yjt.core.perm.PermAnnotation;
-import yjt.model.Apply;
 import yjt.model.Withdraw;
-import yjt.model.query.ApplyQuery;
 import yjt.model.query.WithdrawQuery;
 
 @RouterMapping(url = "/admin/withdraw", viewPath = "/WEB-INF/admin/withdraw")
 @Before(ActionCacheClearInterceptor.class)
 @RouterNotAllowConvert
-public class _WithdrawController extends JBaseCRUDController<Apply>{
+public class _WithdrawController extends JBaseCRUDController<Withdraw>{
 	private String getModuleName() {
 		return getPara("m");
 	}

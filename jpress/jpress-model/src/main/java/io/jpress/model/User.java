@@ -102,6 +102,12 @@ public class User extends BaseUser<User> {
 		return canBollowMoney;
 	}
 	
+	public String getUserLink() {
+		BigInteger id = getId();
+		if(id == null) id = BigInteger.ZERO;
+		return Utils.toMedia("admin/user/edit?id="+id.toString()+"&c=list&p=user");
+	}
+	
 	public HashMap<String, Object> getMemberProfile(){
 		HashMap<String, Object> profile = new HashMap<String, Object>();
 		BigInteger id = getId();

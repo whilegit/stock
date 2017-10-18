@@ -15,11 +15,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Page;
 
-import io.jpress.model.Content;
-import io.jpress.model.User;
 import io.jpress.model.core.Jdb;
 import io.jpress.model.query.JBaseQuery;
-import io.jpress.model.query.UserQuery;
 import io.jpress.utils.StringUtils;
 import yjt.Utils;
 import yjt.model.Contract;

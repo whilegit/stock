@@ -1554,7 +1554,7 @@ public class IndexController extends ApiBaseController {
 		member.setRealname(realname);
 		
 		member.setIdcardFront(Utils.stripMedia(idcardimg1));
-		member.setIdcardFront(Utils.stripMedia(idcardimg2));
+		member.setIdcardBack(Utils.stripMedia(idcardimg2));
 		member.update();
 		
 		renderJson(getReturnJson(Code.OK, "实名认证成功", EMPTY_OBJECT));

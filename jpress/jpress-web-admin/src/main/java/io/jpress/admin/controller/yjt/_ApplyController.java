@@ -1,17 +1,12 @@
 package io.jpress.admin.controller.yjt;
 
-import java.math.BigInteger;
-import java.util.List;
-
 import com.jfinal.aop.Before;
-import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Page;
 
 import io.jpress.core.JBaseCRUDController;
 import io.jpress.core.interceptor.ActionCacheClearInterceptor;
 import io.jpress.router.RouterMapping;
 import io.jpress.router.RouterNotAllowConvert;
-import io.jpress.utils.StringUtils;
 import yjt.core.perm.PermAnnotation;
 import yjt.model.Apply;
 import yjt.model.query.ApplyQuery;

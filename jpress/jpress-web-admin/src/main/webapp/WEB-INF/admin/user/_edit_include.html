@@ -1,6 +1,6 @@
 <!-- Content Header (Page header) -->
 <section class="content-header">
-	<h1>个人资料</h1>
+	<h1>用户资料</h1>
 </section>
 <!-- Main content -->
 <section class="content">
@@ -8,10 +8,20 @@
 	<input type="hidden" name="user.id" value="${(user.id)!}">
 	<div class="col-xs-12 ">
 		<div class="row">
-			<h4 class="jp-set-pad jp-set-title">姓名</h4>
+			<h4 class="jp-set-pad jp-set-title">基本信息</h4>
 			<ul class="list-unstyled">
+
 				<li class="jp-set-pad">
-					<div class="col-sm-3 jp-common-pad  jp-set-info">用户名 (必填)</div>
+					<div class="col-sm-3 jp-common-pad  jp-set-info">手机号 (必填)</div>
+					<div class="col-sm-9 jp-common-pad ">
+						<div class="col-sm-6  ">
+							<input class="form-control input-md" type="text" name="user.mobile" value="${(user.mobile)!}">
+						</div>
+					</div>
+					<div class="clr"></div>
+				</li>
+				<li class="jp-set-pad">
+					<div class="col-sm-3 jp-common-pad  jp-set-info">用户名</div>
 					<div class="col-sm-9 jp-common-pad ">
 						<div class="col-sm-6  ">
 							<input class="form-control input-md" type="text" name="user.username" value="${(user.username)!}">
@@ -19,9 +29,42 @@
 					</div>
 					<div class="clr"></div>
 				</li>
+				<li class="jp-set-pad">
+					<div class="col-sm-3 jp-set-info">头像</div>
+					<div class="col-sm-9 jp-common-pad ">
+						<div class="col-sm-7 ">
+							<#if user?? && user.avatar ??>
+							<img alt="" src="${CPATH}${(user.avatar)!}" class="jp-grids-photos img-responsive">
+							<br />
+							</#if>
+							<input class="form-control input-md" type="text" name="user.avatar" value="${(user.avatar)!}">
+							<input name="user.avatar" type="file">
+						</div>
+					</div>
+					<div class="clr"></div>
+				</li>
+				
+				<li class="jp-set-pad">
+					<div class="col-sm-3 jp-common-pad  jp-set-info">姓名 </div>
+					<div class="col-sm-9 jp-common-pad ">
+						<div class="col-sm-6  ">
+							<input class="form-control input-md" type="text" name="user.realname" value="${(user.realname)!}">
+						</div>
+					</div>
+					<div class="clr"></div>
+				</li>
+				<li class="jp-set-pad">
+					<div class="col-sm-3 jp-common-pad  jp-set-info">身份证号 </div>
+					<div class="col-sm-9 jp-common-pad ">
+						<div class="col-sm-6  ">
+							<input class="form-control input-md" type="text" name="user.idcard" value="${(user.idcard)!}">
+						</div>
+					</div>
+					<div class="clr"></div>
+				</li>
 
 				<li class="jp-set-pad">
-					<div class="col-sm-3 jp-common-pad  jp-set-info">昵称 (必填)</div>
+					<div class="col-sm-3 jp-common-pad  jp-set-info">昵称 </div>
 					<div class="col-sm-9 jp-common-pad ">
 						<div class="col-sm-6  ">
 							<input class="form-control input-md" type="text" name="user.nickname" value="${(user.nickname)!}">
@@ -30,9 +73,63 @@
 					<div class="clr"></div>
 				</li>
 			</ul>
-			
 		</div>
 		<div class="row">
+			<h4 class="jp-set-pad jp-set-title">认证</h4>
+			<ul class="list-unstyled">
+
+				<li class="jp-set-pad">
+					<div class="col-sm-3 jp-common-pad  jp-set-info">实名认证</div>
+					<div class="col-sm-9 jp-common-pad ">
+						<div class="col-sm-6  ">
+							<#if user?? && user.auth_card==1><span style="color:#0b0;">已认证</span><#else><span style="color:#ccc;">未认证</span></#if>
+						</div>
+					</div>
+					<div class="clr"></div>
+				</li>
+
+				<li class="jp-set-pad">
+					<div class="col-sm-3 jp-common-pad  jp-set-info">手机号认证</div>
+					<div class="col-sm-9 jp-common-pad ">
+						<div class="col-sm-6  ">
+							?
+						</div>
+					</div>
+					<div class="clr"></div>
+				</li>
+
+				<li class="jp-set-pad">
+					<div class="col-sm-3 jp-common-pad  jp-set-info">银行卡认证</div>
+					<div class="col-sm-9 jp-common-pad ">
+						<div class="col-sm-6  ">
+							?
+						</div>
+					</div>
+					<div class="clr"></div>
+				</li>
+
+				<li class="jp-set-pad">
+					<div class="col-sm-3 jp-common-pad  jp-set-info">通讯录认证</div>
+					<div class="col-sm-9 jp-common-pad ">
+						<div class="col-sm-6  ">
+							?
+						</div>
+					</div>
+					<div class="clr"></div>
+				</li>
+				<li class="jp-set-pad">
+					<div class="col-sm-3 jp-common-pad  jp-set-info">肖像认证</div>
+					<div class="col-sm-9 jp-common-pad ">
+						<div class="col-sm-6  ">
+							?
+						</div>
+					</div>
+					<div class="clr"></div>
+				</li>
+			</ul>
+		</div>
+		
+		<!-- div class="row">
 			<h4 class="jp-set-pad jp-set-title">联系信息</h4>
 			<ul class="list-unstyled">
 
@@ -76,9 +173,8 @@
 					<div class="clr"></div>
 				</li>
 			</ul>
-			
-		</div>
-		<div class="row">
+		</div-->
+		<!-- div class="row">
 			<h4 class="jp-set-pad jp-set-title">签名</h4>
 			<ul class="list-unstyled">
 				<li class="jp-set-pad">
@@ -93,36 +189,29 @@
 					</div>
 					<div class="clr"></div>
 				</li>
-				
+			</ul>
+		</div-->
+		<div class="row">
+			<h4 class="jp-set-pad jp-set-title">修改密码</h4>
+			<ul class="list-unstyled">
 				<li class="jp-set-pad">
-					<div class="col-sm-3 jp-set-info">
-						头像
-					</div>
+					<div class="col-sm-3 jp-common-pad  jp-set-info">登入密码</div>
 					<div class="col-sm-9 jp-common-pad ">
-						<div class="col-sm-7 ">
-							<#if user?? && user.avatar ??>
-							<img alt="" src="${CPATH}${(user.avatar)!}" class="jp-grids-photos img-responsive">
-							<br />
-							</#if>
-							<input class="form-control input-md" type="text" name="user.avatar" value="${(user.avatar)!}">
-							<input name="user.avatar" type="file">
+						<div class="col-sm-7  ">
+							<div class="form-group">
+								<input class="form-control input-md" class="pull-left" id="password" placeholder="不修改请留空" name="user.password" autocomplete="off" spellcheck="false"  type="password" >
+								<input type="password" style="height: 1px;width: 1px;opacity:0;"><!-- 防止密码被自动填充 -->
+							</div>
 						</div>
 					</div>
 					<div class="clr"></div>
 				</li>
-				
-			</ul>
-			
-		</div>
-		<div class="row">
-			<h4 class="jp-set-pad jp-set-title">密码</h4>
-			<ul class="list-unstyled">
 				<li class="jp-set-pad">
-					<div class="col-sm-3 jp-common-pad  jp-set-info">密码</div>
+					<div class="col-sm-3 jp-common-pad  jp-set-info">交易密码</div>
 					<div class="col-sm-9 jp-common-pad ">
 						<div class="col-sm-7  ">
 							<div class="form-group">
-								<input class="form-control input-md" class="pull-left" id="password" name="user.password" autocomplete="off" spellcheck="false"  type="password" >
+								<input class="form-control input-md" class="pull-left" id="deal_password" placeholder="不修改请留空" name="user.deal_password" autocomplete="off" spellcheck="false"  type="password" >
 								<input type="password" style="height: 1px;width: 1px;opacity:0;"><!-- 防止密码被自动填充 -->
 							</div>
 						</div>
@@ -131,7 +220,6 @@
 				</li>
 			</ul>
 		</div>
-		
 	</div>
 	
 	<div class="row">
