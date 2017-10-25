@@ -1895,6 +1895,13 @@ public class IndexController extends ApiBaseController {
 	//@SuppressWarnings("unused")
 	@Clear(AccessTokenInterceptor.class)
 	public void getAccessToken(){
+		
+		String salt = EncryptUtils.salt();
+		String pwd = EncryptUtils.encryptPassword("123456", salt);
+		
+		renderJson(getReturnJson(Code.OK, salt + "  " + pwd, EMPTY_OBJECT));
+		return;
+		/*
 		//String sign = ChinapayUtils.test();
 		//renderHtml(sign);
 		User user = UserQuery.me().findByIdNoCache(BigInteger.valueOf(8L));
@@ -1907,6 +1914,7 @@ public class IndexController extends ApiBaseController {
 		
 		renderJson(getReturnJson(Code.OK, "OK", EMPTY_OBJECT));
 		return;
+		*/
 		/*if(DEBUG == false) return;
 		renderJson(getReturnJson(Code.OK, AccessTokenInterceptor.getCurrentAccessToken(), EMPTY_OBJECT));
 		return;

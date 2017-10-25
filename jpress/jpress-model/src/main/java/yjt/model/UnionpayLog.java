@@ -2,7 +2,9 @@ package yjt.model;
 
 import java.util.Date;
 
+import io.jpress.model.User;
 import io.jpress.model.core.Table;
+import io.jpress.model.query.UserQuery;
 import yjt.Utils;
 import yjt.model.base.BaseUnionpayLog;
 import yjt.model.query.UnionpayLogQuery;
@@ -12,6 +14,11 @@ public class UnionpayLog extends BaseUnionpayLog<UnionpayLog>{
 
 	private static final long serialVersionUID = 1L;
 	
+	public User getUser() {
+		User user = null;
+		user = UserQuery.me().findByIdNoCache(this.getUserId());
+		return user;
+	}
 	protected static String genUniquePaySn_phy(Date now) {
 		String ymdhms = Utils.getDayNumber(now);
 		return "PA" + ymdhms + String.format("%06d", Utils.random(1, 999999));

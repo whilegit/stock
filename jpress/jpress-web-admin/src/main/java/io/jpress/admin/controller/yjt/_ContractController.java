@@ -34,53 +34,6 @@ public class _ContractController extends JBaseCRUDController<Contract>{
 	
 	@PermAnnotation("contract-list")
 	public void index(){
-		/*
-		//根据合约编号查询
-		String contractNumber = (getPara("contract_number") != null) ? getPara("contract_number") : null;
-		
-		//根据合约状态查询
-		Contract.Status cs = Contract.Status.ALL;
-		int status =  (getPara("status") != null) ? Integer.parseInt(getPara("status")) : Contract.Status.ALL.getIndex();
-		cs = Contract.Status.getEnum(status);
-
-		//根据借款人查询
-		BigInteger debitUid = null;
-		String debitAccount = (getPara("debit_account") != null) ? getPara("debit_account") : null;
-		if(StrKit.notBlank(debitAccount)){
-			User debitUser = UserQuery.me().findUserByUsername(debitAccount);
-			debitUid = (debitUser != null) ? debitUser.getId() : null;
-		}
-		
-		//根据放款人查询
-		BigInteger creditUid = null;
-		String creditAccount = (getPara("credit_account") != null) ? getPara("credit_account") : null;
-		if(StrKit.notBlank(creditAccount)){
-			User creditUser = UserQuery.me().findUserByUsername(creditAccount);
-			creditUid = (creditUser != null) ? creditUser.getId() : null;
-		}
-
-		//查询记录条数和内容，并据此计算分页显示
-		long total_records = ContractQuery.me().findCount(cs,contractNumber, debitUid, creditUid);
-		int page_index = (getPara("page") != null) ? Integer.parseInt(getPara("page")) : 1;
-		int page_size = (getPara("pagesize") != null) ? Integer.parseInt(getPara("pagesize")) : 10;
-		int total_pages = (int)Math.ceil(((double)total_records)/page_size);
-		List<Contract> list = ContractQuery.me().findList(page_index, page_size, cs, contractNumber, debitUid, creditUid);
-	
-		//设定渲染内容
-		setAttr("list", list);
-		setAttr("total_records", total_records);
-		setAttr("total_pages", total_pages);
-		setAttr("page_size", page_size);
-		setAttr("page_index", page_index);
-		//设置几个查询条件
-		setAttr("credit_account", creditAccount);
-		setAttr("debit_account", debitAccount);
-		setAttr("status", status);
-		setAttr("contract_number", contractNumber);
-		//设置状态码
-		
-		*/
-		
 		int count = (int) ContractQuery.me().findCount(Contract.Status.ALL, null, null, null);
 		setAttr("count", count);
 		int establish_count = (int) ContractQuery.me().findCount(Contract.Status.ESTABLISH, null, null, null);

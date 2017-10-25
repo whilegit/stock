@@ -116,7 +116,6 @@ public class ContractQuery extends JBaseQuery{
 			return DAO.paginate(page, pagesize, true, select, sql.toString());
 		}
 
-		System.out.println(JSON.toJSONString(params));
 		return DAO.paginate(page, pagesize, true, select, sql.toString(), params.toArray());
 	}
 	

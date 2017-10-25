@@ -92,7 +92,7 @@
 					<div class="col-sm-3 jp-common-pad  jp-set-info">手机号认证</div>
 					<div class="col-sm-9 jp-common-pad ">
 						<div class="col-sm-6  ">
-							?
+							<#if user?? && user.mobileStatusLogic=='1'><span style="color:#0b0;">已认证</span><#else><span style="color:#ccc;">未认证</span></#if>
 						</div>
 					</div>
 					<div class="clr"></div>
@@ -102,7 +102,7 @@
 					<div class="col-sm-3 jp-common-pad  jp-set-info">银行卡认证</div>
 					<div class="col-sm-9 jp-common-pad ">
 						<div class="col-sm-6  ">
-							?
+							<#if user?? && user.auth_bank==1><span style="color:#0b0;">已认证</span><#else><span style="color:#ccc;">未认证</span></#if>
 						</div>
 					</div>
 					<div class="clr"></div>
@@ -112,7 +112,7 @@
 					<div class="col-sm-3 jp-common-pad  jp-set-info">通讯录认证</div>
 					<div class="col-sm-9 jp-common-pad ">
 						<div class="col-sm-6  ">
-							?
+							<#if user?? && user.auth_book==1><span style="color:#0b0;">已认证</span><#else><span style="color:#ccc;">未认证</span></#if>
 						</div>
 					</div>
 					<div class="clr"></div>
@@ -121,7 +121,7 @@
 					<div class="col-sm-3 jp-common-pad  jp-set-info">肖像认证</div>
 					<div class="col-sm-9 jp-common-pad ">
 						<div class="col-sm-6  ">
-							?
+							<#if user?? && user.auth_face==1><span style="color:#0b0;">已认证</span><#else><span style="color:#ccc;">未认证</span></#if>
 						</div>
 					</div>
 					<div class="clr"></div>

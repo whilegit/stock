@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.ehcache.IDataLoader;
 
@@ -90,11 +91,22 @@ public class UserQuery extends JBaseQuery {
 		return null;
 	}
 
-	public Page<User> paginate(int pageNumber, int pageSize , String orderby) {
+	public Page<User> paginate(int pageNumber, int pageSize ,String role, String keyword) {
 		String select = "select * ";
 		StringBuilder fromBuilder = new StringBuilder(" from user u ");
-		buildOrderBy(orderby, fromBuilder);
-		return DAO.paginate(pageNumber, pageSize, select, fromBuilder.toString());
+		LinkedList<Object> params = new LinkedList<Object>();
+		
+		boolean needWhere = true;
+		needWhere = appendIfNotEmpty(fromBuilder, "u.role", role, params, needWhere);
+		if(StrKit.notBlank(keyword)) {
+			needWhere = appendWhereOrAnd(fromBuilder, needWhere);
+			fromBuilder.append(" (u.`realname` like ?)");
+			params.add("%" + keyword + "%");
+		}
+		fromBuilder.append(" group by u.id");
+		fromBuilder.append(" ORDER BY u.id DESC");
+		
+		return DAO.paginate(pageNumber, pageSize, true, select, fromBuilder.toString(), params.toArray());
 	}
 
 	public long findCount() {

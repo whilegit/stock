@@ -17,6 +17,7 @@ package io.jpress.admin.controller;
 
 import java.math.BigInteger;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,7 +40,7 @@ import io.jpress.router.RouterNotAllowConvert;
 import io.jpress.template.TemplateManager;
 import io.jpress.utils.EncryptUtils;
 import io.jpress.utils.StringUtils;
-
+import yjt.Utils;
 import yjt.core.perm.PermAnnotation;
 import yjt.core.perm.PermGroup;
 import yjt.core.perm.PermKit;
@@ -51,10 +52,12 @@ public class _UserController extends JBaseCRUDController<User> {
 
 	@PermAnnotation("user-list")
 	public void index() {
+		String r = getPara("r");
+		String k = getPara("keyword");
 		setAttr("userCount", UserQuery.me().findCount());
 		setAttr("adminCount", UserQuery.me().findAdminCount());
 
-		Page<User> page = UserQuery.me().paginate(getPageNumber(), getPageSize(), null);
+		Page<User> page = UserQuery.me().paginate(getPageNumber(), getPageSize(), r, k);
 		setAttr("page", page);
 
 		String templateHtml = "admin_user_index.html";
@@ -62,6 +65,7 @@ public class _UserController extends JBaseCRUDController<User> {
 			setAttr("include", TemplateManager.me().currentTemplatePath() + "/" + templateHtml);
 			return;
 		}
+		setAttr("keyword", k);
 		setAttr("include", "_index_include.html");
 	}
 
@@ -327,4 +331,37 @@ public class _UserController extends JBaseCRUDController<User> {
 		super.delete();
 	}
 
+	public void changeRole() {
+		String idsStr = getPara("ids", "");
+		Integer toRole = this.getParaToInt("toRole");
+		if(StrKit.isBlank(idsStr)) {
+			renderAjaxResultForError("没有选择要变更角色的用户");
+			return;
+		}
+		if(toRole == null) {
+			renderAjaxResultForError("请提供要变更成的角色，管理员或客户");
+			return;
+		}
+		
+		if(toRole != 25 && toRole != 30) { //客户是25，管理员是30
+			renderAjaxResultForError("无法识别的角色类型");
+			return;
+		}
+		
+		ArrayList<BigInteger> ids = Utils.splitToBigInteger(idsStr, ",", true);
+		List<User> usrAry = UserQuery.me().findList(ids);
+		
+		for(User user : usrAry) {
+			String role = user.getRole();
+			if(toRole == 30 && "administrator".equals(role) == false) {
+				user.setRole("administrator");
+				user.update();
+			} else if(toRole == 25 && "visitor".equals(role) == false) {
+				user.setRole("visitor");
+				user.update();
+			}
+		}
+		this.renderAjaxResultForSuccess("修改角色成功");
+		return;
+	}
 }

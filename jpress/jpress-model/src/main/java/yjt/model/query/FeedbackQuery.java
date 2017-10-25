@@ -48,6 +48,7 @@ public class FeedbackQuery extends JBaseQuery{
 			params.add("%" + keyword + "%");
 		}
 		
+		sql.append(" group by c.id");
 		sql.append(" ORDER BY c.id DESC");
 
 		if (params.isEmpty()) {

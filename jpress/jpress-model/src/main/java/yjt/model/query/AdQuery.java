@@ -61,6 +61,7 @@ public class AdQuery extends JBaseQuery{
 			needWhere = appendIfNotEmpty(sql, "c.status", status, params, needWhere);
 		}
 		
+		sql.append(" group by c.id");
 		sql.append(" ORDER BY c.order_num DESC");
 
 		if (params.isEmpty()) {

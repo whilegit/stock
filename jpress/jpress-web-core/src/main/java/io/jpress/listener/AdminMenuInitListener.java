@@ -48,10 +48,10 @@ public class AdminMenuInitListener implements MessageListener {
 
 		//menuMnager.addMenuGroup(MenuGroup.createBlockGroup());
 		menuMnager.addMenuGroup(createUserMenuGroup());
-		menuMnager.addMenuGroup(createAuthMenuGroup());
 		
 		menuMnager.addMenuGroup(createContractMenuGroup());
 		menuMnager.addMenuGroup(createApplyMenuGroup());
+		menuMnager.addMenuGroup(createChargeMenuGroup());
 		menuMnager.addMenuGroup(createDrawMenuGroup());
 		menuMnager.addMenuGroup(createAdMenuGroup());
 		menuMnager.addMenuGroup(createReportMenuGroup());
@@ -130,14 +130,6 @@ public class AdminMenuInitListener implements MessageListener {
 		return group;
 	}
 	
-	private MenuGroup createAuthMenuGroup() {
-		MenuGroup group = new MenuGroup("auth", "fa fa-user", "认证");
-		{
-			group.addMenuItem(new MenuItem("list", "/admin/auth", "认证列表"));
-		}
-		return group;
-	}
-	
 	
 	
 	private MenuGroup createContractMenuGroup(){
@@ -162,6 +154,14 @@ public class AdminMenuInitListener implements MessageListener {
 		MenuGroup group = new MenuGroup("draw", "fa fa-file-text-o", "提现管理");
 		{
 			group.addMenuItem(new MenuItem("list", "/admin/withdraw", "提现列表"));
+		}
+		return group;
+	}
+	
+	private MenuGroup createChargeMenuGroup() {
+		MenuGroup group = new MenuGroup("charge", "fa fa-file-text-o", "充值管理");
+		{
+			group.addMenuItem(new MenuItem("list", "/admin/unionpaylog", "充值列表"));
 		}
 		return group;
 	}
