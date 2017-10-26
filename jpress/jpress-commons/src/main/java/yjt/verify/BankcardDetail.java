@@ -34,7 +34,6 @@ public class BankcardDetail {
 			
 		try {
 			String html = Utils.get(url, params, headers);
-			System.out.println(html);
 			if(StrKit.notBlank(html)){
 				BankcardDetail verifier = JSON.parseObject(html, BankcardDetail.class);
 				if(verifier != null && verifier.getErrorCode() == 0){

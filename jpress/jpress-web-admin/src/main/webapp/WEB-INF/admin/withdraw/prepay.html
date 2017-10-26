@@ -1,0 +1,104 @@
+<section class="content-header">
+	<h1>
+		提现打款
+	</h1>
+</section>
+<hr>
+
+<!-- Main content -->
+<section class="content">
+	<#if !draw??>
+	该提现不存在。
+	<#elseif draw.status == 1>
+	该笔提现款已汇出，不可重复汇出。
+	<#elseif draw.status == -1>
+	该笔提现款已失效，不可操作。
+	<#elseif !user??>
+	用户不存在。
+	<#else>
+	<form class="form-horizontal" method="POST" action="${CPATH}/admin/withdraw/dopay" onsubmit="return check();">
+		<p style="color:red;margin-bottom:10px;">提示：请仔细核对提现信息。</p>
+		<ul class="list-group" style="width:100%;">
+			<li class="list-group-item">
+				<div class="col-sm-2 jp-common-pad  jp-set-info">用户姓名 <span style="color:#b00;">*</span></div>
+				<div class="col-sm-10 jp-common-pad ">
+					<div class="col-sm-12  ">
+						${(user.realname)!}
+					</div>
+				</div>
+				<div class="clr"></div>
+			</li>
+			<li class="list-group-item">
+				<div class="col-sm-2 jp-common-pad  jp-set-info">提现金额 <span style="color:#b00;">*</span></div>
+				<div class="col-sm-10 jp-common-pad ">
+					<div class="col-sm-12  ">
+						<input class="form-control input-md" type="text" name="draw[money]" value="${(draw.money)?string('0.00')!}">
+					</div>
+				</div>
+				<div class="clr"></div>
+			</li>
+			<li class="list-group-item">
+				<div class="col-sm-2 jp-common-pad  jp-set-info">银行卡账号 <span style="color:#b00;">*</span></div>
+				<div class="col-sm-10 jp-common-pad ">
+					<div class="col-sm-12  ">
+						<div>${(draw.bank_account)!}</div>
+						<#if bankdetail?? && bankdetail.result ??>
+							<div>
+								<b>参考：</b><a  target="_blank" href="${bankdetail.result.bankurl!}">${bankdetail.result.bankname!}(${bankdetail.result.abbreviation!})</a>
+								<#if bankdetail.result.bankimage?? ><img src="${bankdetail.result.bankimage!}"></#if><br>
+								<b>参考：</b>前6位是<b>${bankdetail.result.cardprefixnum!}</b>，共${bankdetail.result.cardlength!}位长度<br>
+								<b>参考：</b>${bankdetail.result.cardtype!}， ${bankdetail.result.cardname!}
+							</div>
+						</#if>
+					</div>
+				</div>
+				<div class="clr"></div>
+			</li>
+			<li class="list-group-item">
+				<div class="col-sm-2 jp-common-pad  jp-set-info">卡所在省份 <span style="color:#b00;">*</span></div>
+				<div class="col-sm-10 jp-common-pad ">
+					<div class="col-sm-12  ">
+							<input class="form-control input-md" type="text" placeholder="如不能自动获取，请联系用户获得卡的开户省份" name="privince" value="<#if bankdetail?? && bankdetail.result ??>${bankdetail.result.province!}</#if>">
+					</div>
+				</div>
+				<div class="clr"></div>
+			</li>
+			<li class="list-group-item">
+				<div class="col-sm-2 jp-common-pad  jp-set-info">卡所在城市 <span style="color:#b00;">*</span></div>
+				<div class="col-sm-10 jp-common-pad ">
+					<div class="col-sm-12  ">
+							<input class="form-control input-md" type="text" name="privince" placeholder="如不能自动获取，请联系用户获得卡的开户城市" value="<#if bankdetail?? && bankdetail.result ??>${bankdetail.result.city!}</#if>">
+					</div>
+				</div>
+				<div class="clr"></div>
+			</li>
+			<li class="list-group-item">
+				<div class="col-sm-2 jp-common-pad  jp-set-info">操作备注 <span style="color:#b00;">*</span></div>
+				<div class="col-sm-10 jp-common-pad ">
+					<div class="col-sm-12  ">
+						<textarea rows="6" class="form-control input-md" id="draw_comment" name="draw[comment]"></textarea>
+					</div>
+				</div>
+				<div class="clr"></div>
+			</li>
+		</ul>
+		 <div class="modal-footer">
+		    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+		    <input type="submit" class="btn btn-danger" value="确认打款" />
+		    <input type="hidden" name="id" value="${id!}" />
+		</div>
+	</form>
+	</#if>
+	<!-- /.row -->
+</section>
+
+<script>
+function check(){
+	var comment = document.getElementById("draw_comment").value;
+	if(comment == ""){
+		toastr.error("请没有填写操作备注",'提示：');
+		return false;
+	}
+	return true;
+}
+</script>

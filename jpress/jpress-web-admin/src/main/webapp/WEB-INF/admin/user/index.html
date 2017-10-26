@@ -2,9 +2,9 @@
 <#macro script>
 function alertTips(title, body, update_flag){
 	$(".myModalLabel").text(title);
-		$(".myModalBody").text(body);
-		update_flag ? $(".myModalUpdate").show() : $(".myModalUpdate").hide()
-		$('#myModal').modal();
+	$(".myModalBody").text(body);
+	update_flag ? $(".myModalUpdate").show() : $(".myModalUpdate").hide()
+	$('#myModal').modal();
 }
 
 function frozen(id){

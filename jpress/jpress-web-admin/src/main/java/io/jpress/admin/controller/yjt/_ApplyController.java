@@ -25,35 +25,6 @@ public class _ApplyController extends JBaseCRUDController<Apply>{
 	
 	@PermAnnotation("apply-list")
 	public void index(){
-		/*
-		int count = (int) ContractQuery.me().findCount(Contract.Status.ALL, null, null, null);
-		setAttr("count", count);
-		int establish_count = (int) ContractQuery.me().findCount(Contract.Status.ESTABLISH, null, null, null);
-		setAttr("establish_count", establish_count);
-		int finish_count = (int) ContractQuery.me().findCount(Contract.Status.FINISH, null, null, null); 
-		setAttr("finish_count", finish_count);
-		int extend_count = (int) ContractQuery.me().findCount(Contract.Status.EXTEND, null, null, null);
-		setAttr("extend_count", extend_count);
-		int lost_count = (int) ContractQuery.me().findCount(Contract.Status.LOST, null, null, null);
-		setAttr("lost_count", lost_count);
-		
-		String keyword = getPara("k", "").trim();
-		
-		Page<Contract> page = null;
-		page = ContractQuery.me().paginateBySearch(getPageNumber(), getPageSize(), keyword,getStatus());
-		setAttr("page", page);
-
-		setAttr("StatusINITCode", Contract.Status.INIT.getIndex());		setAttr("StatusINITName", Contract.Status.INIT.getName());
-		setAttr("StatusRISK1Code", Contract.Status.RISK1.getIndex());	setAttr("StatusRISK1Name", Contract.Status.RISK1.getName());
-		setAttr("StatusRISK2Code", Contract.Status.RISK2.getIndex());	setAttr("StatusRISK2Name", Contract.Status.RISK2.getName());
-		setAttr("StatusRISK3Code", Contract.Status.RISK3.getIndex());	setAttr("StatusRISK3Name", Contract.Status.RISK3.getName());
-		setAttr("StatusCLOSECode", Contract.Status.CLOSE.getIndex());	setAttr("StatusCLOSEName", Contract.Status.CLOSE.getName());
-		setAttr("StatusESTABLISHCode", Contract.Status.ESTABLISH.getIndex());	setAttr("StatusESTABLISHName", Contract.Status.ESTABLISH.getName());
-		setAttr("StatusFINISHCode", Contract.Status.FINISH.getIndex());	setAttr("StatusFINISHName", Contract.Status.FINISH.getName());
-		setAttr("StatusEXTENDCode", Contract.Status.EXTEND.getIndex());	setAttr("StatusEXTENDName", Contract.Status.EXTEND.getName());
-		setAttr("StatusLOSTCode", Contract.Status.LOST.getIndex());		setAttr("StatusLOSTName", Contract.Status.LOST.getName());
-		setAttr("StatusALLCode", Contract.Status.ALL.getIndex());		setAttr("StatusALLName", Contract.Status.ALL.getName());
-		*/
 		setAttr("StatusInvalidCode", ApplyQuery.Status.INVALID.getIndex());	
 		setAttr("StatusValidCode", ApplyQuery.Status.VALID.getIndex());
 		setAttr("StatusDealedCode", ApplyQuery.Status.DEALED.getIndex());
