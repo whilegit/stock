@@ -5,6 +5,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -43,9 +45,155 @@ public class ChinapayUtils {
 		}
 	}
 	
-	public static ChinapayTransBean getTransBean() {
-		return null;
+	public static ChinapayTransBean getTransBean(String cardNo, String usrName, String openBank, String prov, String city,
+												 int transAmt, String purpose) {
+		ChinapayTransBean bean = new ChinapayTransBean();
+		bean.setMerId(merId);
+		bean.setMerDate(Utils.getDayNumber_Ymd(new Date()));
+		bean.setMerSeqId(String.format("%08d", (int)(Math.random() * 99999999)));
+		bean.setCardNo(cardNo);
+		bean.setUsrName(usrName);
+		bean.setOpenBank(openBank);
+		bean.setProv(prov);
+		bean.setCity(city);
+		bean.setTransAmt(""+transAmt);   //单位分
+		bean.setPurpose(purpose != null ? purpose : "");
 		
+		bean.setFlag("00"); 
+		bean.setVersion("20160530");
+		bean.setTermType("08");
+		bean.setPayMode("1");
+		return bean;
+	}
+	
+	public static class PayStatus{
+		public String responseCode;		
+		public HashMap<String, String> pairs = new HashMap<String, String>();
+		public String raw;
+		
+		public String tips;
+		public boolean success = false;
+		/*
+		 * 0000	接收成功	提交成功
+		   0100	接收失败	商户提交的字段长度、格式错误
+		   0101	接收失败  商户验签错误
+		   0102	接收失败	手续费计算出错
+		   0103	接收失败	商户备付金帐户金额不足
+		   0104	接收失败	操作拒绝
+		   0105	待查询	重复交易
+		 */
+		private static String mapTips(String responseCode) {
+			String tips = "";
+			if(StrKit.isBlank(responseCode)) {
+				tips = "状态码为空";
+			}else if("0000".equals(responseCode)) {
+				tips = "提交成功";
+			}else if("0100".equals(responseCode)) {
+				tips = "接收失败(商户提交的字段长度、格式错误)";
+			}else if("0101".equals(responseCode)) {
+				tips = "接收失败 (商户验签错误)";
+			}else if("0102".equals(responseCode)) {
+				tips = "接收失败(手续费计算出错)";
+			}else if("0103".equals(responseCode)) {
+				tips = "接收失败(商户备付金帐户金额不足)";
+			}else if("0104".equals(responseCode)) {
+				tips = "接收失败(操作拒绝)";
+			}else if("0105".equals(responseCode)) {
+				tips = "待查询(重复交易)";
+			}else {
+				tips = "不可识别";
+			}
+			return tips;
+		}
+		
+		/*
+		 * responseCode=0000&merId=808080211306315&merDate=20171027&merSeqId=80546581&cpDate=20171027&cpSeqId=276644&transAmt=1000&stat=s&cardNo=6228581099025464660&chkValue=5CDBA0F9B97E3C00AC7115002EA1240BCC3E66E373E9AB4BEE3E95E592F141810043C5EDC29A73B842257B4110159F699385FDAB722EED59DE32DC8B74CC999A1D818F0489B99178383F6AD4435B74D615277B9A8CC9EDA921EF913DCC8CB48C755821985403575B47B4E45B2026C8E8F22382B248A236890E1B8FBA5ACB32E5
+		 */
+		public static PayStatus parseResult(String result) {
+			if(StrKit.isBlank(result)) return null;
+			PayStatus st = new PayStatus();
+			st.raw = result;
+			String[] items = result.split("&");
+			for(String item : items) {
+				String[] kv = item.split("=");
+				if(kv.length == 2) {
+					st.pairs.put(kv[0], kv[1]);
+					if("responseCode".equals(kv[0])) {
+						st.responseCode = kv[1];
+						if("0000".equals(kv[1])) {
+							st.success = true;
+						}
+						st.tips = mapTips(kv[1]);
+					}
+				}
+			}
+			return st;
+		}
+	}
+	
+	public static PayStatus pay(ChinapayTransBean bean) {
+		String merDate = bean.getMerDate();
+		String merSeqId = bean.getMerSeqId();
+		String cardNo = bean.getCardNo();
+		String usrName = bean.getUsrName();
+		String openBank = bean.getOpenBank();
+		String prov = bean.getProv();
+		String city = bean.getCity();
+		String transAmt = bean.getTransAmt();
+		String purpose = bean.getPurpose();
+		String subBank = "";
+		
+		String flag = bean.getFlag();//固定 "00";
+		String version = bean.getVersion(); //固定 "20160530";
+		String termType = bean.getTermType(); //固定 "08";
+		String payMode = bean.getPayMode(); //固定 "1";
+		
+		// 将要签名的数据传给msg
+		String msg, priKeyPath;
+		priKeyPath = PathKit.getRootClassPath()+ "/certs/MerPrK_808080211306315_20170927140135.key";
+		msg = merId+ merDate + merSeqId +cardNo +usrName+openBank 
+					 +prov +city +transAmt+purpose+subBank+flag+version + termType +payMode;
+			
+        //对签名的数据进行Base64编码
+        String msg1 = new String(Base64.encode(msg.toString().getBytes()));
+        chinapay.PrivateKey key=new chinapay.PrivateKey(); 
+        boolean flag1=key.buildKey(merId, 0, priKeyPath); 
+		if (flag1==false) { 
+			//System.out.println("build key error!"); 
+			return null; 
+		}
+		//签名
+        SecureLink s = new SecureLink(key);
+		String chkValue = s.Sign(msg1);
+		
+		String strParams = "merId=" + merId + "&merDate=" + merDate + "&merSeqId=" + merSeqId+ "&cardNo=" + cardNo+ "&usrName=" + usrName
+				 + "&openBank=" + openBank
+				 + "&prov=" + prov+ "&city=" + city+ "&transAmt=" + transAmt + "&purpose=" + purpose
+				 + "&flag=" + flag+ "&version=" + version+ "&signFlag=1&termType=08&payMode=1&chkValue=" + chkValue;
+		String str = "";
+		
+		try {
+			str = URLEncoder.encode(strParams, "UTF-8");
+			str = str.replaceAll("%3D", "=");
+			str = str.replaceAll("%26", "&");
+		} catch (UnsupportedEncodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		String result = "";
+		try {
+			String url = "http://sfj.chinapay.com/dac/SinPayServletUTF8";
+			result = post(url, str, null);
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return PayStatus.parseResult( result);
 	}
 	
 	public static String test(){

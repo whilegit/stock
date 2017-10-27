@@ -41,7 +41,12 @@
 				<div class="col-sm-2 jp-common-pad  jp-set-info">银行卡账号 <span style="color:#b00;">*</span></div>
 				<div class="col-sm-10 jp-common-pad ">
 					<div class="col-sm-12  ">
-						<div>${(draw.bank_account)!}</div>
+						<div>
+							${(draw.bank_account)!}
+							<input type="hidden" name="draw[bank_account]" value="${(draw.bank_account)!}" />
+							<input type="hidden" name="draw[openbank]" value="${bankdetail.result.bankname!}" />
+						</div>
+						
 						<#if bankdetail?? && bankdetail.result ??>
 							<div>
 								<b>参考：</b><a  target="_blank" href="${bankdetail.result.bankurl!}">${bankdetail.result.bankname!}(${bankdetail.result.abbreviation!})</a>
@@ -58,7 +63,7 @@
 				<div class="col-sm-2 jp-common-pad  jp-set-info">卡所在省份 <span style="color:#b00;">*</span></div>
 				<div class="col-sm-10 jp-common-pad ">
 					<div class="col-sm-12  ">
-							<input class="form-control input-md" type="text" placeholder="如不能自动获取，请联系用户获得卡的开户省份" name="privince" value="<#if bankdetail?? && bankdetail.result ??>${bankdetail.result.province!}</#if>">
+							<input class="form-control input-md" type="text" id="draw_province" name="draw[province]" placeholder="如不能自动获取，请联系用户获得卡的开户省份" value="<#if bankdetail?? && bankdetail.result ??>${bankdetail.result.province!}</#if>">
 					</div>
 				</div>
 				<div class="clr"></div>
@@ -67,7 +72,7 @@
 				<div class="col-sm-2 jp-common-pad  jp-set-info">卡所在城市 <span style="color:#b00;">*</span></div>
 				<div class="col-sm-10 jp-common-pad ">
 					<div class="col-sm-12  ">
-							<input class="form-control input-md" type="text" name="privince" placeholder="如不能自动获取，请联系用户获得卡的开户城市" value="<#if bankdetail?? && bankdetail.result ??>${bankdetail.result.city!}</#if>">
+							<input class="form-control input-md" type="text" id="draw_city" name="draw[city]" placeholder="如不能自动获取，请联系用户获得卡的开户城市" value="<#if bankdetail?? && bankdetail.result ??>${bankdetail.result.city!}</#if>">
 					</div>
 				</div>
 				<div class="clr"></div>
@@ -94,11 +99,25 @@
 
 <script>
 function check(){
+	
+	var province = document.getElementById("draw_province").value;
+	if(province == ""){
+		toastr.error("请没有填写银行卡的开户省份",'提示：');
+		return false;
+	}
+	
+	var city = document.getElementById("draw_city").value;
+	if(city == ""){
+		toastr.error("请没有填写银行卡的开户城市",'提示：');
+		return false;
+	}
+	
 	var comment = document.getElementById("draw_comment").value;
 	if(comment == ""){
 		toastr.error("请没有填写操作备注",'提示：');
 		return false;
 	}
+
 	return true;
 }
 </script>

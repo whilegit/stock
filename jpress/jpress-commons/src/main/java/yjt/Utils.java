@@ -44,6 +44,8 @@ public class Utils {
 	protected static final SimpleDateFormat sdfYmdHms = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	protected static final SimpleDateFormat sdfYmdHms_chs = new SimpleDateFormat("yyyy年MM月dd日 HH:mm");
 	protected static final SimpleDateFormat sdfNumber = new SimpleDateFormat("yyyyMMddHHmmss");
+	protected static final SimpleDateFormat sdfNumber_Ymd = new SimpleDateFormat("yyyyMMdd");
+
 	protected static final Pattern MOBILE_PATTERN = Pattern.compile("^1[345789][0-9]{9}$");
 	
 	protected static String domain = null;
@@ -148,6 +150,13 @@ public class Utils {
 		if(d == null) return "";
 		return sdfNumber.format(d);
 	}
+	
+	public static String getDayNumber_Ymd(Date d) {
+		if(d == null) return "";
+		return sdfNumber_Ymd.format(d);
+	}
+	
+	
 	
 	public static int random(int min, int max) {
 		return (int) (Math.random() * (max -min) + min);

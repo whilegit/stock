@@ -38,6 +38,7 @@ public class ChinapayTransBean {
 	private String payMode = "1";
 	 */
 	
+	
 	public String getMerId() {
 		return merId;
 	}
@@ -129,6 +130,4 @@ public class ChinapayTransBean {
 	public void setPayMode(String payMode) {
 		this.payMode = payMode;
 	}
-	
-	
 }

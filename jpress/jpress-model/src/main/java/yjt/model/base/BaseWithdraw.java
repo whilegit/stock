@@ -202,6 +202,13 @@ public class BaseWithdraw<M extends BaseWithdraw<M>> extends JModel<M> implement
 		return get("log");
 	}
 	
+	public void setCode(String code) {
+		set("code", code);
+	}
+	public String getCode() {
+		return get("code");
+	}
+	
 	public void setUpdateTime(java.util.Date updateTime ){
 		set("update_time", updateTime);
 	}

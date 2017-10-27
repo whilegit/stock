@@ -41,7 +41,7 @@ public class Withdraw extends BaseWithdraw<Withdraw>{
 	}
 	
 	public static enum Status{
-		UNTRANS("未打款", 0), TRANS("已打款", 1);
+		UNTRANS("未打款", 0), TRANS("已打款", 1), FAIL("失败", 2);
 		private String name;
 		private int index;
 	    private Status(String name, int index) {  
