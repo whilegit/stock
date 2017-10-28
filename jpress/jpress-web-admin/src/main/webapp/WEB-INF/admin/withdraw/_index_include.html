@@ -67,9 +67,13 @@
 									<td>${bean.realname}</td>
 									<td>${bean.bank_account}</td>
 									<td><#if bean.type=1>微信<#elseif bean.type=2>支付宝<#elseif bean.type=3>银联</#if></td>
-									<td><#if bean.status=0>
-										<span style="color:#ccc;">未打款</span> <a data-toggle="modal" href="${CPATH}/admin/withdraw/prepay?id=${bean.id}" data-target="#modal">去打款</a>
-										<#else><span style="color:#0b0;">已打款</span></#if>
+									<td>
+										<#if bean.status=0>
+											<span style="color:#ccc;">未打款</span> <a data-toggle="modal" href="${CPATH}/admin/withdraw/prepay?id=${bean.id}" data-target="#modal">去打款</a>
+										<#elseif bean.status=1><span style="color:#0b0;">已打款</span>
+										<#else>
+											<span style="color:#b00;" title="请人工核查打款是否成功">打款失败</span>
+										</#if>
 									</td>
 									<td>${bean.log}</td>
 									<td>${bean.create_time?string("yyyy-MM-dd HH:mm")}</td>

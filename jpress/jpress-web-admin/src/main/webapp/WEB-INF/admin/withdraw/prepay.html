@@ -42,9 +42,13 @@
 				<div class="col-sm-10 jp-common-pad ">
 					<div class="col-sm-12  ">
 						<div>
-							${(draw.bank_account)!}
-							<input type="hidden" name="draw[bank_account]" value="${(draw.bank_account)!}" />
-							<input type="hidden" name="draw[openbank]" value="${bankdetail.result.bankname!}" />
+							<#if bankdetail?? && bankdetail.result ??>
+								${(draw.bank_account)!}
+								<input type="hidden" name="draw[bank_account]" value="${(draw.bank_account)!}" />
+								<input type="hidden" name="draw[openbank]" value="${bankdetail.result.bankname!}" />
+							<#else>
+								<span style="color:#b00;">警告：提现者可能没有完成银行卡认证，无法打款！</span>
+							</#if>
 						</div>
 						
 						<#if bankdetail?? && bankdetail.result ??>

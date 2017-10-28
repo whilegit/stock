@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
@@ -22,6 +23,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.jfinal.kit.PathKit;
 import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;
@@ -32,7 +35,6 @@ import chinapay.SecureLink;
 import yjt.Utils;
 
 public class ChinapayUtils {
-
 	protected static final Log log = Log.getLog(ChinapayUtils.class);
 
 	public static String merId; // = "808080211306315";
@@ -47,6 +49,10 @@ public class ChinapayUtils {
 	
 	public static ChinapayTransBean getTransBean(String cardNo, String usrName, String openBank, String prov, String city,
 												 int transAmt, String purpose) {
+		if(!StrKit.notBlank(cardNo, usrName, openBank, prov, city) || transAmt <= 0) {
+			log.error("参数为空或金额不大于0(purpose可以为空)：" + "cardNo:" + cardNo + ",usrName=" + usrName + ",openBank=" + openBank + ",prov=" + prov + ",city=" + city + ",transAmt=" + transAmt + ",purpose=" + purpose);
+			return null;
+		}
 		ChinapayTransBean bean = new ChinapayTransBean();
 		bean.setMerId(merId);
 		bean.setMerDate(Utils.getDayNumber_Ymd(new Date()));
@@ -67,6 +73,8 @@ public class ChinapayUtils {
 	}
 	
 	public static class PayStatus{
+		
+
 		public String responseCode;		
 		public HashMap<String, String> pairs = new HashMap<String, String>();
 		public String raw;
@@ -129,6 +137,30 @@ public class ChinapayUtils {
 			}
 			return st;
 		}
+		
+		public String getTips() {
+			return tips;
+		}
+
+		public void setTips(String tips) {
+			this.tips = tips;
+		}
+
+		public String getResponseCode() {
+			return responseCode;
+		}
+
+		public void setResponseCode(String responseCode) {
+			this.responseCode = responseCode;
+		}
+
+		public boolean isSuccess() {
+			return success;
+		}
+
+		public void setSuccess(boolean success) {
+			this.success = success;
+		}
 	}
 	
 	public static PayStatus pay(ChinapayTransBean bean) {
@@ -155,14 +187,23 @@ public class ChinapayUtils {
 					 +prov +city +transAmt+purpose+subBank+flag+version + termType +payMode;
 			
         //对签名的数据进行Base64编码
-        String msg1 = new String(Base64.encode(msg.toString().getBytes()));
+        String msg1 = null;
+		try {
+			char[] chs = Base64.encode(msg.toString().getBytes("GBK"));
+			msg1 = new String(chs);
+		} catch (UnsupportedEncodingException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
         chinapay.PrivateKey key=new chinapay.PrivateKey(); 
         boolean flag1=key.buildKey(merId, 0, priKeyPath); 
 		if (flag1==false) { 
 			//System.out.println("build key error!"); 
+			log.error("对数据签名时失败，" +  priKeyPath + "\r\n" + msg);
 			return null; 
 		}
 		//签名
+		
         SecureLink s = new SecureLink(key);
 		String chkValue = s.Sign(msg1);
 		
@@ -192,6 +233,7 @@ public class ChinapayUtils {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		log.info(result);
 		
 		return PayStatus.parseResult( result);
 	}
@@ -278,6 +320,7 @@ public class ChinapayUtils {
 		}
 		httpPost.setHeader("Content-Type", "application/x-www-form-urlencoded"); //Content-Type:
 		httpPost.setEntity(new StringEntity(params));
+		Header[] headers1 = httpPost.getAllHeaders();
 		CloseableHttpResponse response = httpclient.execute(httpPost);
 
 		try {

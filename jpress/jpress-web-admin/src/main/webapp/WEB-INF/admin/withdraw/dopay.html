@@ -2,16 +2,13 @@
 <#macro script>
 $(document).ready(function(){
 	$("tr:even").addClass("bg");
-	
-	$("#modal").on("hidden.bs.modal", function() {
-	    $(this).removeData("bs.modal");
-	});
-
 });
 </#macro> 
+
 <@layout active_id=p child_active_id=c>
 <#include include/>
 </@layout>
+
 
 
 
