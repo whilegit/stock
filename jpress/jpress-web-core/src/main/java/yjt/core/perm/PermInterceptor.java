@@ -1,7 +1,12 @@
 package yjt.core.perm;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.Invocation;
+import com.jfinal.core.Controller;
+import com.jfinal.render.Render;
 
 import io.jpress.interceptor.InterUtils;
 import io.jpress.model.User;
@@ -28,13 +33,23 @@ public class PermInterceptor implements Interceptor{
 			pass = false;
 			User user = InterUtils.tryToGetUser(inv);
 			if(user != null){
-				// 角色为Administrator时为超级管理员，任何接口都可调用
-				String role = user.getRole();
-				if("administrator".equalsIgnoreCase(role)) pass = true;
+				// 角色超级管理员，任何接口都可调用
+				if(user.isSuperAdministrator()) pass = true;
 				else pass = PermKit.permCheck(pa, user.getPerm());
 			}
 		}
 		if(pass) inv.invoke();
-		else inv.getController().redirect("/admin/unauthority");
+		else {
+			Controller controller = inv.getController();
+			HttpServletRequest request = controller.getRequest();
+			HttpServletResponse response = controller.getResponse();
+			String ref = request.getHeader("referer");
+			
+			controller.setAttr("perm", pa.value());
+			controller.setAttr("ref", ref);
+			controller.render("not_permit.html");
+			Render render = controller.getRender();
+			render.setContext(request, response, "/WEB-INF/admin/").render();
+		}
 	}
 }

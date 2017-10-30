@@ -50,6 +50,10 @@ public class User extends BaseUser<User> {
 	public boolean isAdministrator() {
 		return ROLE_ADMINISTRATOR.equals(getRole());
 	}
+	
+	public boolean isSuperAdministrator() {
+		return ROLE_ADMINISTRATOR.equals(getRole()) && "admin".equals(this.getUsername());
+	}
 
 	public boolean isFrozen() {
 		return STATUS_FROZEN.equals(getStatus());

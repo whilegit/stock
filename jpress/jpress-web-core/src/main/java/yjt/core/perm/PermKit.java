@@ -101,6 +101,7 @@ public class PermKit {
 			if(StrKit.notBlank(usrPermStr)){
 				String[] must = paStr.split(",");
 				List<String> have = Arrays.asList(usrPermStr.split(","));
+				check = true;
 				for(String m : must){
 					if(have.contains(m) == false){
 						check = false;
