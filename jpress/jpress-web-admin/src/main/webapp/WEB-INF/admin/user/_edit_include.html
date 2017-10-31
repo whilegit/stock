@@ -221,13 +221,15 @@
 			</ul>
 		</div>
 	</div>
-	
+	<#if hasEditPerm?? && hasEditPerm>
 	<div class="row">
 		<div class="col-xs-12">
 			<button type="button" onclick="doSubmit()" class="btn btn-primary">保存更改</button>
 		</div>
-		</div>
+	</div>
+	</#if>
 	</form>
+	
 </section>
 
 

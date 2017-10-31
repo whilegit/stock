@@ -3,10 +3,15 @@ package yjt.core.perm;
 import com.jfinal.kit.PathKit;
 import com.jfinal.kit.StrKit;
 import com.jfinal.log.Log;
+
+import io.jpress.menu.MenuGroup;
+import io.jpress.menu.MenuItem;
+import io.jpress.model.User;
 import yjt.core.perm.PermAnnotation;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -88,15 +93,8 @@ public class PermKit {
 		return newPermGroup;
 	}
 	
-	/**
-	 * 权限比较函数（用户的权限列表应包含action所要求的权限)
-	 * @param pa 注解要求的权限(使用PermAnnotation注解，以逗号分隔)
-	 * @param usrPermStr　用户所拥有的权限（存放于user表的perm字段，以逗号分隔）
-	 * @return　boolean
-	 */
-	public static boolean permCheck(PermAnnotation pa, String usrPermStr){
+	public static boolean permCheck(String paStr, String usrPermStr) {
 		boolean check = false;
-		String paStr = pa.value();
 		if(StrKit.notBlank(paStr)){
 			if(StrKit.notBlank(usrPermStr)){
 				String[] must = paStr.split(",");
@@ -115,5 +113,44 @@ public class PermKit {
 			check = true;
 		}
 		return check;
+	}
+	
+	public static boolean permCheck(String paStr, User user) {
+		if(user.isSuperAdministrator()) {
+			return true;
+		}else {
+			return permCheck(paStr, user.getPerm());
+		}
+	}
+	
+	/**
+	 * 权限比较函数（用户的权限列表应包含action所要求的权限)
+	 * @param pa 注解要求的权限(使用PermAnnotation注解，以逗号分隔)
+	 * @param usrPermStr　用户所拥有的权限（存放于user表的perm字段，以逗号分隔）
+	 * @return　boolean
+	 */
+	public static boolean permCheck(PermAnnotation pa, User user){
+		if(user.isSuperAdministrator()) {
+			return true;
+		}else {
+			return permCheck(pa.value(), user.getPerm());
+		}
+	}
+	
+	public static MenuGroup permFilter(MenuGroup menuGrp, String usrPermStr) {
+		if(menuGrp == null || menuGrp.getMenuItems() == null || menuGrp.getMenuItems().size() == 0) {
+			return menuGrp;
+		}
+		List<String> have = Arrays.asList(usrPermStr.split(","));
+		List<MenuItem> menuItem = menuGrp.getMenuItems();
+		List<MenuItem> newMenuItems = new ArrayList<MenuItem>();
+		for(MenuItem item : menuItem) {
+			String must = item.getPerm();
+			if(StrKit.isBlank(must) || have.contains(must) == true) {
+				newMenuItems.add(item);
+			}
+		}
+		menuGrp.setMenuItems(newMenuItems);
+		return menuGrp;
 	}
 }

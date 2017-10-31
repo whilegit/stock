@@ -34,8 +34,7 @@ public class PermInterceptor implements Interceptor{
 			User user = InterUtils.tryToGetUser(inv);
 			if(user != null){
 				// 角色超级管理员，任何接口都可调用
-				if(user.isSuperAdministrator()) pass = true;
-				else pass = PermKit.permCheck(pa, user.getPerm());
+				pass = PermKit.permCheck(pa, user);
 			}
 		}
 		if(pass) inv.invoke();

@@ -19,6 +19,7 @@ import java.util.LinkedList;
 
 import io.jpress.core.addon.HookInvoker;
 import io.jpress.message.MessageKit;
+import io.jpress.model.User;
 import io.jpress.utils.StringUtils;
 
 public class MenuManager {
@@ -32,7 +33,7 @@ public class MenuManager {
 		return manager;
 	}
 
-	public String generateHtml() {
+	public String generateHtml(User user) {
 		if (menuGroups.isEmpty()) {
 			MessageKit.sendMessage(ACTION_INIT_MENU, this);
 		}
@@ -41,7 +42,7 @@ public class MenuManager {
 
 		StringBuilder htmlBuilder = new StringBuilder();
 		for (MenuGroup group : menuGroups) {
-			htmlBuilder.append(group.generateHtml());
+			htmlBuilder.append(group.generateHtml(user));
 		}
 
 		HookInvoker.menuInitAfter(this);

@@ -69,12 +69,30 @@ public class _UserController extends JBaseCRUDController<User> {
 		setAttr("include", "_index_include.html");
 	}
 
-	@PermAnnotation("user-edit")
+	@PermAnnotation("user-view")
 	public void edit() {
 		BigInteger id = getParaToBigInteger("id");
 		if (id != null) {
 			setAttr("user", UserQuery.me().findById(id));
 		}
+		
+		boolean hasEditPerm = PermKit.permCheck("user-edit", getLoginedUser());
+		setAttr("hasEditPerm", hasEditPerm);
+
+		String templateHtml = "admin_user_edit.html";
+		if (TemplateManager.me().existsFile(templateHtml)) {
+			setAttr("include", TemplateManager.me().currentTemplatePath() + "/" + templateHtml);
+			return;
+		}
+		setAttr("include", "_edit_include.html");
+
+	}
+	
+	@PermAnnotation("user-add")
+	public void add() {
+	
+		boolean hasEditPerm = PermKit.permCheck("user-add", getLoginedUser());
+		setAttr("hasEditPerm", hasEditPerm);
 
 		String templateHtml = "admin_user_edit.html";
 		if (TemplateManager.me().existsFile(templateHtml)) {
@@ -97,6 +115,7 @@ public class _UserController extends JBaseCRUDController<User> {
 		final User user = getModel(User.class);
 		String password = user.getPassword();
 		String deal_password = user.getDealPassword();
+		
 		/*
 		if (StringUtils.isBlank(user.getUsername())) {
 			renderAjaxResultForError("用户名不能为空。");
@@ -215,6 +234,9 @@ public class _UserController extends JBaseCRUDController<User> {
 		}
 		setAttr("user", user);
 
+		boolean hasEditPerm = PermKit.permCheck("user-edit", user);
+		setAttr("hasEditPerm", hasEditPerm);
+		
 		String templateHtml = "admin_user_info.html";
 		if (TemplateManager.me().existsFile(templateHtml)) {
 			setAttr("include", TemplateManager.me().currentTemplatePath() + "/" + templateHtml);
@@ -289,6 +311,7 @@ public class _UserController extends JBaseCRUDController<User> {
 		renderText("错误：用户不存在");
 	}
 
+	@PermAnnotation("user-frozen")
 	public void frozen() {
 		BigInteger id = getParaToBigInteger("id");
 		if (id != null) {
@@ -301,6 +324,7 @@ public class _UserController extends JBaseCRUDController<User> {
 		}
 	}
 
+	@PermAnnotation("user-restore")
 	public void restore() {
 		BigInteger id = getParaToBigInteger("id");
 		if (id != null) {
@@ -331,6 +355,7 @@ public class _UserController extends JBaseCRUDController<User> {
 		super.delete();
 	}
 
+	@PermAnnotation("user-changerole")
 	public void changeRole() {
 		String idsStr = getPara("ids", "");
 		Integer toRole = this.getParaToInt("toRole");

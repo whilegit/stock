@@ -111,7 +111,6 @@ public class AdminMenuInitListener implements MessageListener {
 
 	private MenuGroup createAttachmentMenuGroup() {
 		MenuGroup group = new MenuGroup("attachment", "fa fa-file-image-o", "附件");
-
 		{
 			group.addMenuItem(new MenuItem("list", "/admin/attachment", "所有附件"));
 			group.addMenuItem(new MenuItem("upload", "/admin/attachment/upload", "上传"));
@@ -121,11 +120,10 @@ public class AdminMenuInitListener implements MessageListener {
 
 	private MenuGroup createUserMenuGroup() {
 		MenuGroup group = new MenuGroup("user", "fa fa-user", "用户");
-
 		{
-			group.addMenuItem(new MenuItem("list", "/admin/user", "用户列表"));
-			group.addMenuItem(new MenuItem("edit", "/admin/user/edit", "添加"));
-			group.addMenuItem(new MenuItem("info", "/admin/user/info", "我的资料"));
+			group.addMenuItem(new MenuItem("list", "/admin/user", "用户列表", "user-list"));
+			group.addMenuItem(new MenuItem("edit", "/admin/user/add", "创建用户", "user-add"));
+			group.addMenuItem(new MenuItem("info", "/admin/user/info", "我的资料", "user-view"));
 		}
 		return group;
 	}
@@ -135,8 +133,8 @@ public class AdminMenuInitListener implements MessageListener {
 	private MenuGroup createContractMenuGroup(){
 		MenuGroup group = new MenuGroup("contract", "fa fa-file-text-o", "借条管理");
 		{
-			group.addMenuItem(new MenuItem("list", "/admin/contract", "借条列表"));
-			group.addMenuItem(new MenuItem("list", "/admin/contract?today=1", "今日借条"));
+			group.addMenuItem(new MenuItem("list", "/admin/contract", "借条列表", "contract-list"));
+			group.addMenuItem(new MenuItem("list", "/admin/contract?today=1", "今日借条", "contract-list"));
 		}
 		return group;
 	}
@@ -144,7 +142,7 @@ public class AdminMenuInitListener implements MessageListener {
 	private MenuGroup createApplyMenuGroup(){
 		MenuGroup group = new MenuGroup("apply", "fa fa-file-text-o", "申请管理");
 		{
-			group.addMenuItem(new MenuItem("list", "/admin/apply", "申请列表"));
+			group.addMenuItem(new MenuItem("list", "/admin/apply", "申请列表", "apply-list"));
 			//group.addMenuItem(new MenuItem("info", "/admin/apply/stat", "申请统计"));
 		}
 		return group;
@@ -153,8 +151,8 @@ public class AdminMenuInitListener implements MessageListener {
 	private MenuGroup createDrawMenuGroup(){
 		MenuGroup group = new MenuGroup("draw", "fa fa-file-text-o", "提现管理");
 		{
-			group.addMenuItem(new MenuItem("list", "/admin/withdraw", "提现列表"));
-			group.addMenuItem(new MenuItem("list", "/admin/withdraw?today=1", "今日提现"));
+			group.addMenuItem(new MenuItem("list", "/admin/withdraw", "提现列表", "withdraw-list"));
+			group.addMenuItem(new MenuItem("list", "/admin/withdraw?today=1", "今日提现", "withddraw-list"));
 		}
 		return group;
 	}
@@ -162,8 +160,8 @@ public class AdminMenuInitListener implements MessageListener {
 	private MenuGroup createChargeMenuGroup() {
 		MenuGroup group = new MenuGroup("charge", "fa fa-file-text-o", "充值管理");
 		{
-			group.addMenuItem(new MenuItem("list", "/admin/unionpaylog", "充值列表"));
-			group.addMenuItem(new MenuItem("list", "/admin/unionpaylog?today=1", "今日充值"));
+			group.addMenuItem(new MenuItem("list", "/admin/unionpaylog", "充值列表", "unionpaylog-list"));
+			group.addMenuItem(new MenuItem("list", "/admin/unionpaylog?today=1", "今日充值", "unionpaylog-list"));
 
 		}
 		return group;
@@ -172,7 +170,7 @@ public class AdminMenuInitListener implements MessageListener {
 	private MenuGroup createAdMenuGroup(){
 		MenuGroup group = new MenuGroup("ad", "fa fa-file-text-o", "广告管理");
 		{
-			group.addMenuItem(new MenuItem("list", "/admin/ad", "广告列表"));
+			group.addMenuItem(new MenuItem("list", "/admin/ad", "广告列表", "ad-list"));
 		}
 		return group;
 	}
@@ -180,7 +178,7 @@ public class AdminMenuInitListener implements MessageListener {
 	private MenuGroup createFeedbackMenuGroup(){
 		MenuGroup group = new MenuGroup("feedback", "fa fa-file-text-o", "反馈管理");
 		{
-			group.addMenuItem(new MenuItem("list", "/admin/feedback", "反馈列表"));
+			group.addMenuItem(new MenuItem("list", "/admin/feedback", "反馈列表", "feedback-list"));
 		}
 		return group;
 	}
@@ -189,7 +187,7 @@ public class AdminMenuInitListener implements MessageListener {
 	private MenuGroup createReportMenuGroup(){
 		MenuGroup group = new MenuGroup("report", "fa fa-file-text-o", "举报管理");
 		{
-			group.addMenuItem(new MenuItem("list", "/admin/report", "举报列表"));
+			group.addMenuItem(new MenuItem("list", "/admin/report", "举报列表", "report-list"));
 		}
 		return group;
 	}
@@ -220,7 +218,7 @@ public class AdminMenuInitListener implements MessageListener {
 	private MenuGroup createSettingMenuGroup() {
 		MenuGroup group = new MenuGroup("option", "fa fa-cog", "设置");
 		{
-			group.addMenuItem(new MenuItem("list", "/admin/option/web", "常规"));
+			/*group.addMenuItem(new MenuItem("list", "/admin/option/web", "常规"));
 			group.addMenuItem(new MenuItem("edit", "/admin/option/comment", "评论"));
 			group.addMenuItem(new MenuItem("n", "/admin/option/notification", "通知"));
 			group.addMenuItem(new MenuItem("seo", "/admin/option/seo", "SEO"));
@@ -229,6 +227,7 @@ public class AdminMenuInitListener implements MessageListener {
 			group.addMenuItem(new MenuItem("reg", "/admin/option/register", "登录注册"));
 			group.addMenuItem(new MenuItem("cdn", "/admin/option/cdn", "CDN加速"));
 			group.addMenuItem(new MenuItem("api", "/admin/api", "API应用"));
+			*/
 		}
 
 		return group;
