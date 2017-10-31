@@ -19,13 +19,24 @@
 	},
 	{
 		"key":"contract",
-		"desc":"合约操作",
+		"desc":"借条管理",
 		"perms":[
-			{"key":"contract-list","desc":"合约列表"},
-			{"key":"contract-stat","desc":"合约统计"},
-			{"key":"contract-create","desc":"创建合约"},
-			{"key":"contract-edit","desc":"编辑合约"},
-			{"key":"contract-delete","desc":"关闭合约"}
+			{"key":"contract-list","desc":"借条列表"}
+		]
+	},
+	{
+		"key":"withdraw",
+		"desc":"提现管理",
+		"perms":[
+			{"key":"withdraw-list","desc":"提现列表"},
+			{"key":"withdraw-pay","desc":"提现支付"}
+		]
+	},
+	{
+		"key":"unionpaylog",
+		"desc":"充值管理",
+		"perms":[
+			{"key":"unionpaylog-list","desc":"充值列表"}
 		]
 	}
 ]

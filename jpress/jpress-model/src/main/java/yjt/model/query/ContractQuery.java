@@ -83,11 +83,11 @@ public class ContractQuery extends JBaseQuery{
 		}
 	}
 	
-	public Page<Contract> paginateBySearch(int page, int pagesize, String keyword, String status) {
-		return paginate(page, pagesize, keyword, status);
+	public Page<Contract> paginateBySearch(int page, int pagesize, String keyword, String status, Long fromTime, Long toTime) {
+		return paginate(page, pagesize, keyword, status, fromTime, toTime);
 	}
 	
-	public Page<Contract> paginate(int page, int pagesize, String keyword, String status) {
+	public Page<Contract> paginate(int page, int pagesize, String keyword, String status, Long fromTime, Long toTime) {
 
 		String select = "select c.*";
 
@@ -107,6 +107,17 @@ public class ContractQuery extends JBaseQuery{
 			params.add("%" + keyword + "%");
 			params.add("%" + keyword + "%");
 			params.add("%" + keyword + "%");
+		}
+		
+		if(fromTime != null) {
+			needWhere = appendWhereOrAnd(sql, needWhere);
+			sql.append("c.create_time >= ? ");
+			params.add(Utils.toYmdHms(new Date(fromTime)));
+		}
+		if(toTime != null) {
+			needWhere = appendWhereOrAnd(sql, needWhere);
+			sql.append("c.create_time < ? ");
+			params.add(Utils.toYmdHms(new Date(toTime)));
 		}
 		
 		sql.append(" group by c.id");
@@ -152,7 +163,7 @@ public class ContractQuery extends JBaseQuery{
 		return DAO.find(sqlBuilder.toString(), params.toArray());
 	}
 	
-	public long findCount(Contract.Status[] stats, String contractNumber, BigInteger debitUid, BigInteger creditUid) {
+	public long findCount(Contract.Status[] stats, String contractNumber, BigInteger debitUid, BigInteger creditUid, Long fromTime, Long toTime) {
 		StringBuilder sqlBuilder = new StringBuilder();
 		LinkedList<Object> params = new LinkedList<Object>();
 		
@@ -180,6 +191,19 @@ public class ContractQuery extends JBaseQuery{
 		String creditId = (creditUid != null) ? creditUid.toString() : null;
 		appendAndIfNotEmpty(sqlBuilder, "credit_id", creditId, params);
 
+		
+		if(fromTime != null) {
+			if(params.size() > 0) sqlBuilder.append("and ");
+			sqlBuilder.append("create_time >= ? ");
+			params.add(Utils.toYmdHms(new Date(fromTime)));
+		}
+		if(toTime != null) {
+			if(params.size() > 0) sqlBuilder.append("and ");
+			sqlBuilder.append("create_time < ? ");
+			params.add(Utils.toYmdHms(new Date(toTime)));
+		}
+
+		
 		if(params.isEmpty()){
 			return DAO.doFindCount(sqlBuilder.toString());
 		}else{
@@ -194,7 +218,7 @@ public class ContractQuery extends JBaseQuery{
 		} else {
 			stats = new Contract.Status[] {stat};
 		}
-		return findCount(stats, contractNumber, debitUid, creditUid);
+		return findCount(stats, contractNumber, debitUid, creditUid, null, null);
 	}
 	
 	
@@ -222,20 +246,29 @@ public class ContractQuery extends JBaseQuery{
 	 * @param creditUid
 	 * @return
 	 */
-	protected double queryAmount(BigInteger debitUid, BigInteger creditUid, Contract.Status[] stats){
+	protected double queryAmount(BigInteger debitUid, BigInteger creditUid, Contract.Status[] stats, Long fromTime, Long toTime){
 		LinkedList<Object> params = new LinkedList<Object>();
-		StringBuilder sqlBuilder = new StringBuilder("Select sum(amount) as money From contract Where ");
+		StringBuilder sqlBuilder = new StringBuilder("Select sum(amount) as money From contract Where 1");
 		if(stats.length == 1){
-			sqlBuilder.append("status = ? ");
+			sqlBuilder.append(" and status = ? ");
 			params.add(stats[0].getIndex());
 		} else {
-			sqlBuilder.append("status in (");
+			sqlBuilder.append(" and status in (");
 			for(int i = 0; i<stats.length; i++){
 				if(i != 0) sqlBuilder.append(",");
 				sqlBuilder.append("?");
 				params.add(stats[i].getIndex());
 			}
 			sqlBuilder.append(") ");
+		}
+		
+		if(fromTime != null) {
+			sqlBuilder.append("and create_time >= ? ");
+			params.add(Utils.toYmdHms(new Date(fromTime)));
+		}
+		if(toTime != null) {
+			sqlBuilder.append("and create_time < ? ");
+			params.add(Utils.toYmdHms(new Date(toTime)));
 		}
 		
 		//params.add(lost);
@@ -252,7 +285,12 @@ public class ContractQuery extends JBaseQuery{
 	 */
 	public double queryCurDebits(BigInteger debitUid){
 		Contract.Status[] stats = {Status.ESTABLISH, Status.EXTEND};
-		return queryAmount(debitUid, null, stats);
+		return queryAmount(debitUid, null, stats, null, null);
+	}
+	
+	public double queryTodayAmount() {
+		Contract.Status[] stats = {Status.ESTABLISH};
+		return queryAmount(null, null, stats, Utils.getDayStartTime(new Date()), null);
 	}
 	
 	/**
@@ -262,7 +300,7 @@ public class ContractQuery extends JBaseQuery{
 	 */
 	public double queryTotalDebits(BigInteger debitUid){
 		Contract.Status[] stats = {Status.ESTABLISH, Status.EXTEND, Status.FINISH, Status.LOST};
-		return queryAmount(debitUid, null, stats);
+		return queryAmount(debitUid, null, stats, null, null);
 	}
 	
 	/**
@@ -272,7 +310,7 @@ public class ContractQuery extends JBaseQuery{
 	 */
 	public double queryCurCredits(BigInteger creditUid){
 		Contract.Status[] stats = {Status.ESTABLISH, Status.EXTEND};
-		return queryAmount(null, creditUid, stats);
+		return queryAmount(null, creditUid, stats, null, null);
 	}
 	
 	/**
@@ -282,7 +320,7 @@ public class ContractQuery extends JBaseQuery{
 	 */
 	public double queryTotalCredits(BigInteger creditUid){
 		Contract.Status[] stats = {Status.ESTABLISH, Status.EXTEND, Status.FINISH, Status.LOST};
-		return queryAmount(null, creditUid, stats);
+		return queryAmount(null, creditUid, stats, null, null);
 	}
 	
 	/**
@@ -320,9 +358,9 @@ public class ContractQuery extends JBaseQuery{
 		JSONObject json = new JSONObject();
 		Contract.Status[] totalStats = {Status.ESTABLISH, Status.EXTEND, Status.FINISH, Status.LOST};
 		Contract.Status[] curStats = {Status.ESTABLISH, Status.EXTEND};
-		long totalCount = findCount(totalStats, null, debitor, creditor);
-		long curCount = findCount(curStats, null, debitor, creditor);
-		double curAmount = queryAmount(debitor, creditor, curStats);
+		long totalCount = findCount(totalStats, null, debitor, creditor, null, null);
+		long curCount = findCount(curStats, null, debitor, creditor, null, null);
+		double curAmount = queryAmount(debitor, creditor, curStats, null, null);
 		json.put("usCrtMoneyAmount", String.format("%.2f", curAmount) );      //当前debitor向creditor借入的交易总金额
 		json.put("usCrtMoneyCount", "" + curCount);        //当前debitor向creditor借入的交易笔数
 		json.put("usCrtAllMoneyCount", "" + totalCount);   //debitort向creditor借入的累计交易笔数
@@ -336,9 +374,9 @@ public class ContractQuery extends JBaseQuery{
 		
 		JSONObject json = new JSONObject();
 		double userMoneyAmount = ContractQuery.me().queryCurDebits(uid);
-		long userMoneyCount = findCount(curStats, null, uid, null);
-		long userAllMoneyCount = findCount(totalStats, null, uid, null);
-		double returnMoneyAmount = queryAmount(uid, null, finishedStat);
+		long userMoneyCount = findCount(curStats, null, uid, null, null, null);
+		long userAllMoneyCount = findCount(totalStats, null, uid, null, null, null);
+		double returnMoneyAmount = queryAmount(uid, null, finishedStat, null, null);
 		long dealFriendCount = queryDiffOppositors(uid);
 		json.put("userMoneyAmount", String.format("%.2f", userMoneyAmount));      //当前借入总金额
 		json.put("userMoneyCount", ""+userMoneyCount);        //当前借入笔数
@@ -356,10 +394,10 @@ public class ContractQuery extends JBaseQuery{
 		long totalItems = 0;
 		if(type.equals("in")) {
 			list = findList(page, pageSize, curStats, null, uid, null);
-			totalItems = findCount(curStats, null, uid, null);
+			totalItems = findCount(curStats, null, uid, null, null, null);
 		} else {
 			list = findList(page, pageSize, curStats, null, null, uid);
-			totalItems = findCount(curStats, null, null, uid);
+			totalItems = findCount(curStats, null, null, uid, null, null);
 		}
 		List<JSONObject>  result = new ArrayList<JSONObject>();
 		for(Contract contract : list) {

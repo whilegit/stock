@@ -133,10 +133,10 @@ public class AdminMenuInitListener implements MessageListener {
 	
 	
 	private MenuGroup createContractMenuGroup(){
-		MenuGroup group = new MenuGroup("contract", "fa fa-file-text-o", "合约管理");
+		MenuGroup group = new MenuGroup("contract", "fa fa-file-text-o", "借条管理");
 		{
-			group.addMenuItem(new MenuItem("list", "/admin/contract", "合约列表"));
-			group.addMenuItem(new MenuItem("info", "/admin/contract/stat", "合约统计"));
+			group.addMenuItem(new MenuItem("list", "/admin/contract", "借条列表"));
+			group.addMenuItem(new MenuItem("list", "/admin/contract?today=1", "今日借条"));
 		}
 		return group;
 	}
@@ -145,7 +145,7 @@ public class AdminMenuInitListener implements MessageListener {
 		MenuGroup group = new MenuGroup("apply", "fa fa-file-text-o", "申请管理");
 		{
 			group.addMenuItem(new MenuItem("list", "/admin/apply", "申请列表"));
-			group.addMenuItem(new MenuItem("info", "/admin/apply/stat", "申请统计"));
+			//group.addMenuItem(new MenuItem("info", "/admin/apply/stat", "申请统计"));
 		}
 		return group;
 	}
@@ -154,6 +154,7 @@ public class AdminMenuInitListener implements MessageListener {
 		MenuGroup group = new MenuGroup("draw", "fa fa-file-text-o", "提现管理");
 		{
 			group.addMenuItem(new MenuItem("list", "/admin/withdraw", "提现列表"));
+			group.addMenuItem(new MenuItem("list", "/admin/withdraw?today=1", "今日提现"));
 		}
 		return group;
 	}
@@ -162,6 +163,8 @@ public class AdminMenuInitListener implements MessageListener {
 		MenuGroup group = new MenuGroup("charge", "fa fa-file-text-o", "充值管理");
 		{
 			group.addMenuItem(new MenuItem("list", "/admin/unionpaylog", "充值列表"));
+			group.addMenuItem(new MenuItem("list", "/admin/unionpaylog?today=1", "今日充值"));
+
 		}
 		return group;
 	}

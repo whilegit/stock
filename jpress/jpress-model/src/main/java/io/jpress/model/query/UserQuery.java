@@ -17,6 +17,7 @@ package io.jpress.model.query;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import io.jpress.model.Metadata;
 import io.jpress.model.User;
 import io.jpress.template.TemplateManager;
 import io.jpress.template.TplModule;
+import yjt.Utils;
 
 public class UserQuery extends JBaseQuery {
 	protected static final User DAO = new User();
@@ -112,6 +114,13 @@ public class UserQuery extends JBaseQuery {
 	public long findCount() {
 		return DAO.doFindCount();
 	}
+	
+	public long findTodayCount() {
+		long t = Utils.getDayStartTime(new Date());
+		String today = Utils.toYmdHms(new Date(t));
+		return DAO.doFindCount(" created >= ? ", today);
+	}
+	
 
 	public long findAdminCount() {
 		return DAO.doFindCount(" role = ? ", "administrator");

@@ -1,6 +1,6 @@
 <section class="content-header">
 	<h1>
-		所有充值
+		<#if today=0>所有<#else>今日</#if>充值
 	</h1>
 </section>
 
@@ -10,7 +10,7 @@
 	<div class="row content-row">
 		<ul class="list-inline" style="float: left">
 			<li class="all">
-				<a class="current" href="${CPATH}/admin/unionpaylog?m=${m!}&p=${p!}&c=${c!}">
+				<a class="current" href="${CPATH}/admin/unionpaylog?m=${m!}&p=${p!}&c=${c!}&today=${today!}">
 					所有 <span class="count">(${count!"0"})</span>
 				</a>
 				|
@@ -69,7 +69,7 @@
 			
 			<#if page??> 
 			<#include "../_inc/_paginate.html" /> 
-			<@paginate currentPage=page.pageNumber totalPage=page.totalPage actionUrl="?p="+(p!)+"&c="+(c!)+"&m="+(m!)+"&t="+(t!)+"&s="+(s!)+"&k="+(k!)+"&tids="+(tids!)+"&page="/> 
+			<@paginate currentPage=page.pageNumber totalPage=page.totalPage actionUrl="?p="+(p!)+"&c="+(c!)+"&m="+(m!)+"&t="+(t!)+"&today="+(today!)+"&s="+(s!)+"&k="+(k!)+"&tids="+(tids!)+"&page="/> 
 			</#if>
 
 		</div>

@@ -1,6 +1,6 @@
 <section class="content-header">
 	<h1>
-		所有提现申请
+		<#if today==0>所有<#else>今日</#if>提现
 	</h1>
 </section>
 
@@ -10,11 +10,12 @@
 	<div class="row content-row">
 		<ul class="list-inline" style="float: left">
 			<li class="all">
-				<a class="current" href="${CPATH}/admin/withdraw?m=${m!}&p=${p!}&c=${c!}">
+				<a class="current" href="${CPATH}/admin/withdraw?m=${m!}&p=${p!}&c=${c!}&today=${today!}">
 					全部 <span class="count">(${count!"0"})</span>
 				</a>
 				|
 			</li>
+			<#if today==0>
 			<li class="publish">
 				<a href="${CPATH}/admin/withdraw?m=${m!}&p=${p!}&c=${c!}&s=${StatusUnTransCode!}">
 					未打款 <span class="count">(${untrans_count!"0"})</span>
@@ -27,6 +28,7 @@
 				</a>
 				|
 			</li>
+			</#if>
 		</ul>
 
 
@@ -49,7 +51,7 @@
 							<th style="width:20px;"><input name="dataItem" onclick="checkAll(this)" type="checkbox" value="0"></th>
 							<th style="width:8%">申请人</th>
 							<th style="width:8%">金额</th>
-							<th style="width:8%">户名</th>
+							<th style="width:8%">提交户名</th>
 							<th style="width:20%">银行卡号</th>
 							<th style="width:8%">提现方式</th> 
 							<th>当前状态</th>
@@ -62,7 +64,7 @@
 							<#list page.getList() as bean>
 								<tr class="jp-onmouse">
 									<td><input name="dataItem" type="checkbox" value="${bean.id}"></td>
-									<td>${bean.user.realname}</td>
+									<td><#if bean.user??><a target="_blank" href="${bean.user.userLink!}">${bean.user.realname!}</a></#if></td>
 									<td>${bean.money?string("0.00")}</td>
 									<td>${bean.realname}</td>
 									<td>${bean.bank_account}</td>
@@ -92,7 +94,7 @@
 			
 			<#if page??> 
 			<#include "../_inc/_paginate.html" /> 
-			<@paginate currentPage=page.pageNumber totalPage=page.totalPage actionUrl="?p="+(p!)+"&c="+(c!)+"&m="+(m!)+"&t="+(t!)+"&s="+(s!)+"&k="+(k!)+"&tids="+(tids!)+"&page="/> 
+			<@paginate currentPage=page.pageNumber totalPage=page.totalPage actionUrl="?p="+(p!)+"&c="+(c!)+"&m="+(m!)+"&today="+(today!)+"&t="+(t!)+"&s="+(s!)+"&k="+(k!)+"&tids="+(tids!)+"&page="/> 
 			</#if>
 
 		</div>

@@ -15,6 +15,7 @@ import io.jpress.model.User;
 import io.jpress.model.query.UserQuery;
 import io.jpress.router.RouterMapping;
 import io.jpress.router.RouterNotAllowConvert;
+import yjt.Utils;
 import yjt.ChinaPay.ChinapayTransBean;
 import yjt.ChinaPay.ChinapayUtils;
 import yjt.ChinaPay.ChinapayUtils.PayStatus;
@@ -40,8 +41,14 @@ public class _WithdrawController extends JBaseCRUDController<Withdraw>{
 		setAttr("StatusTransCode", Withdraw.Status.TRANS.getIndex());	
 		setAttr("StatusUnTransCode", Withdraw.Status.UNTRANS.getIndex());
 		
-		
-		int count = (int) WithdrawQuery.me().findCount(null);
+		int count = 0;
+		Integer today = getParaToInt("today", 0);
+		if(today == 0) {
+			count = (int) WithdrawQuery.me().findCount(null);
+		} else {
+			count = (int) WithdrawQuery.me().findCountToday();
+		}
+		setAttr("today", today);
 		setAttr("count", count);
 		int trans_count = (int) WithdrawQuery.me().findCount(Withdraw.Status.TRANS);
 		setAttr("trans_count", trans_count);
@@ -50,7 +57,7 @@ public class _WithdrawController extends JBaseCRUDController<Withdraw>{
 		
 		
 		String keyword = getPara("k", "").trim();
-		Page<Withdraw> page =  WithdrawQuery.me().paginateBySearch(getPageNumber(), getPageSize(), keyword, getStatus());
+		Page<Withdraw> page =  WithdrawQuery.me().paginateBySearch(getPageNumber(), getPageSize(), keyword, getStatus(),  today==1?Utils.getTodayStartTime():null);
 		setAttr("page", page);
 		
 		setAttr("include", "_index_include.html");

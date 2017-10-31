@@ -90,23 +90,23 @@ function reply(id){
 				<div class="box-body">
 					<div class="row chart-row">
 						<div class="col-xs-4">
-							<a class="chart-item" href="#">
+							<a class="chart-item" href="${CPATH}/admin/contract?p=contract&c=list&today=1">
 								<p class="chart-item-title">今日借条</p>
-								<h3 class="chart-item-amount">10</h3>
+								<h3 class="chart-item-amount">${todayContractsNum!}</h3>
 								<span class="chart-item-bottom chart-bottom-c3"></span>
 							</a>
 						</div>
 						<div class="col-xs-4">
-							<a class="chart-item" href="#">
+							<a class="chart-item" href="${CPATH}/admin/unionpaylog?p=charge&c=list&today=1">
 								<p class="chart-item-title">今日充值</p>
-								<h3 class="chart-item-amount">10.5</h3>
+								<h3 class="chart-item-amount">${todayCharge?string("0.00")}</h3>
 								<span class="chart-item-bottom chart-bottom-c3"></span>
 							</a>
 						</div>
 						<div class="col-xs-4">
-							<a class="chart-item" href="#">
+							<a class="chart-item" href="${CPATH}/admin/withdraw?p=draw&c=list&today=1">
 								<p class="chart-item-title">今日提现</p>
-								<h3 class="chart-item-amount">20.0</h3>
+								<h3 class="chart-item-amount">${todayWithdraw?string("0.00")}</h3>
 								<span class="chart-item-bottom chart-bottom-c3"></span>
 							</a>
 						</div>
@@ -114,36 +114,30 @@ function reply(id){
 					
 					<div class="row chart-row">
 						<div class="col-xs-4">
-							<a class="chart-item" href="#">
+							<a class="chart-item" href="${CPATH}/admin/user?p=user&c=list&today=1">
 								<p class="chart-item-title">今日用户</p>
-								<h3 class="chart-item-amount">10</h3>
+								<h3 class="chart-item-amount">${todayUserCount!}</h3>
 								<span class="chart-item-bottom chart-bottom-c3"></span>
 							</a>
 						</div>
 						<div class="col-xs-4">
-							<a class="chart-item" href="#">
+							<a class="chart-item" href="${CPATH}/admin/contract?p=contract&c=list&today=1">
 								<p class="chart-item-title">今日借入</p>
-								<h3 class="chart-item-amount">10.5</h3>
+								<h3 class="chart-item-amount">${todayContractAmount?string("0.00")}</h3>
 								<span class="chart-item-bottom chart-bottom-c3"></span>
 							</a>
 						</div>
 						<div class="col-xs-4">
-							<a class="chart-item" href="#">
+							<a class="chart-item" href="${CPATH}/admin/contract?p=contract&c=list&today=1">
 								<p class="chart-item-title">今日借出</p>
-								<h3 class="chart-item-amount">20.0</h3>
+								<h3 class="chart-item-amount">${todayContractAmount?string("0.00")}</h3>
 								<span class="chart-item-bottom chart-bottom-c3"></span>
 							</a>
 						</div>
 					</div>
-
 				</div>
-				<!-- /.box-body-->
 			</div>
-			<!-- /.box -->
 		</div>
-		<!-- /.col -->
 	</div>
-	<!-- /.row -->
 </section>
-<!-- /.content -->
 </@layout>

@@ -16,6 +16,7 @@ import io.jpress.model.query.UserQuery;
 import io.jpress.router.RouterMapping;
 import io.jpress.router.RouterNotAllowConvert;
 import io.jpress.utils.StringUtils;
+import yjt.Utils;
 import yjt.core.perm.PermAnnotation;
 import yjt.model.Contract;
 import yjt.model.query.ContractQuery;
@@ -34,7 +35,14 @@ public class _ContractController extends JBaseCRUDController<Contract>{
 	
 	@PermAnnotation("contract-list")
 	public void index(){
-		int count = (int) ContractQuery.me().findCount(Contract.Status.ALL, null, null, null);
+		Integer today = getParaToInt("today", 0);
+		int count = 0;
+		if(today == 0) {
+			count = (int) ContractQuery.me().findCount(Contract.Status.ALL, null, null, null);
+		} else {
+			setAttr("today", 1);
+			count = (int) ContractQuery.me().findCount(null, null, null, null, Utils.getTodayStartTime(), null);
+		}
 		setAttr("count", count);
 		int establish_count = (int) ContractQuery.me().findCount(Contract.Status.ESTABLISH, null, null, null);
 		setAttr("establish_count", establish_count);
@@ -48,7 +56,7 @@ public class _ContractController extends JBaseCRUDController<Contract>{
 		String keyword = getPara("k", "").trim();
 		
 		Page<Contract> page = null;
-		page = ContractQuery.me().paginateBySearch(getPageNumber(), getPageSize(), keyword,getStatus());
+		page = ContractQuery.me().paginateBySearch(getPageNumber(), getPageSize(), keyword,getStatus(), today==1?Utils.getTodayStartTime():null, null);
 		setAttr("page", page);
 
 		setAttr("StatusINITCode", Contract.Status.INIT.getIndex());		setAttr("StatusINITName", Contract.Status.INIT.getName());

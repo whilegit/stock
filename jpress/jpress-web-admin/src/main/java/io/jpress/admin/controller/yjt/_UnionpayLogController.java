@@ -7,6 +7,7 @@ import io.jpress.core.JBaseCRUDController;
 import io.jpress.core.interceptor.ActionCacheClearInterceptor;
 import io.jpress.router.RouterMapping;
 import io.jpress.router.RouterNotAllowConvert;
+import yjt.Utils;
 import yjt.core.perm.PermAnnotation;
 import yjt.model.UnionpayLog;
 import yjt.model.query.FeedbackQuery;
@@ -20,11 +21,18 @@ public class _UnionpayLogController extends JBaseCRUDController<UnionpayLog>{
 	
 	@PermAnnotation("unionpaylog-list")
 	public void index(){
-		int count = (int) UnionpayLogQuery.me().findCount();
+		Integer today = getParaToInt("today", 0);
+		int count = 0;
+		if(today == 0)
+			count = (int) UnionpayLogQuery.me().findCount();
+		else {
+			count = (int) UnionpayLogQuery.me().findCountToday();
+		}
 		setAttr("count", count);
+		setAttr("today", today);
 		
 		String keyword = getPara("k", "").trim();
-		Page<UnionpayLog> page =  UnionpayLogQuery.me().paginateBySearch(getPageNumber(), getPageSize(), keyword, null);
+		Page<UnionpayLog> page =  UnionpayLogQuery.me().paginateBySearch(getPageNumber(), getPageSize(), keyword, null, today==1?Utils.getTodayStartTime():null);
 		setAttr("page", page);
 		
 		setAttr("include", "_index_include.html");
