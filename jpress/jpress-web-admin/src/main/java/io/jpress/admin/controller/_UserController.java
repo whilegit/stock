@@ -104,7 +104,7 @@ public class _UserController extends JBaseCRUDController<User> {
 		
 		if (user.getId() == null) {
 			User loginedUser = getLoginedUser();
-			if(loginedUser == null || PermKit.permCheck("user-add", loginedUser)) {
+			if(loginedUser == null || PermKit.permCheck("user-add", loginedUser) == false) {
 				renderAjaxResultForError("无权操作");
 				return;
 			}
