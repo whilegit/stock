@@ -29,26 +29,22 @@
 					</div>
 					<div class="clr"></div>
 				</li>
-				<li class="jp-set-pad">
-					<div class="col-sm-3 jp-set-info">头像</div>
-					<div class="col-sm-9 jp-common-pad ">
-						<div class="col-sm-7 ">
-							<#if user?? && user.avatar ??>
-							<img alt="" src="${CPATH}${(user.avatar)!}" class="jp-grids-photos img-responsive">
-							<br />
-							</#if>
-							<input class="form-control input-md" type="text" name="user.avatar" value="${(user.avatar)!}">
-							<input name="user.avatar" type="file">
-						</div>
-					</div>
-					<div class="clr"></div>
-				</li>
 				
 				<li class="jp-set-pad">
 					<div class="col-sm-3 jp-common-pad  jp-set-info">姓名 </div>
 					<div class="col-sm-9 jp-common-pad ">
 						<div class="col-sm-6  ">
 							<input class="form-control input-md" type="text" name="user.realname" value="${(user.realname)!}">
+						</div>
+					</div>
+					<div class="clr"></div>
+				</li>
+				<li class="jp-set-pad">
+					<div class="col-sm-3 jp-common-pad  jp-set-info">性别</div>
+					<div class="col-sm-9 jp-common-pad ">
+						<div class="col-sm-6  ">
+							<label class="radio-inline"><input type="radio" name="user.gender" value="1" checked> 男</label>
+							<label class="radio-inline"><input type="radio" name="user.gender" value="0"> 女</label>
 						</div>
 					</div>
 					<div class="clr"></div>
@@ -82,8 +78,8 @@
 					<div class="col-sm-3 jp-common-pad  jp-set-info">实名认证</div>
 					<div class="col-sm-9 jp-common-pad ">
 						<div class="col-sm-6  ">
-							<label class="radio-inline"><input type="radio" name="user.auth_card" value="0" <#if user.auth_card==0>checked</#if>> 未认证</label>
-							<label class="radio-inline"><input type="radio" name="user.auth_card" value="1" <#if user.auth_card==1>checked</#if>> 已认证</label>
+							<label class="radio-inline"><input type="radio" name="user.auth_card" value="0" checked> 未认证</label>
+							<label class="radio-inline"><input type="radio" name="user.auth_card" value="1"> 已认证</label>
 						</div>
 					</div>
 					<div class="clr"></div>
@@ -93,8 +89,8 @@
 					<div class="col-sm-3 jp-common-pad  jp-set-info">手机号认证</div>
 					<div class="col-sm-9 jp-common-pad ">
 						<div class="col-sm-6  ">
-							<label class="radio-inline"><input type="radio" name="mobileStatusLogic" value="0" <#if user.mobileStatusLogic=='0'>checked</#if>> 未认证</label>
-							<label class="radio-inline"><input type="radio" name="mobileStatusLogic" value="1" <#if user.mobileStatusLogic=='1'>checked</#if>> 已认证</label>
+							<label class="radio-inline"><input type="radio" name="mobileStatusLogic" value="0" checked> 未认证</label>
+							<label class="radio-inline"><input type="radio" name="mobileStatusLogic" value="1"> 已认证</label>						
 						</div>
 					</div>
 					<div class="clr"></div>
@@ -104,8 +100,8 @@
 					<div class="col-sm-3 jp-common-pad  jp-set-info">银行卡认证</div>
 					<div class="col-sm-9 jp-common-pad ">
 						<div class="col-sm-6  ">
-							<label class="radio-inline"><input type="radio" name="user.auth_bank" value="0" <#if user.auth_bank==0>checked</#if>> 未认证</label>
-							<label class="radio-inline"><input type="radio" name="user.auth_bank" value="1" <#if user.auth_bank==1>checked</#if>> 已认证</label>
+							<label class="radio-inline"><input type="radio" name="user.auth_bank" value="0" checked> 未认证</label>
+							<label class="radio-inline"><input type="radio" name="user.auth_bank" value="1"> 已认证</label>			
 						</div>
 					</div>
 					<div class="clr"></div>
@@ -115,8 +111,8 @@
 					<div class="col-sm-3 jp-common-pad  jp-set-info">通讯录认证</div>
 					<div class="col-sm-9 jp-common-pad ">
 						<div class="col-sm-6  ">
-							<label class="radio-inline"><input type="radio" name="user.auth_book" value="0" <#if user.auth_book==0>checked</#if>> 未认证</label>
-							<label class="radio-inline"><input type="radio" name="user.auth_book" value="1" <#if user.auth_book==1>checked</#if>> 已认证</label>
+							<label class="radio-inline"><input type="radio" name="user.auth_book" value="0" checked> 未认证</label>
+							<label class="radio-inline"><input type="radio" name="user.auth_book" value="1"> 已认证</label>	
 						</div>
 					</div>
 					<div class="clr"></div>
@@ -125,8 +121,8 @@
 					<div class="col-sm-3 jp-common-pad  jp-set-info">肖像认证</div>
 					<div class="col-sm-9 jp-common-pad ">
 						<div class="col-sm-6  ">
-							<label class="radio-inline"><input type="radio" name="user.auth_face" value="0" <#if user.auth_face==0>checked</#if>> 未认证</label>
-							<label class="radio-inline"><input type="radio" name="user.auth_face" value="1" <#if user.auth_face==1>checked</#if>> 已认证</label>
+							<label class="radio-inline"><input type="radio" name="user.auth_face" value="0" checked> 未认证</label>
+							<label class="radio-inline"><input type="radio" name="user.auth_face" value="1"> 已认证</label>	
 						</div>
 					</div>
 					<div class="clr"></div>
@@ -141,84 +137,23 @@
 					<div class="col-sm-3 jp-common-pad  jp-set-info">银行卡号</div>
 					<div class="col-sm-9 jp-common-pad ">
 						<div class="col-sm-6  ">
-							<input class="form-control input-md" type="text" name="user.bankcard" value="${(user.bankcard)!}">
+							<input class="form-control input-md" type="text" name="user.mobile" value="${(user.mobile)!}">
 						</div>
 					</div>
 					<div class="clr"></div>
 				</li>
 			</ul>
 		</div>
-		<!-- div class="row">
-			<h4 class="jp-set-pad jp-set-title">联系信息</h4>
-			<ul class="list-unstyled">
-
-				<li class="jp-set-pad">
-					<div class="col-sm-3 jp-common-pad  jp-set-info">电子邮件 (必填)</div>
-					<div class="col-sm-9 jp-common-pad ">
-						<div class="col-sm-6  ">
-							<input class="form-control input-md" type="text" name="user.email" value="${(user.email)!}">
-						</div>
-					</div>
-					<div class="clr"></div>
-				</li>
-
-				<li class="jp-set-pad">
-					<div class="col-sm-3 jp-common-pad  jp-set-info">电话</div>
-					<div class="col-sm-9 jp-common-pad ">
-						<div class="col-sm-6  ">
-							<input class="form-control input-md" type="text" name="user.mobile" value="${(user.mobile)!}">
-						</div>
-					</div>
-					<div class="clr"></div>
-				</li>
-
-				<li class="jp-set-pad">
-					<div class="col-sm-3 jp-common-pad  jp-set-info">QQ</div>
-					<div class="col-sm-9 jp-common-pad ">
-						<div class="col-sm-6  ">
-							<input class="form-control input-md" type="text" name="user.qq" value="${(user.qq)!}">
-						</div>
-					</div>
-					<div class="clr"></div>
-				</li>
-
-				<li class="jp-set-pad">
-					<div class="col-sm-3 jp-common-pad  jp-set-info">微博</div>
-					<div class="col-sm-9 jp-common-pad ">
-						<div class="col-sm-6  ">
-							<input class="form-control input-md" type="text" name="user.weibo" value="${(user.weibo)!}">
-						</div>
-					</div>
-					<div class="clr"></div>
-				</li>
-			</ul>
-		</div-->
-		<!-- div class="row">
-			<h4 class="jp-set-pad jp-set-title">签名</h4>
-			<ul class="list-unstyled">
-				<li class="jp-set-pad">
-					<div class="col-sm-3 jp-common-pad  jp-set-info">个人签名</div>
-					<div class="col-sm-9 jp-common-pad ">
-						<div class="col-sm-7  ">
-							<div class="form-group">
-								<textarea class="form-control" rows="4" name="user.signature">${(user.signature)!}</textarea>
-								<p>分享关于您的一些心情和公开信息。</p>
-							</div>
-						</div>
-					</div>
-					<div class="clr"></div>
-				</li>
-			</ul>
-		</div-->
+		
 		<div class="row">
-			<h4 class="jp-set-pad jp-set-title">修改密码</h4>
+			<h4 class="jp-set-pad jp-set-title">设置密码</h4>
 			<ul class="list-unstyled">
 				<li class="jp-set-pad">
 					<div class="col-sm-3 jp-common-pad  jp-set-info">登入密码</div>
 					<div class="col-sm-9 jp-common-pad ">
 						<div class="col-sm-7  ">
 							<div class="form-group">
-								<input class="form-control input-md" class="pull-left" id="password" placeholder="不修改请留空" name="user.password" autocomplete="off" spellcheck="false"  type="password" >
+								<input class="form-control input-md" class="pull-left" id="password" placeholder="不设置请留空" name="user.password" autocomplete="off" spellcheck="false"  type="password" >
 								<input type="password" style="height: 1px;width: 1px;opacity:0;"><!-- 防止密码被自动填充 -->
 							</div>
 						</div>
@@ -230,7 +165,7 @@
 					<div class="col-sm-9 jp-common-pad ">
 						<div class="col-sm-7  ">
 							<div class="form-group">
-								<input class="form-control input-md" class="pull-left" id="deal_password" placeholder="不修改请留空" name="user.deal_password" autocomplete="off" spellcheck="false"  type="password" >
+								<input class="form-control input-md" class="pull-left" id="deal_password" placeholder="不设置请留空" name="user.deal_password" autocomplete="off" spellcheck="false"  type="password" >
 								<input type="password" style="height: 1px;width: 1px;opacity:0;"><!-- 防止密码被自动填充 -->
 							</div>
 						</div>
@@ -240,13 +175,11 @@
 			</ul>
 		</div>
 	</div>
-	<#if hasEditPerm?? && hasEditPerm>
 	<div class="row">
 		<div class="col-xs-12">
-			<button type="button" onclick="doSubmit()" class="btn btn-primary">保存更改</button>
+			<button type="button" onclick="doSubmit()" class="btn btn-primary">新增用户</button>
 		</div>
 	</div>
-	</#if>
 	</form>
 	
 </section>

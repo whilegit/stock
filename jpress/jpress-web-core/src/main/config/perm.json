@@ -13,6 +13,7 @@
 			{"key":"user-list","desc":"查看用户列表"},
 			{"key":"user-view","desc":"查看用户信息"},
 			{"key":"user-edit","desc":"用户编辑"},
+			{"key":"user-add","desc":"添加用户"},
 			{"key":"user-frozen","desc":"冻结用户"},
 			{"key":"user-restore","desc":"恢复用户"},
 			{"key":"user-delete","desc":"删除用户"},

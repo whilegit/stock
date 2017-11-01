@@ -71,36 +71,22 @@ public class _UserController extends JBaseCRUDController<User> {
 
 	@PermAnnotation("user-view")
 	public void edit() {
-		BigInteger id = getParaToBigInteger("id");
-		if (id != null) {
-			setAttr("user", UserQuery.me().findById(id));
+		BigInteger id = getParaToBigInteger("id", BigInteger.ZERO);
+		User user = UserQuery.me().findById(id);
+		if (user == null) {
+			this.renderText("非法访问");
+			return;
 		}
+		setAttr("user", user);
 		
 		boolean hasEditPerm = PermKit.permCheck("user-edit", getLoginedUser());
 		setAttr("hasEditPerm", hasEditPerm);
-
-		String templateHtml = "admin_user_edit.html";
-		if (TemplateManager.me().existsFile(templateHtml)) {
-			setAttr("include", TemplateManager.me().currentTemplatePath() + "/" + templateHtml);
-			return;
-		}
 		setAttr("include", "_edit_include.html");
-
 	}
 	
 	@PermAnnotation("user-add")
 	public void add() {
-	
-		boolean hasEditPerm = PermKit.permCheck("user-add", getLoginedUser());
-		setAttr("hasEditPerm", hasEditPerm);
-
-		String templateHtml = "admin_user_edit.html";
-		if (TemplateManager.me().existsFile(templateHtml)) {
-			setAttr("include", TemplateManager.me().currentTemplatePath() + "/" + templateHtml);
-			return;
-		}
-		setAttr("include", "_edit_include.html");
-
+		setAttr("include", "_add_include.html");
 	}
 
 	/**
@@ -116,14 +102,12 @@ public class _UserController extends JBaseCRUDController<User> {
 		String password = user.getPassword();
 		String deal_password = user.getDealPassword();
 		
-		/*
-		if (StringUtils.isBlank(user.getUsername())) {
-			renderAjaxResultForError("用户名不能为空。");
-			return;
-		}
-		*/
 		if (user.getId() == null) {
-
+			User loginedUser = getLoginedUser();
+			if(loginedUser == null || PermKit.permCheck("user-add", loginedUser)) {
+				renderAjaxResultForError("无权操作");
+				return;
+			}
 			User dbUser = UserQuery.me().findUserByUsername(user.getUsername());
 			if (dbUser != null) {
 				renderAjaxResultForError("该用户名已经存在，不能添加。");
@@ -140,9 +124,12 @@ public class _UserController extends JBaseCRUDController<User> {
 			if (StringUtils.isNotBlank(user.getMobile())) {
 				dbUser = UserQuery.me().findUserByMobile(user.getMobile());
 				if (dbUser != null) {
-					renderAjaxResultForError("手机号码地址已经存在，不能添加该手机号码。");
+					renderAjaxResultForError("手机号码已经存在，不能添加该手机号码。");
 					return;
 				}
+			} else {
+				renderAjaxResultForError("请至少提供手机号码");
+				return;
 			}
 
 			// 新增用户
@@ -197,6 +184,32 @@ public class _UserController extends JBaseCRUDController<User> {
 			user.setAvatar(files.get("user.avatar"));
 		}
 
+		
+		Integer mobileStatusLogic = this.getParaToInt("mobileStatusLogic", 0);
+		if (user.getId() == null) {
+			if(mobileStatusLogic == 1) {
+				user.setMobileStatus("1");
+				user.setAuthExpire(Utils.getNextMonthDay());
+			}
+		} else {
+			User dbUser = UserQuery.me().findByIdNoCache(user.getId());
+			if(dbUser == null) {
+				renderAjaxResultForError("用户不存在！");
+				return;
+			}
+			String prev = dbUser.getMobileStatusLogic();
+			if(mobileStatusLogic == 1) {
+				if("1".equals(prev) == false) {
+					user.setMobileStatus("1");
+					user.setAuthExpire(Utils.getNextMonthDay());
+				}
+			} else {
+				if("1".equals(prev)) {
+					user.setAuthExpire(Utils.getPrevMonthDay(new Date()));
+				}
+			}
+		}
+		
 		boolean saved = Db.tx(new IAtom() {
 			@Override
 			public boolean run() throws SQLException {

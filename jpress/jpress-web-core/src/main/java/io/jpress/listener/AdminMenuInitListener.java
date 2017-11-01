@@ -122,7 +122,7 @@ public class AdminMenuInitListener implements MessageListener {
 		MenuGroup group = new MenuGroup("user", "fa fa-user", "用户");
 		{
 			group.addMenuItem(new MenuItem("list", "/admin/user", "用户列表", "user-list"));
-			group.addMenuItem(new MenuItem("edit", "/admin/user/add", "创建用户", "user-add"));
+			group.addMenuItem(new MenuItem("edit", "/admin/user/add", "添加用户", "user-add"));
 			group.addMenuItem(new MenuItem("info", "/admin/user/info", "我的资料", "user-view"));
 		}
 		return group;
