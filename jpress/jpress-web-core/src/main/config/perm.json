@@ -41,5 +41,15 @@
 		"perms":[
 			{"key":"unionpaylog-list","desc":"充值列表"}
 		]
+	},
+	{
+		"key":"ad",
+		"desc":"广告管理",
+		"perms":[
+			{"key":"ad-list","desc":"广告列表"},
+			{"key":"ad-view","desc":"广告查看"},
+			{"key":"ad-edit","desc":"广告编辑"},
+			{"key":"ad-delete","desc":"广告删除"}
+		]
 	}
 ]

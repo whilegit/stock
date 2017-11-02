@@ -171,6 +171,7 @@ public class AdminMenuInitListener implements MessageListener {
 		MenuGroup group = new MenuGroup("ad", "fa fa-file-text-o", "广告管理");
 		{
 			group.addMenuItem(new MenuItem("list", "/admin/ad", "广告列表", "ad-list"));
+			group.addMenuItem(new MenuItem("add", "/admin/ad/add", "添加广告", "ad-add"));
 		}
 		return group;
 	}

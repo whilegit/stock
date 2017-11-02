@@ -1,5 +1,10 @@
 package io.jpress.admin.controller.yjt;
 
+import java.math.BigInteger;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.jfinal.aop.Before;
 import com.jfinal.plugin.activerecord.Page;
 
@@ -8,6 +13,7 @@ import io.jpress.core.interceptor.ActionCacheClearInterceptor;
 import io.jpress.router.RouterMapping;
 import io.jpress.router.RouterNotAllowConvert;
 import yjt.core.perm.PermAnnotation;
+import yjt.core.perm.PermKit;
 import yjt.model.Ad;
 import yjt.model.query.AdQuery;
 
@@ -43,5 +49,45 @@ public class _AdController extends JBaseCRUDController<Ad>{
 		
 		setAttr("include", "_index_include.html");
 		render("index.html");
+	}
+	
+	@PermAnnotation("ad-view")
+	public void edit(){
+		BigInteger id = getParaToBigInteger("id", BigInteger.ZERO);
+		Ad ad = AdQuery.me().findById(id);
+		if(ad == null){
+			this.renderText("出错了，广告不存在");
+			return;
+		}
+		boolean hasEditPerm = PermKit.permCheck("ad-edit", getLoginedUser());
+		setAttr("hasEditPerm", hasEditPerm);
+		setAttr("bean", ad);
+		setAttr("include","_edit_include.html");
+		render("edit.html");
+	}
+	
+	@PermAnnotation("ad-edit")
+	public void save(){
+		HashMap<String, String> files = getUploadFilesMap();
+		final Map<String, String> metas = getMetas(files);
+		final Ad ad = getModel(Ad.class);
+		if (files != null && files.containsKey("ad.img")) {
+			ad.setImg(files.get("ad.img"));
+		}
+		ad.setCreateTime(new Date());
+		ad.update();
+		this.renderAjaxResultForSuccess();
+	}
+	
+	@PermAnnotation("ad-add")
+	public void add(){
+		this.renderText("暂时不可用");
+		return;
+	}
+	
+	@PermAnnotation("ad-delete")
+	public void delete(){
+		this.renderText("暂时不可用");
+		return;
 	}
 }

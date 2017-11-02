@@ -28,6 +28,9 @@
 				|
 			</li>
 		</ul>
+		<div class="form-horizontal" style="float: right">
+			<a class="btn btn-danger btn-sm" href="${CPATH}/admin/ad/add?c=${c!}&p=${p!}">新增</a>
+		</div>
 	</div>
 					
 	<div class="box">
@@ -53,7 +56,15 @@
 							<#list page.getList() as bean>
 								<tr class="jp-onmouse">
 									<td><input name="dataItem" type="checkbox" value="${bean.id}"></td>
-									<td>${bean.title!}</td>
+									<td>
+										<strong><a href="${CPATH}/admin/user/edit?id=${bean.id}&c=${c!}&p=${p!}">${bean.title!}</a></strong>
+										<div class="jp-flash-comment">
+											<p class="row-actions jp-cancel-pad">
+												<span class="approve"> <a class="vim-a" href="${CPATH}/admin/ad/edit?id=${bean.id}&c=${c!}&p=${p!}">编辑</a></span>
+												<span class="spam"> | <a class="vim-s vim-destructive" href="javascript:;" onclick="del('${bean.id}')">删除</a></span> 
+											</p>
+										</div>
+									</td>
 									<td><a href="${bean.imgMedia!}" target="_blank">${bean.imgMedia!}</a></td>
 									<td><a href="${bean.urlMedia!}" target="_blank">${bean.urlMedia!}</a></td>
 									<td>${bean.dscrpt!}</td>
@@ -72,12 +83,10 @@
 	
 	<div class="cf">
 		<div class="pull-right " >
-			
 			<#if page??> 
 			<#include "../_inc/_paginate.html" /> 
 			<@paginate currentPage=page.pageNumber totalPage=page.totalPage actionUrl="?p="+(p!)+"&c="+(c!)+"&m="+(m!)+"&t="+(t!)+"&s="+(s!)+"&k="+(k!)+"&tids="+(tids!)+"&page="/> 
 			</#if>
-
 		</div>
 	</div>
 		
