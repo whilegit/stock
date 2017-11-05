@@ -1,0 +1,12 @@
+<div style="position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);border:1px solid <#if errMsg??>#b00;<#else>#0b0</#if>;border-radius:5px;padding:10px;">
+	<#if errMsg??>
+		<div style="color:#b00">${errMsg!}</div>
+	<#else>
+		处理成功
+	</#if>
+	
+	<div><a href="${href!}">返回前一页</a></div>
+</div>
+
+
+

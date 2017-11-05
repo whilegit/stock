@@ -177,6 +177,25 @@ public class BaseReport<M extends BaseReport<M>> extends JModel<M> implements IB
 		return get("status");
 	}
 	
+	public void setClerk(java.math.BigInteger clerk) {
+		set("clerk", clerk);
+	}
+
+	public java.math.BigInteger getClerk() {
+		Object clerk = get("clerk");
+		if (clerk == null)
+			return null;
+
+		return clerk instanceof BigInteger ? (BigInteger)clerk : new BigInteger(clerk.toString());
+	}
+	
+	public void setFeedback(String feedback){
+		set("feedback", feedback);
+	}
+	public String getFeedback(){
+		return get("feedback");
+	}
+	
 	public void setDeleted(int deleted){
 		set("deleted", deleted);
 	}

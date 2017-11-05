@@ -47,9 +47,10 @@
 							<th style="width:20px;"><input name="dataItem" onclick="checkAll(this)" type="checkbox" value="0"></th>
 							<th style="width:10%">举报人</th>
 							<th style="width:10%">被举报人</th>
-							<th style="width:40%">内容</th>
+							<th style="width:20%">内容</th>
 							<th style="width:20%">图片</th>
 							<th style="width:10%">举报日期</th>
+							<th style="width:20%">处理意见</th>
 							<th style="width:10%">当前状态</th>
 						</tr>
 					</thead>
@@ -58,13 +59,21 @@
 							<#list page.getList() as bean>
 								<tr class="jp-onmouse">
 									<td><input name="dataItem" type="checkbox" value="${bean.id}"></td>
-									<td>${bean.fromUser.realname!}</td>
-									<td>${bean.toUser.realname!}</td>
+									<td>
+										<strong><a target="_blank" href="${CPATH}/admin/user/edit?id=${(bean.fromUser.id)!}&c=${c!}&p=${p!}">${bean.fromUser.realname!}</a></strong>
+										<div class="jp-flash-comment">
+											<p class="row-actions jp-cancel-pad">
+												<a data-toggle="modal" href="${CPATH}/admin/report/proc?id=${bean.id}" data-target="#modal">处理</a>
+												<span class="spam"> | <a class="vim-s vim-destructive" href="javascript:;" onclick="del('${bean.id}')">删除</a></span> 
+											</p>
+										</div>
+									</td>
+									<td><a target="_blank" href="${CPATH}/admin/user/edit?id=${(bean.toUser.id)!}&c=${c!}&p=${p!}">${bean.toUser.realname!}</a></td>
 									<td>${bean.content!}</td>
 									<td>${bean.imgsHtml!}</td>
 									<td>${bean.create_time?string("yyyy-MM-dd HH:mm")}</td>
+									<td>${bean.feedback!}</td>
 									<td><#if bean.status==1><span style="color:#0b0;">已处理</span><#else><span style="color:#ccc;">未处理</span></#if></td>
-									
 								</tr>
 							</#list> 
 						</#if>
@@ -89,3 +98,10 @@
 	<!-- /.row -->
 </section>
 <!-- /.content -->
+
+<div class="modal" id="modal">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-radius:5px;"></div>
+    </div>
+</div>
+

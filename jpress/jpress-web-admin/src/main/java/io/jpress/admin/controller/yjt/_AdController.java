@@ -75,19 +75,29 @@ public class _AdController extends JBaseCRUDController<Ad>{
 			ad.setImg(files.get("ad.img"));
 		}
 		ad.setCreateTime(new Date());
-		ad.update();
+		if(ad.getId() != null){
+			ad.update();
+		} else {
+			ad.save();
+		}
 		this.renderAjaxResultForSuccess();
 	}
 	
 	@PermAnnotation("ad-add")
 	public void add(){
-		this.renderText("暂时不可用");
+		setAttr("include","_add_include.html");
+		render("add.html");
 		return;
 	}
 	
 	@PermAnnotation("ad-delete")
 	public void delete(){
-		this.renderText("暂时不可用");
-		return;
+		BigInteger id = getParaToBigInteger("id");
+		if (id == null) {
+			renderAjaxResultForError();
+			return;
+		}
+		Ad ad = AdQuery.me().findById(id);
+		ad.delete();
 	}
 }
