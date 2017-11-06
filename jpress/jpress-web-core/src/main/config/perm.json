@@ -51,5 +51,14 @@
 			{"key":"ad-edit","desc":"广告编辑"},
 			{"key":"ad-delete","desc":"广告删除"}
 		]
+	},
+	{
+		"key":"report",
+		"desc":"举报管理",
+		"perms":[
+			{"key":"report-list","desc":"举报列表"},
+			{"key":"report-delete","desc":"删除举报"},
+			{"key":"report-proc","desc":"举报处理"}
+		]
 	}
 ]
