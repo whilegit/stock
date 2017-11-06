@@ -60,5 +60,14 @@
 			{"key":"report-delete","desc":"删除举报"},
 			{"key":"report-proc","desc":"举报处理"}
 		]
+	},
+	{
+		"key":"feedback",
+		"desc":"反馈管理",
+		"perms":[
+			{"key":"feedback-list","desc":"反馈列表"},
+			{"key":"feedback-delete","desc":"删除反馈"},
+			{"key":"feedback-proc","desc":"反馈处理"}
+		]
 	}
 ]

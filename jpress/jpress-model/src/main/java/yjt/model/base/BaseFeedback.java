@@ -164,4 +164,30 @@ public class BaseFeedback<M extends BaseFeedback<M>> extends JModel<M> implement
 	public java.util.Date getCreateTime(){
 		return get("create_time");
 	}
+	
+	public void setStatus(int status){
+		set("status", status);
+	}
+	public int getStatus(){
+		return get("status");
+	}
+	
+	public void setClerk(java.math.BigInteger clerk) {
+		set("clerk", clerk);
+	}
+
+	public java.math.BigInteger getClerk() {
+		Object clerk = get("clerk");
+		if (clerk == null)
+			return null;
+
+		return clerk instanceof BigInteger ? (BigInteger)clerk : new BigInteger(clerk.toString());
+	}
+	
+	public void setFeedback(String feedback){
+		set("feedback", feedback);
+	}
+	public String getFeedback(){
+		return get("feedback");
+	}
 }
