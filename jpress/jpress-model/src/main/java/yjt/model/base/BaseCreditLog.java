@@ -173,7 +173,9 @@ public class BaseCreditLog<M extends BaseCreditLog<M>> extends JModel<M> impleme
 		set("clerk", clerk);
 	}
 	public BigInteger getClerk() {
-		return get("clerk");
+		Object val = get("clerk");
+		if(val == null) return BigInteger.ZERO;
+		return val instanceof Long ? BigInteger.valueOf((Long)val) : (BigInteger)val;
 	}
 	
 	public void setLog(String log) {

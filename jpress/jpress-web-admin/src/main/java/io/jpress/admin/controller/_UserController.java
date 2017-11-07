@@ -44,6 +44,8 @@ import yjt.Utils;
 import yjt.core.perm.PermAnnotation;
 import yjt.core.perm.PermGroup;
 import yjt.core.perm.PermKit;
+import yjt.model.CreditLog;
+import yjt.model.query.CreditLogQuery;
 
 @RouterMapping(url = "/admin/user", viewPath = "/WEB-INF/admin/user")
 @Before(ActionCacheClearInterceptor.class)
@@ -401,5 +403,21 @@ public class _UserController extends JBaseCRUDController<User> {
 		}
 		this.renderAjaxResultForSuccess("修改角色成功");
 		return;
+	}
+	
+	@PermAnnotation("user-balance")
+	public void balance() {
+		BigInteger uid = getParaToBigInteger("id", BigInteger.ZERO);
+		User user = UserQuery.me().findByIdNoCache(uid);
+		if(user == null){
+			renderText("错误：用户不存在");
+			return;
+		}
+		setAttr("id", uid);
+		CreditLog.Platfrom[] platforms = {CreditLog.Platfrom.ALIPAY,CreditLog.Platfrom.WEIXIN, CreditLog.Platfrom.JIETIAO365, CreditLog.Platfrom.UNIONPAY};
+		Page<CreditLog> page = CreditLogQuery.me().paginate(getPageNumber(), getPageSize(), uid,  platforms);
+		setAttr("page", page);
+		setAttr("user", user);
+		setAttr("include", "_balance_include.html");
 	}
 }

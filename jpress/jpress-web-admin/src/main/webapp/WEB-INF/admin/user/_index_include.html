@@ -88,12 +88,15 @@
 								<p class="row-actions jp-cancel-pad">
 									<span class="approve"> <a class="vim-a" href="${CPATH}/admin/user/edit?id=${bean.id}&c=${c!}&p=${p!}">编辑</a></span>
 									<#if bean.role == 'administrator'><span class="approve"> <a class="vim-a" href="${CPATH}/admin/user/perm?id=${bean.id}">编辑权限</a> </span></#if>
+									<span class="approve"> <a class="vim-a" href="${CPATH}/admin/user/balance?id=${bean.id}&c=${c!}&p=${p!}">收支明细</a></span>
+									<!-- 
 									<#if "frozen" != bean.status!> 
 									<span class="spam"> | <a class="vim-s vim-destructive" href="javascript:;" onclick="frozen('${bean.id}')">冻结</a></span> 
 									<#else> 
 									<span class="approve"> | <a class="vim-a" href="javascript:;" onclick="restore('${bean.id}')">解冻</a></span> 
 									</#if>
 									<span class="spam"> | <a class="vim-s vim-destructive" href="javascript:;" onclick="del('${bean.id}')">永久删除</a></span> 
+									-->
 								</p>
 							</div>
 						</td>

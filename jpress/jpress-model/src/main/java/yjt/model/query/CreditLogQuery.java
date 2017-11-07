@@ -4,6 +4,8 @@ import java.math.BigInteger;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.jfinal.plugin.activerecord.Page;
+
 import io.jpress.model.query.JBaseQuery;
 import yjt.model.CreditLog;
 import yjt.model.CreditLog.Platfrom;
@@ -60,6 +62,46 @@ public class CreditLogQuery extends JBaseQuery{
 		}else{
 			return DAO.find(sqlBuilder.toString(), params.toArray());
 		}
+	}
+	
+	public Page<CreditLog> paginateBySearch(int page, int pagesize, BigInteger uid, Platfrom[] platforms) {
+		return paginate(page, pagesize, uid, platforms);
+	}
+	
+	public Page<CreditLog> paginate(int page, int pagesize,BigInteger uid, Platfrom[] platforms) {
+
+		String select = "select c.*";
+		StringBuilder sql = new StringBuilder(" from creditlog c Where 1 ");
+		LinkedList<Object> params = new LinkedList<Object>();
+		
+
+		if(uid != null){
+			appendIfNotEmpty(sql, "c.user_id", uid.toString(), params, false);
+		}
+		
+		if(platforms != null && platforms.length > 0) {
+			if(platforms.length == 1){
+				sql.append("And c.platform = ? ");
+				params.add(platforms[0].getIndex());
+			} else {
+				sql.append("And c.platform in (");
+				for(int i = 0; i<platforms.length; i++){
+					if(i != 0) sql.append(",");
+					sql.append("?");
+					params.add(platforms[i].getIndex());
+				}
+				sql.append(") ");
+			}
+		}
+		
+		sql.append(" group by c.id");
+		sql.append(" ORDER BY c.id DESC");
+
+		if (params.isEmpty()) {
+			return DAO.paginate(page, pagesize, true, select, sql.toString());
+		}
+
+		return DAO.paginate(page, pagesize, true, select, sql.toString(), params.toArray());
 	}
 	
 	public CreditLog findById(final BigInteger id) {
