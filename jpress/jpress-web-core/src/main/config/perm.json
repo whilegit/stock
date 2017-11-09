@@ -17,7 +17,10 @@
 			{"key":"user-frozen","desc":"冻结用户"},
 			{"key":"user-restore","desc":"恢复用户"},
 			{"key":"user-delete","desc":"删除用户"},
-			{"key":"user-changerole","desc":"变更角色"}
+			{"key":"user-changerole","desc":"变更角色"},
+			{"key":"user-balance","desc":"查看支付明细"},
+			{"key":"user-credit","desc":"查看借出记录"},
+			{"key":"user-debit","desc":"查看借入记录"}
 	     ]
 	},
 	{

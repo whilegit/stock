@@ -84,10 +84,10 @@ public class ContractQuery extends JBaseQuery{
 	}
 	
 	public Page<Contract> paginateBySearch(int page, int pagesize, String keyword, String status, Long fromTime, Long toTime) {
-		return paginate(page, pagesize, keyword, status, fromTime, toTime);
+		return paginate(page, pagesize, keyword, status, fromTime, toTime, null, null);
 	}
 	
-	public Page<Contract> paginate(int page, int pagesize, String keyword, String status, Long fromTime, Long toTime) {
+	public Page<Contract> paginate(int page, int pagesize, String keyword, String status, Long fromTime, Long toTime, BigInteger debitUid, BigInteger creditUid) {
 
 		String select = "select c.*";
 
@@ -118,6 +118,18 @@ public class ContractQuery extends JBaseQuery{
 			needWhere = appendWhereOrAnd(sql, needWhere);
 			sql.append("c.create_time < ? ");
 			params.add(Utils.toYmdHms(new Date(toTime)));
+		}
+		
+		if(debitUid != null){
+			needWhere = appendWhereOrAnd(sql, needWhere);
+			sql.append("c.debit_id = ? ");
+			params.add(debitUid.toString());
+		}
+		
+		if(creditUid != null){
+			needWhere = appendWhereOrAnd(sql, needWhere);
+			sql.append("c.credit_id = ? ");
+			params.add(creditUid.toString());
 		}
 		
 		sql.append(" group by c.id");

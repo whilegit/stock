@@ -44,7 +44,10 @@ import yjt.Utils;
 import yjt.core.perm.PermAnnotation;
 import yjt.core.perm.PermGroup;
 import yjt.core.perm.PermKit;
+import yjt.model.Contract;
 import yjt.model.CreditLog;
+import yjt.model.Contract.Status;
+import yjt.model.query.ContractQuery;
 import yjt.model.query.CreditLogQuery;
 
 @RouterMapping(url = "/admin/user", viewPath = "/WEB-INF/admin/user")
@@ -419,5 +422,55 @@ public class _UserController extends JBaseCRUDController<User> {
 		setAttr("page", page);
 		setAttr("user", user);
 		setAttr("include", "_balance_include.html");
+	}
+	
+	@PermAnnotation("user-credit")
+	public void credit(){
+		BigInteger uid = getParaToBigInteger("id", BigInteger.ZERO);
+		User user = UserQuery.me().findByIdNoCache(uid);
+		if(user == null){
+			renderText("错误：用户不存在");
+			return;
+		}
+		
+		double curCredit = ContractQuery.me().queryCurCredits(uid);
+		double totalCredit = ContractQuery.me().queryTotalCredits(uid);
+		long curCreditCount = ContractQuery.me().findCount(new Contract.Status[] {Status.ESTABLISH, Status.EXTEND}, null, null, uid, null, null);
+		long totalCreditCount = ContractQuery.me().findCount(new Contract.Status[] {Status.ESTABLISH, Status.EXTEND, Status.FINISH, Status.LOST}, null, null, uid, null, null);
+
+		setAttr("curCredit", curCredit);
+		setAttr("totalCredit", totalCredit);
+		setAttr("curCreditCount", curCreditCount);
+		setAttr("totalCreditCount", totalCreditCount);
+		Page<Contract> page = ContractQuery.me().paginate(getPageNumber(), getPageSize(), null, null, null, null, null, uid);
+		setAttr("page", page);
+		setAttr("user", user);
+		setAttr("id", uid);
+		setAttr("include", "_credit_include.html");
+	}
+	
+	@PermAnnotation("user-debit")
+	public void debit(){
+		BigInteger uid = getParaToBigInteger("id", BigInteger.ZERO);
+		User user = UserQuery.me().findByIdNoCache(uid);
+		if(user == null){
+			renderText("错误：用户不存在");
+			return;
+		}
+		
+		double curDebit = ContractQuery.me().queryCurDebits(uid);
+		double totalDebit = ContractQuery.me().queryTotalDebits(uid);
+		long curDebitCount = ContractQuery.me().findCount(new Contract.Status[] {Status.ESTABLISH, Status.EXTEND}, null, uid, null, null, null);
+		long totalDebitCount = ContractQuery.me().findCount(new Contract.Status[] {Status.ESTABLISH, Status.EXTEND, Status.FINISH, Status.LOST}, null, uid, null, null, null);
+
+		setAttr("curDebit", curDebit);
+		setAttr("totalDebit", totalDebit);
+		setAttr("curDebitCount", curDebitCount);
+		setAttr("totalDebitCount", totalDebitCount);
+		Page<Contract> page = ContractQuery.me().paginate(getPageNumber(), getPageSize(), null, null, null, null, uid, null);
+		setAttr("page", page);
+		setAttr("user", user);
+		setAttr("id", uid);
+		setAttr("include", "_debit_include.html");
 	}
 }
