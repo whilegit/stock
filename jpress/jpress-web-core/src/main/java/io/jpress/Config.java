@@ -38,6 +38,7 @@ import io.jpress.ui.freemarker.tag.UsersTag;
 import yjt.ChinaPay.ChinapayUtils;
 import yjt.core.perm.PermKit;
 import yjt.core.push.Push;
+import yjt.core.quartz.MainSchedule;
 
 public class Config extends JpressConfig {
 
@@ -72,8 +73,10 @@ public class Config extends JpressConfig {
 		//推送的始始化
 		Push.init();
 		
+		//启动几个定时任务
+		MainSchedule.init();
+		
 		MessageKit.sendMessage(Actions.JPRESS_STARTED);
-
 	}
 
 

@@ -73,7 +73,7 @@
 							<#list page.getList() as bean>
 								<tr class="jp-onmouse">
 									<td><input name="dataItem" type="checkbox" value="${bean.id}"></td>
-									<td>${bean.applyUser.realname!}</td>
+									<td><#if bean.applyUser??><a target="_blank" href="${bean.applyUser.userLink!}">${bean.applyUser.realname!}</a></#if></td>
 									<td>${bean.amount?string("0.00")}</td>
 									<td>${bean.annual_rate?string("0.00")}%</td>
 									<td>${bean.maturity_date?string("yyyy-MM-dd")}</td>

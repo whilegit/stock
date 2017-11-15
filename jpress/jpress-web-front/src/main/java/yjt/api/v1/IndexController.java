@@ -57,13 +57,12 @@ import yjt.verify.IdcardVerify;
 import yjt.verify.MobileVerify;
 import yjt.api.v1.Interceptor.*;
 import yjt.api.v1.Push.BalanceAddPush;
-import yjt.api.v1.Push.ChargeFailPush;
 import yjt.api.v1.Push.LendoutPush;
 import yjt.api.v1.UnionAppPay.UnionAppPay;
 import yjt.api.v1.UnionAppPay.UnionAppPayMethod;
 import yjt.core.push.Push;
+import yjt.AliSms;
 import yjt.Utils;
-import yjt.ChinaPay.ChinapayUtils;
 import yjt.api.v1.Annotation.*;
 
 
@@ -1227,7 +1226,7 @@ public class IndexController extends ApiBaseController {
 		JSONObject json = new JSONObject();
 		json.put("code", code);
 		try {
-			sendSms(mobile, template, json);
+			AliSms.sendSms(mobile, template, json);
 			Captcha captcha = getModel(Captcha.class);
 			captcha.setCode(code);
 			captcha.setType(type);
