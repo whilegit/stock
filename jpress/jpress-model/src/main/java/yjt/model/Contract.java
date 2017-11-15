@@ -56,7 +56,22 @@ public class Contract extends BaseContract<Contract>{
 		if(enumStatus != null) System.out.println(JSONObject.toJSONString(enumStatus));
 		if(enumStatus != null) return enumStatus.getName();
 		enumStatus = Status.getEnum(getStatus());
-		return enumStatus.getName();
+		
+		String ret = enumStatus.getName();
+		String color = "black";
+		//ESTABLISH("使用中", 5), FINISH("已还完", 6), EXTEND("已逾期", 7), LOST("已损失", 8),ALL("全部",100);
+		if(enumStatus == Status.ESTABLISH) {
+			color = "#0b0;";
+		} else if(enumStatus == Status.FINISH) {
+			color = "#00b;";
+		} else if(enumStatus == Status.EXTEND) {
+			color = "#b00;";
+		}else if(enumStatus == Status.LOST) {
+			color = "#bb0;";
+		}
+		ret = "<span  style='color:white;padding:3px;border-radius:3px;background-color:"+color+"'>" + ret + "<span>";
+
+		return ret;
 	}
 	
 	public static RepaymentMethod getDefaultReportMethod() {

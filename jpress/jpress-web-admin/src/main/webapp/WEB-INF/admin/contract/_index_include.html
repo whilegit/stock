@@ -80,7 +80,7 @@
 										<strong>${bean.contract_number!}</strong>
 										<div class="jp-flash-comment">
 											<p class="row-actions jp-cancel-pad">
-												<a data-toggle="modal" href="${CPATH}/admin/contract/view?id=${bean.id}" data-target="#modal">详细</a>
+												<a data-toggle="modal" href="${CPATH}/admin/contract/edit?id=${bean.id}" data-target="#modal">详细</a>
 												<#if bean.apply ?? && bean.apply.video!=''><a data-toggle="modal" href="${CPATH}/admin/contract/video?id=${bean.id}" data-target="#modal">视频</a></#if>
 											</p>
 										</div>

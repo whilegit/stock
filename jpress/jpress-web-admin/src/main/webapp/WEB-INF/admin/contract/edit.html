@@ -1,12 +1,166 @@
-<#include "../_inc/_layout.html"/> 
-<#macro script>
-$(document).ready(function(){
-	//$("tr:even").addClass("bg");
-});
-</#macro> 
-<@layout active_id="contract" child_active_id="list">
-<#include include/>
-</@layout>
+<section class="content-header">
+	<h1>
+		借条信息
+	</h1>
+</section>
+<hr>
 
-
-
+<!-- Main content -->
+<section class="content">
+	<#if !contract??>
+	该借条不存在。
+	<#else>
+	<form class="form-horizontal" method="POST" action="${CPATH}/admin/contract/doedit">
+		<ul class="list-group" style="width:100%;">
+			<li class="list-group-item">
+				<div class="col-sm-2 jp-common-pad  jp-set-info">借条编号</div>
+				<div class="col-sm-10 jp-common-pad ">
+					<div class="col-sm-12  ">
+						${contract.contract_number!}
+					</div>
+				</div>
+				<div class="clr"></div>
+			</li>
+			<li class="list-group-item">
+				<div class="col-sm-2 jp-common-pad  jp-set-info">借条进度</div>
+				<div class="col-sm-10 jp-common-pad ">
+					<div class="col-sm-12  ">
+						${contract.statusDesc!}
+					</div>
+				</div>
+				<div class="clr"></div>
+			</li>
+			<li class="list-group-item">
+				<div class="col-sm-2 jp-common-pad  jp-set-info">借款人</div>
+				<div class="col-sm-10 jp-common-pad ">
+					<div class="col-sm-12  ">
+						<#if contract.debitUser??><a target="_blank" href="${contract.debitUser.userLink!}">${contract.debitUser.realname!}</a></#if>
+					</div>
+				</div>
+				<div class="clr"></div>
+			</li>
+			<li class="list-group-item">
+				<div class="col-sm-2 jp-common-pad  jp-set-info">放款人</div>
+				<div class="col-sm-10 jp-common-pad ">
+					<div class="col-sm-12  ">
+						<#if contract.creditUser??><a target="_blank" href="${contract.creditUser.userLink!}">${contract.creditUser.realname!}</a></#if>
+					</div>
+				</div>
+				<div class="clr"></div>
+			</li>
+			<li class="list-group-item">
+				<div class="col-sm-2 jp-common-pad  jp-set-info">借条金额</div>
+				<div class="col-sm-10 jp-common-pad ">
+					<div class="col-sm-12  ">
+						${contract.amount?string("0.00")}
+					</div>
+				</div>
+				<div class="clr"></div>
+			</li>
+			<li class="list-group-item">
+				<div class="col-sm-2 jp-common-pad  jp-set-info">起止日期</div>
+				<div class="col-sm-10 jp-common-pad ">
+					<div class="col-sm-12  ">
+						<span style="background-color:#1c84c6;color:white;border-radius:3px;padding:2px;">${contract.value_date?string("yyyy-MM-dd")}</span> ~ <span style="background-color:#1c84c6;color:white;border-radius:3px;padding:2px;">${contract.maturity_date?string("yyyy-MM-dd")}</span>
+					</div>
+				</div>
+				<div class="clr"></div>
+			</li>
+			<li class="list-group-item">
+				<div class="col-sm-2 jp-common-pad  jp-set-info">借条期限</div>
+				<div class="col-sm-10 jp-common-pad ">
+					<div class="col-sm-12  ">
+						${contract.loan_term} 天
+					</div>
+				</div>
+				<div class="clr"></div>
+			</li>
+			<li class="list-group-item">
+				<div class="col-sm-2 jp-common-pad  jp-set-info">年化利率</div>
+				<div class="col-sm-10 jp-common-pad ">
+					<div class="col-sm-12  ">
+						${contract.annual_rate}%
+					</div>
+				</div>
+				<div class="clr"></div>
+			</li>
+			<li class="list-group-item">
+				<div class="col-sm-2 jp-common-pad  jp-set-info">到期本金</div>
+				<div class="col-sm-10 jp-common-pad ">
+					<div class="col-sm-12  ">
+						${contract.capitalAndInterest?string("0.00")}
+					</div>
+				</div>
+				<div class="clr"></div>
+			</li>
+			<li class="list-group-item">
+				<div class="col-sm-2 jp-common-pad  jp-set-info">借款协议</div>
+				<div class="col-sm-10 jp-common-pad ">
+					<div class="col-sm-12  ">
+						<a target="_blank" href="${contract.agreement!}">查看</a>
+					</div>
+				</div>
+				<div class="clr"></div>
+			</li>
+			<li class="list-group-item">
+				<div class="col-sm-2 jp-common-pad  jp-set-info">借条创建时间</div>
+				<div class="col-sm-10 jp-common-pad ">
+					<div class="col-sm-12  ">
+						${contract.create_time?string("yyyy-MM-dd HH:mm:ss")}
+					</div>
+				</div>
+				<div class="clr"></div>
+			</li>
+			<li class="list-group-item">
+				<div class="col-sm-2 jp-common-pad  jp-set-info"> </div>
+				<div class="col-sm-10 jp-common-pad ">
+					<div class="col-sm-12  "> 
+					</div>
+				</div>
+				<div class="clr"></div>
+			</li>
+			
+			<li class="list-group-item">
+				<div class="col-sm-2 jp-common-pad  jp-set-info">申请借款用途</div>
+				<div class="col-sm-10 jp-common-pad ">
+					<div class="col-sm-12  ">
+						${apply.purposeChs}
+					</div>
+				</div>
+				<div class="clr"></div>
+			</li>
+			<li class="list-group-item">
+				<div class="col-sm-2 jp-common-pad  jp-set-info">申请发布对象</div>
+				<div class="col-sm-10 jp-common-pad ">
+					<div class="col-sm-12  ">
+						${apply.toFriendsList!}
+					</div>
+				</div>
+				<div class="clr"></div>
+			</li>
+			<li class="list-group-item">
+				<div class="col-sm-2 jp-common-pad  jp-set-info">申请视频</div>
+				<div class="col-sm-10 jp-common-pad ">
+					<div class="col-sm-12  ">
+						${apply.videoMedia}
+					</div>
+				</div>
+				<div class="clr"></div>
+			</li>
+			<li class="list-group-item">
+				<div class="col-sm-2 jp-common-pad  jp-set-info">申请时间</div>
+				<div class="col-sm-10 jp-common-pad ">
+					<div class="col-sm-12  ">
+						${apply.create_time?string("yyyy-MM-dd HH:mm:ss")}
+					</div>
+				</div>
+				<div class="clr"></div>
+			</li>
+		 </ul>
+		 <div class="modal-footer">
+		    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+		</div>
+	</form>
+	</#if>
+	<!-- /.row -->
+</section>

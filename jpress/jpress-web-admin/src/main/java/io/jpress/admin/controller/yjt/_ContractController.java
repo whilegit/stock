@@ -76,14 +76,15 @@ public class _ContractController extends JBaseCRUDController<Contract>{
 	
 	@PermAnnotation("contract-edit")
 	public void edit(){
-		int cid =  (getPara("cid") != null) ? Integer.parseInt(getPara("cid")) : 0;
-		Contract contract = ContractQuery.me().findById(BigInteger.valueOf(cid));
+		BigInteger id =  this.getParaToBigInteger("id", BigInteger.ZERO);
+		Contract contract = ContractQuery.me().findById(id);
 		if(contract == null) {
-			this.renderError(-1);
+			this.renderText("所查询的借条不存在");
 			return;
 		}
 		setAttr("contract", contract);
-		setAttr("include", "_edit_include.html");
+		Apply apply = ApplyQuery.me().findById(contract.getApplyId());
+		setAttr("apply", apply);
 		render("edit.html");
 	}
 	

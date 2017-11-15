@@ -98,7 +98,7 @@ public class Apply extends BaseApply<Apply>{
 		return Apply.Purpose.getEnum(this.getPurpose()).getName();
 	}
 	public String getVideoMedia() {
-		return StrKit.notBlank(getVideo()) ? "<a href='"+Utils.toMedia(getVideo())+"'>查看</a>" : "无";
+		return StrKit.notBlank(getVideo()) ? "<a target=\"_blank\" href='"+Utils.toMedia(getVideo())+"'>查看</a>" : "无";
 	}
 	public String getToFriendsList() {
 		String ret = "";
