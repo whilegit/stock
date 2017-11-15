@@ -18,7 +18,7 @@
 				<td style="border-bottom:1px solid #ccc;padding:5px;">${grp.desc}</td>
 				<td style="border-bottom:1px solid #ccc;padding:5px;">
 					<#list grp.perms as perm>
-					<label>${perm.desc}<input name="${perm.key}" value="${perm.key}" <#if perm.checked=true>checked</#if> type="checkbox"/></label><#sep>&nbsp;&nbsp;&nbsp;</#sep>
+					<label><span title="${perm.key}">${perm.desc}</span><input name="${perm.key}" value="${perm.key}" <#if perm.checked=true>checked</#if> type="checkbox"/></label><#sep>&nbsp;&nbsp;&nbsp;</#sep>
 					</#list>
 				</td>
 			</tr>

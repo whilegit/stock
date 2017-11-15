@@ -27,7 +27,9 @@
 		"key":"contract",
 		"desc":"借条管理",
 		"perms":[
-			{"key":"contract-list","desc":"借条列表"}
+			{"key":"contract-list","desc":"借条列表"},
+			{"key":"contract-edit","desc":"借条编辑"},
+			{"key":"contract-video","desc":"查看视频"}
 		]
 	},
 	{

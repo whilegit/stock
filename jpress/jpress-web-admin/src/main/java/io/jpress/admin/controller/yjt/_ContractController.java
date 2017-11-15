@@ -114,9 +114,4 @@ public class _ContractController extends JBaseCRUDController<Contract>{
 		setAttr("contract", contract);
 		render("video.html");
 	}
-	
-	@PermAnnotation("contract-stat")
-	public void stat(){
-		this.renderText("功能暂时未完成");
-	}
 }
