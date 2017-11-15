@@ -21,6 +21,7 @@ import io.jpress.model.query.UserQuery;
 import io.jpress.utils.FileUtils;
 import yjt.Utils;
 import yjt.model.base.BaseContract;
+import yjt.model.query.ApplyQuery;
 import yjt.model.query.ContractQuery;
 
 @Table(tableName = "contract", primaryKey = "id")
@@ -33,6 +34,9 @@ public class Contract extends BaseContract<Contract>{
 	private User creditUser; 	//贷款人
 	private Status enumStatus;  //合约状态
 	
+	public Apply getApply() {
+		return ApplyQuery.me().findById(getApplyId());
+	}
 	public User getDebitUser(){
 		if(debitUser != null) return debitUser;
 		if (getDebitId() == null) return null;

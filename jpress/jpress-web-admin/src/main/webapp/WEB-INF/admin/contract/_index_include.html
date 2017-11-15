@@ -76,7 +76,15 @@
 							<#list page.getList() as bean>
 								<tr class="jp-onmouse">
 									<td><input name="dataItem" type="checkbox" value="${bean.contract_number}"></td>
-									<td>${bean.contract_number!}</td>
+									<td>
+										<strong>${bean.contract_number!}</strong>
+										<div class="jp-flash-comment">
+											<p class="row-actions jp-cancel-pad">
+												<a data-toggle="modal" href="${CPATH}/admin/contract/view?id=${bean.id}" data-target="#modal">详细</a>
+												<#if bean.apply ?? && bean.apply.video!=''><a data-toggle="modal" href="${CPATH}/admin/contract/video?id=${bean.id}" data-target="#modal">视频</a></#if>
+											</p>
+										</div>
+									</td>
 									<td><#if bean.debitUser??><a target="_blank" href="${bean.debitUser.userLink!}">${bean.debitUser.realname!}</a></#if></td>
 									<td><#if bean.creditUser??><a target="_blank" href="${bean.creditUser.userLink!}">${bean.creditUser.realname!}</a></#if></td>
 									<td>${bean.amount?string("0.00")}</td>
@@ -112,3 +120,9 @@
 	<!-- /.row -->
 </section>
 <!-- /.content -->
+
+<div class="modal" id="modal">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-radius:5px;"></div>
+    </div>
+</div>

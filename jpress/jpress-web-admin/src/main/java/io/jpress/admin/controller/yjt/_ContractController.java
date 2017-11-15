@@ -1,30 +1,31 @@
 package io.jpress.admin.controller.yjt;
 
 import java.math.BigInteger;
-import java.util.List;
 
 import com.jfinal.aop.Before;
 import com.jfinal.kit.StrKit;
+import com.jfinal.log.Log;
 import com.jfinal.plugin.activerecord.Page;
 
 import io.jpress.core.JBaseCRUDController;
 import io.jpress.core.interceptor.ActionCacheClearInterceptor;
-import io.jpress.model.Content;
-import io.jpress.model.User;
-import io.jpress.model.query.ContentQuery;
-import io.jpress.model.query.UserQuery;
 import io.jpress.router.RouterMapping;
 import io.jpress.router.RouterNotAllowConvert;
-import io.jpress.utils.StringUtils;
 import yjt.Utils;
 import yjt.core.perm.PermAnnotation;
+import yjt.model.Apply;
 import yjt.model.Contract;
+import yjt.model.query.ApplyQuery;
 import yjt.model.query.ContractQuery;
 
 @RouterMapping(url = "/admin/contract", viewPath = "/WEB-INF/admin/contract")
 @Before(ActionCacheClearInterceptor.class)
 @RouterNotAllowConvert
 public class _ContractController extends JBaseCRUDController<Contract>{
+	
+	protected static final Log log = Log.getLog(_ContractController.class);
+
+	
 	private String getModuleName() {
 		return getPara("m");
 	}
@@ -84,6 +85,33 @@ public class _ContractController extends JBaseCRUDController<Contract>{
 		setAttr("contract", contract);
 		setAttr("include", "_edit_include.html");
 		render("edit.html");
+	}
+	
+	@PermAnnotation("contract-video")
+	public void video() {
+		BigInteger id = this.getParaToBigInteger("id", BigInteger.ZERO);
+		Contract contract = ContractQuery.me().findById(id);
+		if(contract == null) {
+			this.renderText("所查询的借条不存在");
+			return;
+		}
+		Apply apply = ApplyQuery.me().findById(contract.getApplyId());
+		if(apply == null) {
+			this.renderText("所查询的借条不存在");
+			log.error("contract("+contract.getApplyId().intValue()+") 所指的apply不存在");
+			return;
+		}
+		
+		if(StrKit.isBlank(apply.getVideo())) {
+			this.renderText("该借条无视频");
+			return;
+		}
+		String href = Utils.toMedia(apply.getVideo());
+		if(StrKit.notBlank(href)) {
+			setAttr("href", href);
+		}
+		setAttr("contract", contract);
+		render("video.html");
 	}
 	
 	@PermAnnotation("contract-stat")
