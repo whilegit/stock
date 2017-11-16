@@ -219,8 +219,10 @@ public class AdminMenuInitListener implements MessageListener {
 	private MenuGroup createSettingMenuGroup() {
 		MenuGroup group = new MenuGroup("option", "fa fa-cog", "设置");
 		{
-			/*group.addMenuItem(new MenuItem("list", "/admin/option/web", "常规"));
-			group.addMenuItem(new MenuItem("edit", "/admin/option/comment", "评论"));
+			group.addMenuItem(new MenuItem("credittable", "/admin/option/credittable", "信用额度表"));
+			group.addMenuItem(new MenuItem("sensitive", "/admin/option/sensitive", "敏感词设置"));
+			group.addMenuItem(new MenuItem("list", "/admin/option/web", "常规"));
+			/*group.addMenuItem(new MenuItem("edit", "/admin/option/comment", "评论"));
 			group.addMenuItem(new MenuItem("n", "/admin/option/notification", "通知"));
 			group.addMenuItem(new MenuItem("seo", "/admin/option/seo", "SEO"));
 			group.addMenuItem(new MenuItem("watermark", "/admin/option/watermark", "水印"));

@@ -83,6 +83,10 @@ public class _ContractController extends JBaseCRUDController<Contract>{
 			return;
 		}
 		setAttr("contract", contract);
+		String agreement = contract.getAgreement();
+		if(StrKit.notBlank(agreement)) {
+			setAttr("agreement", agreement);
+		}
 		Apply apply = ApplyQuery.me().findById(contract.getApplyId());
 		setAttr("apply", apply);
 		render("edit.html");

@@ -15,20 +15,26 @@
  */
 package io.jpress.admin.controller;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.jfinal.aop.Before;
+import com.jfinal.kit.StrKit;
 
 import io.jpress.core.JBaseController;
 import io.jpress.core.interceptor.ActionCacheClearInterceptor;
 import io.jpress.interceptor.UCodeInterceptor;
 import io.jpress.message.Actions;
 import io.jpress.message.MessageKit;
+import io.jpress.model.Option.CanBorrowMoneyItem;
 import io.jpress.model.query.OptionQuery;
 import io.jpress.router.RouterMapping;
 import io.jpress.router.RouterNotAllowConvert;
 import io.jpress.utils.StringUtils;
+import yjt.core.perm.PermAnnotation;
 
 @RouterMapping(url = "/admin/option", viewPath = "/WEB-INF/admin/option")
 @Before(ActionCacheClearInterceptor.class)
@@ -36,6 +42,7 @@ import io.jpress.utils.StringUtils;
 public class _OptionController extends JBaseController {
 
 	public void index() {
+		System.out.println(getPara());
 		render((getPara() == null ? "web" : getPara()) + ".html");
 	}
 
@@ -85,4 +92,37 @@ public class _OptionController extends JBaseController {
 	}
 
 
+	@PermAnnotation("option-credittable")
+	public void credittable() {
+		List<CanBorrowMoneyItem> credittable = new ArrayList<CanBorrowMoneyItem>();
+		
+		String credittableStr = OptionQuery.me().findValueNoCache("credittable");
+		if(StrKit.notBlank(credittableStr)) {
+			String[] items = credittableStr.split(";");
+			for(int i = 0; i<items.length; i++) {
+				String[] it = items[i].split(":");
+				if(it.length != 2) continue;
+				int age = Integer.parseInt(it[0]);
+				double amount = Double.parseDouble(it[1]);
+				credittable.add(new CanBorrowMoneyItem(age, amount));
+			}
+			Collections.sort(credittable);
+		}
+		setAttr("credittable", credittable);
+	}
+	
+	@PermAnnotation("option-credittable")
+	public void credittable_edit() {
+		this.renderText("ok");
+	}
+	
+	@PermAnnotation("option-sensitive") 
+	public void sensitive() {
+		this.renderText("ok");
+	}
+
+	@PermAnnotation("option-sensitive") 
+	public void sensitive_edit() {
+		this.renderText("ok");
+	}
 }
