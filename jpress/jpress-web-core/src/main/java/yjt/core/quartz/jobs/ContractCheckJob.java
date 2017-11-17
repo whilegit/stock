@@ -31,7 +31,7 @@ public class ContractCheckJob implements Job{
 		//每天零时检查用户手机号码是否认证
 		Trigger trigger = TriggerBuilder.newTrigger()
 			    						.withIdentity("ContractCheckJob", "Check")
-			    						.withSchedule(CronScheduleBuilder.cronSchedule("0 29 14 * * ?"))
+			    						.withSchedule(CronScheduleBuilder.cronSchedule("0 5 17 * * ?"))
 			    						.forJob("ContractCheckJob", "Check")
 			    						.build();
 		// Tell quartz to schedule the job using our trigger
