@@ -113,7 +113,32 @@ public class _OptionController extends JBaseController {
 	
 	@PermAnnotation("option-credittable")
 	public void credittable_edit() {
-		this.renderText("ok");
+		String ages = this.getPara("ages", "");
+		String credits = this.getPara("credits", "");
+		String[] agesAry = ages.split(",");
+		String[] creditsAry = credits.split(",");
+		if(agesAry.length == 0 || agesAry.length != creditsAry.length) {
+			this.renderAjaxResult("错误: 年龄信用设置不能为空", 1);
+		}
+		List<CanBorrowMoneyItem> credittable = new ArrayList<CanBorrowMoneyItem>();
+		try {
+			for(int i = 0; i<agesAry.length; i++) {
+				int age = Integer.valueOf(agesAry[i].trim());
+				double credit = Double.valueOf(creditsAry[i].trim());
+				CanBorrowMoneyItem item = new CanBorrowMoneyItem(age, credit);
+				credittable.add(item);
+			}
+			Collections.sort(credittable);
+			String credittableStr = "";
+			for(CanBorrowMoneyItem item : credittable) {
+				credittableStr += item.getAge() + ":" + item.getAmount() + ";";
+			}
+			credittableStr = credittableStr.substring(0, credittableStr.length() - 1);
+			OptionQuery.me().saveOrUpdate("credittable", credittableStr);
+			this.renderAjaxResult("保存成功", 0);
+		} catch ( Exception e) {
+			this.renderAjaxResult("错误: 格式错误", 2);
+		}
 	}
 	
 	@PermAnnotation("option-sensitive") 
