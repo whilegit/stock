@@ -15,14 +15,19 @@
  */
 package io.jpress.admin.controller;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.alibaba.fastjson.JSON;
 import com.jfinal.aop.Before;
+import com.jfinal.kit.PathKit;
 import com.jfinal.kit.StrKit;
+import com.mchange.io.FileUtils;
 
 import io.jpress.core.JBaseController;
 import io.jpress.core.interceptor.ActionCacheClearInterceptor;
@@ -34,6 +39,7 @@ import io.jpress.model.query.OptionQuery;
 import io.jpress.router.RouterMapping;
 import io.jpress.router.RouterNotAllowConvert;
 import io.jpress.utils.StringUtils;
+import yjt.core.Utils.Common;
 import yjt.core.perm.PermAnnotation;
 
 @RouterMapping(url = "/admin/option", viewPath = "/WEB-INF/admin/option")
@@ -119,6 +125,7 @@ public class _OptionController extends JBaseController {
 		String[] creditsAry = credits.split(",");
 		if(agesAry.length == 0 || agesAry.length != creditsAry.length) {
 			this.renderAjaxResult("错误: 年龄信用设置不能为空", 1);
+			return;
 		}
 		List<CanBorrowMoneyItem> credittable = new ArrayList<CanBorrowMoneyItem>();
 		try {
@@ -143,11 +150,62 @@ public class _OptionController extends JBaseController {
 	
 	@PermAnnotation("option-sensitive") 
 	public void sensitive() {
-		this.renderText("ok");
+		String path = OptionQuery.me().findValueNoCache("sensitive_file");
+		if(StrKit.notBlank(path)) {
+			setAttr("path", path);
+		}
 	}
 
 	@PermAnnotation("option-sensitive") 
 	public void sensitive_edit() {
-		this.renderText("ok");
+		HashMap<String, String> files = getUploadFilesMap();
+		//final Map<String, String> metas = getMetas(files);
+		//System.out.println(JSON.toJSONString(metas));
+		if(files == null || files.containsKey("file") == false || StrKit.isBlank(files.get("file"))) {
+			this.renderAjaxResult("请提供敏感词文件", 2);
+			return;
+		}
+		String text = "";
+		try {
+			text = FileUtils.getContentsAsString(new File(PathKit.getWebRootPath() + files.get("file")), 64*1024, "UTF-8");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			this.renderAjaxResult("文件读取错误", 3);
+			return;
+		}
+		
+		if(StrKit.isBlank(text)) {
+			this.renderAjaxResult("敏感词文件不能为空", 4);
+			return;
+		}
+		
+		text = text.replaceAll("[\r\n\t]", "");
+		String[] words = text.split(",");
+		ArrayList<String> okWords = new ArrayList<String>(4068);
+		for(int i = 0; i<words.length; i++) {
+			String word = words[i].trim();
+			if(StrKit.notBlank(word)) {
+				okWords.add(word);
+			}
+		}
+		if(okWords.size() == 0) {
+			this.renderAjaxResult("敏感词文件必须提供有效的文本", 5);
+			return;
+		}
+		
+		StringBuffer sb = new StringBuffer();
+		boolean needColon = false;
+		for(String w : okWords) {
+			if(needColon) sb.append(",");
+			sb.append(w);
+			needColon = true;
+		}
+		String finalString = sb.toString();
+		OptionQuery.me().saveOrUpdate("sensitive", finalString);
+		OptionQuery.me().saveOrUpdate("sensitive_file", files.get("file"));
+		Common.loadSensitive();
+		
+		this.renderAjaxResult("成功更新", 0);
 	}
 }

@@ -37,6 +37,7 @@ import org.apache.http.util.EntityUtils;
 import com.jfinal.kit.PropKit;
 import com.jfinal.kit.StrKit;
 
+
 public class Utils {
 	protected static final SimpleDateFormat sdfYmd = new SimpleDateFormat("yyyy-MM-dd");
 	protected static final SimpleDateFormat sdfYm_d = new SimpleDateFormat("yyyyMM/dd");
@@ -475,5 +476,4 @@ public class Utils {
 		}
 		return ret;
 	}
-
 }

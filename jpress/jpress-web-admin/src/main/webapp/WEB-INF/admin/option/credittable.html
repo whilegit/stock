@@ -69,7 +69,7 @@ function doSubmit(){
 		var age = $($tds[0]).text();
 		var credit = $($tds[1]).text();
 		if(isNaN(age) || isNaN(credit)){
-			alert("必须设置成数字。" + age + " " + credit);
+			toastr.error("必须设置成数字。" + age + " " + credit,'操作失败');
 			return false;
 		}
 		ages += age + ",";
@@ -81,7 +81,6 @@ function doSubmit(){
 		$.post("${CPATH}/admin/option/credittable_edit", {"ages":ages,"credits":credits}, function(ret){
 			if(ret.errorCode == 0){
 				toastr.success(ret.message,'操作成功');
-				//location.reload();
 			} else {
 				toastr.error(ret.message,'操作失败');
 			}

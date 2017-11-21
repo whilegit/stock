@@ -74,5 +74,13 @@
 			{"key":"feedback-delete","desc":"删除反馈"},
 			{"key":"feedback-proc","desc":"反馈处理"}
 		]
+	},
+	{
+		"key":"option",
+		"desc":"设置",
+		"perms":[
+			{"key":"option-credittable","desc":"年龄信用额度设置"},
+			{"key":"option-sensitive","desc":"敏感词编置"}
+		]
 	}
 ]

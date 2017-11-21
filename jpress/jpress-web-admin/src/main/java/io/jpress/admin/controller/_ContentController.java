@@ -51,6 +51,7 @@ import io.jpress.template.TplModule;
 import io.jpress.template.TplTaxonomyType;
 import io.jpress.utils.JsoupUtils;
 import io.jpress.utils.StringUtils;
+import yjt.core.Utils.Common;
 
 @RouterMapping(url = "/admin/content", viewPath = "/WEB-INF/admin/content")
 @Before(ActionCacheClearInterceptor.class)
@@ -355,6 +356,16 @@ public class _ContentController extends JBaseCRUDController<Content> {
 
 		if (StringUtils.isBlank(content.getTitle())) {
 			renderAjaxResultForError("内容标题不能为空！");
+			return;
+		}
+		
+		if(Common.checkSensitive(content.getTitle())) {
+			renderAjaxResultForError("标题不合法！");
+			return;
+		}
+		
+		if(Common.checkSensitive(content.getText())) {
+			renderAjaxResultForError("内容不合法！");
 			return;
 		}
 
