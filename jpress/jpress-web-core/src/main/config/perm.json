@@ -80,7 +80,7 @@
 		"desc":"设置",
 		"perms":[
 			{"key":"option-credittable","desc":"年龄信用额度设置"},
-			{"key":"option-sensitive","desc":"敏感词编置"}
+			{"key":"option-sensitive","desc":"敏感词编辑"}
 		]
 	}
 ]
