@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.quartz.CronScheduleBuilder;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobBuilder;
 import org.quartz.JobDetail;
@@ -15,13 +16,12 @@ import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 
 import com.alibaba.fastjson.JSONObject;
-import com.aliyuncs.exceptions.ClientException;
 import com.jfinal.kit.StrKit;
 import com.jfinal.log.Log;
 
 import io.jpress.model.User;
-import yjt.AliSms;
 import yjt.Utils;
+import yjt.YuxinSms;
 import yjt.model.Contract;
 import yjt.model.Contract.Status;
 import yjt.model.query.ContractQuery;
@@ -38,7 +38,7 @@ public class ContractSmsJob implements Job{
 		//每天零时检查用户手机号码是否认证
 		Trigger trigger = TriggerBuilder.newTrigger()
 			    						.withIdentity("ContractSmsJob", "Check")
-			    						.withSchedule(CronScheduleBuilder.cronSchedule("0 0 10 * * ?"))
+			    						.withSchedule(CronScheduleBuilder.cronSchedule("0 35 11 * * ?"))
 			    						.forJob("ContractSmsJob", "Check")
 			    						.build();
 		// Tell quartz to schedule the job using our trigger
@@ -66,7 +66,7 @@ public class ContractSmsJob implements Job{
 				}
 				boolean flag = false;
 				//只对未逾期的订单发送催收短信
-				if(curTime00  < maturity_date.getTime() && curTime00 + 1L * 86400 * 1000 > maturity_date.getTime()) {
+				if(curTime00  < maturity_date.getTime() && curTime00 + 1L * 86400 * 1000 >= maturity_date.getTime()) {
 					flag = true;
 				}
 				if(flag == true) {
@@ -78,14 +78,9 @@ public class ContractSmsJob implements Job{
 						JSONObject json = new JSONObject();
 						json.put("money", String.format("%.2f", contract.getAmount().doubleValue()));
 						json.put("date1", Utils.toYmd(contract.getMaturityDate()));
-						json.put("date2", "22:00");
-						try {
-							AliSms.sendSms(debit.getMobile(), "SMS_110490041", json);
-						} catch (ClientException e) {
-							// TODO Auto-generated catch block
-							log.error("错误：contract(id = " + contract.getId().toString() + ") 催收短信发送失败:\r\n" + e.getMessage());
-							//e.printStackTrace();
-						}
+						Date prev = Utils.getPrevDay(contract.getMaturityDate());
+						json.put("date2", Utils.toYmd(prev) + " 22:00");
+						new YuxinSms(debit.getMobile(), json.toJSONString(), "414215").send();
 					}
 				}
 			}

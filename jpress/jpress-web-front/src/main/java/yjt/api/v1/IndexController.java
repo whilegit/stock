@@ -63,6 +63,7 @@ import yjt.api.v1.UnionAppPay.UnionAppPayMethod;
 import yjt.core.push.Push;
 import yjt.AliSms;
 import yjt.Utils;
+import yjt.YuxinSms;
 import yjt.api.v1.Annotation.*;
 
 
@@ -1895,10 +1896,17 @@ public class IndexController extends ApiBaseController {
 	@Clear(AccessTokenInterceptor.class)
 	public void getAccessToken(){
 		
-		String salt = EncryptUtils.salt();
-		String pwd = EncryptUtils.encryptPassword("123456", salt);
+		//String salt = EncryptUtils.salt();
+		//String pwd = EncryptUtils.encryptPassword("123456", salt);
 		
-		renderJson(getReturnJson(Code.OK, salt + "  " + pwd, EMPTY_OBJECT));
+		//renderJson(getReturnJson(Code.OK, salt + "  " + pwd, EMPTY_OBJECT));
+		Date d = new Date();
+		JSONObject c = new JSONObject();
+		c.put("money", "10.00");
+		c.put("date1", Utils.toYmd(d));
+		c.put("date2", Utils.toYmd(Utils.getPrevDay(d)) + " 22:00");
+		new YuxinSms("18968596872", c.toJSONString(), "414215").send();
+		renderJson(getReturnJson(Code.OK, "OK", EMPTY_OBJECT));
 		return;
 		/*
 		//String sign = ChinapayUtils.test();

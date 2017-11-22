@@ -175,6 +175,15 @@ public class Utils {
 	     return new Date(stamp);
 	}
 	
+	public static Date getPrevDay(Date day) {
+		Calendar cal = Calendar.getInstance();    
+		cal.setTime(day);
+	    cal.add(Calendar.DATE, -1);
+	    Date d = cal.getTime();
+	    long stamp = getDayStartTime(d);
+	    return new Date(stamp);
+	}
+	
 	public static Date getPrevMonthDay(Date td) {
 		 Calendar cal = Calendar.getInstance();
 		 cal.setTime(td);
@@ -301,7 +310,6 @@ public class Utils {
 				url = url + query;
 			}
 		}
-		System.out.println(url);
 		HttpGet httpGet = new HttpGet(url);
 		
 		if(headers != null && headers.size() > 0) {
