@@ -21,6 +21,7 @@ import java.util.Date;
 import com.jfinal.aop.Before;
 import com.jfinal.aop.Clear;
 import com.jfinal.core.ActionKey;
+import com.jfinal.log.Log;
 
 import io.jpress.Consts;
 import io.jpress.core.BaseFrontController;
@@ -40,6 +41,7 @@ import io.jpress.utils.StringUtils;
 @Before(UserInterceptor.class)
 public class UserController extends BaseFrontController {
 
+	protected static final Log log = Log.getLog(UserController.class);
 	@Clear(UserInterceptor.class)
 	public void index() {
 		String action = getPara();
@@ -71,15 +73,13 @@ public class UserController extends BaseFrontController {
 	@ActionKey(Consts.ROUTER_USER_LOGIN) // 固定登录的url
 	public void login() {
 		keepPara();
-
 		String username = getPara("username");
 		String password = getPara("password");
-
 		if (username == null || password == null) {
 			render("user_login.html");
 			return;
 		}
-
+		
 		long errorTimes = CookieUtils.getLong(this, "_login_errors", 0);
 		if (errorTimes >= 3) {
 			if (!validateCaptcha("_login_captcha")) { // 验证码没验证成功！
@@ -92,7 +92,7 @@ public class UserController extends BaseFrontController {
 			}
 		}
 
-		User user = UserQuery.me().findUserByUsername(username);
+		User user = UserQuery.me().findUserByMobile(username);
 		if (null == user) {
 			if (isAjaxRequest()) {
 				renderAjaxResultForError("没有该用户");

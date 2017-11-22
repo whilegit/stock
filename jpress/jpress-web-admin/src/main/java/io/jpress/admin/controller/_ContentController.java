@@ -360,12 +360,12 @@ public class _ContentController extends JBaseCRUDController<Content> {
 		}
 		
 		if(Common.checkSensitive(content.getTitle())) {
-			renderAjaxResultForError("标题不合法！");
+			renderAjaxResultForError("标题不合适！");
 			return;
 		}
 		
 		if(Common.checkSensitive(content.getText())) {
-			renderAjaxResultForError("内容不合法！");
+			renderAjaxResultForError("内容不合适！");
 			return;
 		}
 
