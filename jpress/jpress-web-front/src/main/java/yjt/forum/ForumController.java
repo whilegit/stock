@@ -15,7 +15,11 @@
  */
 package yjt.forum;
 
+import com.jfinal.plugin.activerecord.Page;
+
 import io.jpress.core.BaseFrontController;
+import io.jpress.model.Content;
+import io.jpress.model.query.ContentQuery;
 import io.jpress.router.RouterMapping;
 
 @RouterMapping(url = "/forum", viewPath="/")
@@ -23,5 +27,20 @@ public class ForumController extends BaseFrontController {
 
 	public void index() {
 		render("forum.html");
+	}
+	
+	public void query() {
+		String typeRaw = getPara("type","valuable");
+		boolean type = "valuable".equals(typeRaw);
+		Page<Content> contentAry = ContentQuery.me().paginate(getPageNumber(), getPageSize(), new String[] {"article"}, "normal", type);
+		this.renderJson(contentAry);
+	}
+	
+	public void newf() {
+		render("forum_new.html");
+	}
+	
+	public void detail() {
+		render("forum_detail.html");
 	}
 }

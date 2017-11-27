@@ -1,0 +1,71 @@
+<#include "_layout.html"/> 
+<@layout>
+<style>
+body{background-color:#f9faf9;}
+.title-tip{color:#476076;font-size:1.0em;margin-top:0.5em;padding-left:3%;padding-top:3%;}
+.content-tip{border-left:0.25em solid #439ed5;padding-left:0.4em;font-size:1.0em;margin-bottom:3%;margin-left:3%;margin-top:3%;color:#666;}
+textarea{border-top:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;border-right:0px;border-left:0px;width:100%;padding:3%;font-size:1.2em;}
+input{background-color:#439ed5;border:0px;color:white;padding:12px 72px 12px 72px;font-size:1.2em;}
+
+.item{border-top:1px solid #f0f0f0;padding:1em;padding-bottom:0.5em;}
+.item>.user>div:not(:last-child){float:left;}
+.item>.user>.username{height:2.5em;line-height:2.5em;margin-left:0.8em;font-size:1.1em;}
+.item>.user>.avatar>img{width:2.5em;height:2.5em;border-radius:1.25em;}
+.item>.title{color:#476076;font-size:1.0em;margin-top:0.5em;}
+.item>.title>.valuable{margin-left:0.8em;background-color:#b00;color:white;border-radius:5px;padding:3px;}
+.item>.content{margin-top:0.5em;}
+.item>.stat{margin-top:1em;color:#9d9d9d;}
+.item>.stat>div:not(:last-child){float:left;}
+.item>.stat>div:first-child>img{width:2em;height:2em;}
+.item>.stat>div:nth-child(2){height:2em;line-height:2em;margin-left:0.2em;font-size:1em;}
+.item>.stat>div:nth-child(4){height:2em;line-height:2em;margin-left:0.2em;font-size:1em;}
+.item>.stat>div:nth-child(3){width:2em;height:2em;margin-left:1em;}
+</style>
+<script src="${CPATH!}/static/plugins/jquery/jquery-2.1.4.min.js"></script>
+
+
+<div class="title-tip">宁肯像种子一样等待，也不愿像疲惫的陀螺 ，旋转得那样勉强</div>
+<div style="padding:3%;">但我要做的一个应用却恰恰相反，需要利用viewport，利用缩放。不论真实分辨率是多少，无论物理尺寸是多少，我都希望在浏览器里，能有统一的分辨率，同时也不允许用户缩放。我用来测试的设备有：iphone4、ipad2、htc的g11、不知道什么厂商的aquos phone（android系统）、华硕的android pad、dell的winphone然后我一路遇到了如下问题</div>
+<div class="content-tip">发表评论</div>
+<div style="background-color:#fff;"><textarea rows="6" placeholder="说点什么吧..."></textarea></div>
+<div style="text-align:right;margin-right:3%;margin-top:3%;">
+	<input type="submit" value="发表评论" />
+</div>
+<div class="content-tip">全部评论</div>
+<div class="container" id="tab_newArticle_container">
+	<div class="item">
+		<div class="user">
+			<div class="avatar"><img src="${CPATH!}/attachment/20171121/86.jpg"/></div>
+			<div class="username">张同学</div>
+			<div style="clear:both;"></div>
+		</div>
+		<div class="content">
+			央视网消息（新闻联播）：中共中央总书记、国家主席、中央军委主席习近平11月24日下午在人民大会堂会见了来华访问的缅甸国防军总司令敏昂莱。 
+		</div>
+		<div class="stat">
+			<div><img src="${CPATH!}/attachment/20171121/visual.png"/></div>
+			<div>100000</div>
+			<div><img src="${CPATH!}/attachment/20171121/comment.jpg"/></div>
+			<div>1000</div>
+			<div style="clear:both;"></div>
+		</div>
+	</div>
+	<div class="item">
+	<div class="user">
+		<div class="avatar"><img src="${CPATH!}/attachment/20171121/86.jpg"/></div>
+			<div class="username">李同学</div>
+			<div style="clear:both;"></div>
+		</div>
+		<div class="content">
+			新华社北京11月24日电（记者 崔文毅、贾钊）中联部24日举行媒体吹风会宣布，中国共产党与世界政党高层对话会将于11月30日至12月3日在北京举行。中共中央总书记、国家主席习近平将出席高层对话会开幕式并发表主旨讲话。
+		</div>
+		<div class="stat">
+			<div><img src="${CPATH!}/attachment/20171121/visual.png"/></div>
+			<div>9865</div>
+			<div><img src="${CPATH!}/attachment/20171121/comment.jpg" style=""/></div>
+			<div>130</div>
+			<div style="clear:both;"></div>
+		</div>
+	</div>
+</div>
+</@layout>
