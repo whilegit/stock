@@ -18,7 +18,7 @@ body{background-color:#f9faf9;}
 .item>.user>.created{color:#ccc;font-size:0.8em;}
 .item>.title{color:#476076;font-size:1.0em;margin-top:0.5em;}
 .item>.title>.valuable{margin-left:0.8em;background-color:#b00;color:white;border-radius:5px;padding:3px;}
-.item>.content{margin-top:0.5em;display: -webkit-box;-webkit-box-orient: vertical;-webkit-line-clamp: 4;overflow: hidden;max-height:6em;}
+.item>.content{margin-top:0.5em;display: -webkit-box;-webkit-box-orient: vertical;-webkit-line-clamp: 4;overflow: hidden;/*max-height:6em;*/}
 .item>.stat{margin-top:1em;color:#9d9d9d;}
 .item>.stat>div:not(:last-child){float:left;}
 .item>.stat>div:first-child>img{width:2em;height:2em;}
@@ -96,7 +96,7 @@ $(document).ready(function(){
 							if(attr == "created"){
 								obj["created"] = moment(obj['created'],'YYYY-MM-DD HH:mm:ss').fromNow();
 							}
-							item_html = item_html.replace("<%"+attr+"%>",obj[attr]);
+							item_html = item_html.replace(new RegExp("<%"+attr+"%>","gm"),obj[attr]);
 						}
 					}
 					container.append(item_html);
@@ -127,7 +127,7 @@ $(document).ready(function(){
 });
 </script>
 <script id="item_template" type="text/template">
-<div class="item">
+<div class="item" idx="<%id%>">
 	<div class="user">
 		<div class="avatar"><img src="${CPATH!}/attachment/20171121/86.jpg"/></div>
 		<div class="username">xxx</div>
@@ -140,7 +140,7 @@ $(document).ready(function(){
 	<div class="stat">
 		<div><img src="${CPATH!}/attachment/20171121/visual.png"/></div>
 		<div><%view_count%></div>
-		<div><img src="${CPATH!}/attachment/20171121/comment.jpg" style=""/></div>
+		<div><a href="${CPATH!}/forum/detail?id=<%id%>"><img src="${CPATH!}/attachment/20171121/comment.jpg" /></a></div>
 		<div><%comment_count%></div>
 		<div style="clear:both;"></div>
 	</div>

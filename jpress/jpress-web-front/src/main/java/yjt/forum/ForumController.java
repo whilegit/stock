@@ -15,10 +15,14 @@
  */
 package yjt.forum;
 
+import java.math.BigInteger;
+
 import com.jfinal.plugin.activerecord.Page;
 
 import io.jpress.core.BaseFrontController;
+import io.jpress.model.Comment;
 import io.jpress.model.Content;
+import io.jpress.model.query.CommentQuery;
 import io.jpress.model.query.ContentQuery;
 import io.jpress.router.RouterMapping;
 
@@ -41,6 +45,15 @@ public class ForumController extends BaseFrontController {
 	}
 	
 	public void detail() {
+		BigInteger id = getParaToBigInteger("id", BigInteger.ZERO);
+		Content content = ContentQuery.me().findById(id);
+		if(content == null) {
+			this.renderText("帖子不存在");
+			return;
+		}
+		Page<Comment> commentAry = CommentQuery.me().paginateByContentId(1, 10, id);
+		setAttr("content", content);
+		setAttr("page", commentAry);
 		render("forum_detail.html");
 	}
 }
