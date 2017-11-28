@@ -5,7 +5,7 @@ body{background-color:#f9faf9;padding:3%;}
 .title-tip{color:#476076;font-size:1.1em;margin-top:0.5em;padding-left:3%;padding-top:3%;}
 .content-tip{border-left:0.25em solid #439ed5;padding-left:0.4em;font-size:1.0em;margin-bottom:3%;margin-left:3%;margin-top:3%;color:#666;}
 textarea{border-top:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;border-right:0px;border-left:0px;width:100%;padding:3%;font-size:1.2em;}
-input{background-color:#439ed5;border:0px;color:white;padding:12px 72px 12px 72px;font-size:1.2em;}
+button{background-color:#439ed5;border:0px;color:white;padding:12px 72px 12px 72px;font-size:1.2em;}
 
 .item{border-top:1px solid #f0f0f0;padding:1em;padding-bottom:0.5em;}
 .item>.user>div:not(:last-child){float:left;}
@@ -22,14 +22,36 @@ input{background-color:#439ed5;border:0px;color:white;padding:12px 72px 12px 72p
 .item>.stat>div:nth-child(3){width:2em;height:2em;margin-left:1em;}
 </style>
 <script src="${CPATH!}/static/plugins/jquery/jquery-2.1.4.min.js"></script>
+<script src="${CPATH!}/static/plugins/toastr/toastr.js"></script>
+<link rel="stylesheet" href="${CPATH!}/static/plugins/toastr/toastr.css" />
+<script>
+$(document).ready(function(){
+	$("#post").click(function(){
+		var text = $("#newComment").val();
+		text = $.trim(text);
+		if(text == "") {
+			toastr.error("",'写点内容吧');
+			return;
+		}
 
+		$.post("${CPATH!}/forum/postComment",{"contentId":${content.id},"text":text},function(ret){
+			if(ret.errorCode == 0){
+				toastr.success("",ret.message);
+				setTimeout(function(){location.reload();}, 2000);
+			} else {
+				toastr.error("",ret.message);
+			}
+		});
+	});
+});
+</script>
 
 <div class="title-tip">${content.title!}</div>
 <div style="padding:3%;">${content.text!}</div>
 <div class="content-tip">发表评论</div>
-<div style="background-color:#fff;"><textarea rows="6" placeholder="说点什么吧..."></textarea></div>
+<div style="background-color:#fff;"><textarea id="newComment" rows="6" placeholder="说点什么吧..."></textarea></div>
 <div style="text-align:right;margin-right:3%;margin-top:3%;">
-	<input type="submit" value="发表评论" />
+	<button id="post">发表评论</button>
 </div>
 <div class="content-tip">全部评论</div>
 <div class="container" id="comment_container">

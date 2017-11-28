@@ -16,15 +16,21 @@
 package yjt.forum;
 
 import java.math.BigInteger;
+import java.util.Date;
 
+import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Page;
 
 import io.jpress.core.BaseFrontController;
 import io.jpress.model.Comment;
 import io.jpress.model.Content;
+import io.jpress.model.User;
 import io.jpress.model.query.CommentQuery;
 import io.jpress.model.query.ContentQuery;
+import io.jpress.model.query.UserQuery;
 import io.jpress.router.RouterMapping;
+import io.jpress.utils.StringUtils;
+import yjt.core.Utils.Common;
 
 @RouterMapping(url = "/forum", viewPath="/")
 public class ForumController extends BaseFrontController {
@@ -55,5 +61,40 @@ public class ForumController extends BaseFrontController {
 		setAttr("content", content);
 		setAttr("page", commentAry);
 		render("forum_detail.html");
+	}
+	
+	public void postComment(){
+		BigInteger uid = BigInteger.ONE;
+		User user = UserQuery.me().findById(uid);
+		BigInteger contentId = getParaToBigInteger("contentId", BigInteger.ZERO);
+		Content content = ContentQuery.me().findById(contentId);
+		if(content == null) {
+			this.renderAjaxResult("帖子不存在", 1);
+			return;
+		}
+		String text = this.getPara("text", "");
+		if(StrKit.isBlank(text)){
+			this.renderAjaxResult("写点内容吧", 2);
+			return;
+		}
+		//合法性检查
+		if(Common.checkSensitive(text)){
+			this.renderAjaxResult("对不起，您提交的内容可能违反了相关法律法规", 3);
+			return;
+		}
+		Comment comment = new Comment();
+		comment.setContentId(contentId);
+		comment.setContentModule("article");
+		comment.setIp(getIPAddress());
+		comment.setAgent(getUserAgent());
+		comment.setText(text);
+		String author = StringUtils.isNotBlank(user.getNickname()) ? user.getNickname() : user.getRealname();
+		comment.setAuthor(author);
+		comment.setUserId(uid);
+		comment.setCreated(new Date());
+		comment.setStatus(Comment.STATUS_NORMAL);
+		comment.save();
+		this.renderAjaxResult("跟帖成功", 0);
+		return;
 	}
 }
