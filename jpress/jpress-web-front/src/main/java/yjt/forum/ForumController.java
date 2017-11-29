@@ -1,23 +1,13 @@
 /**
- * Copyright (c) 2015-2016, Michael Yang 杨福海 (fuhai999@gmail.com).
- *
- * Licensed under the GNU Lesser General Public License (LGPL) ,Version 3.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.gnu.org/licenses/lgpl-3.0.txt
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Author: linzhongren 6215714@qq.com
  */
 package yjt.forum;
 
 import java.math.BigInteger;
 import java.util.Date;
+import java.util.List;
 
+import com.jfinal.aop.Before;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Page;
 
@@ -36,6 +26,15 @@ import yjt.core.Utils.Common;
 public class ForumController extends BaseFrontController {
 
 	public void index() {
+		BigInteger memberID = getAttr("memberID");
+		//memberID = BigInteger.valueOf(8L);
+		if(memberID != null) {
+			User user = UserQuery.me().findById(memberID);
+			String nickname = user.getNickname();
+			if(StrKit.isBlank(nickname)) {
+				setAttr("shouldSetNickname", 1);
+			}
+		}
 		render("forum.html");
 	}
 	
@@ -43,11 +42,78 @@ public class ForumController extends BaseFrontController {
 		String typeRaw = getPara("type","valuable");
 		boolean type = "valuable".equals(typeRaw);
 		Page<Content> contentAry = ContentQuery.me().paginate(getPageNumber(), getPageSize(), new String[] {"article"}, "normal", type);
+		if(contentAry != null && contentAry.getList() != null && contentAry.getList().size() > 0) {
+			List<Content> list= contentAry.getList();
+			BigInteger[] usersIdAry = new BigInteger[list.size()];
+			int index = 0;
+			for(Content content : list) {
+				usersIdAry[index++] = content.getUserId();
+				long view_content = content.getViewCount();
+				content.setViewCount(view_content + 1 );
+				content.update();
+			}
+			List<User> userAry = UserQuery.me().findList(usersIdAry);
+			for(Content content : list) {
+				BigInteger uid = content.getUserId();
+				if(uid == null) continue;
+				for(User user : userAry) {
+					if(user.getId().equals(uid)) {
+						String author = StringUtils.isNotBlank(user.getNickname()) ? user.getNickname() : user.getRealname();
+						String avatar = user.getAvatar();
+						if(StrKit.isBlank(avatar)) avatar = "";
+						content.setAuthor(author + "@&@" + avatar);
+						break;
+					}
+				}
+			}
+		}
 		this.renderJson(contentAry);
+	}
+	
+	public void query_comment() {
+		BigInteger contentId = getParaToBigInteger("contentId",BigInteger.ZERO);
+		Content content = ContentQuery.me().findById(contentId);
+		if(content == null) {
+			this.renderText("帖子不存在");
+			return;
+		}
+		Page<Comment> commentAry = CommentQuery.me().paginateByContentId(getPageNumber(), getPageSize(), contentId);
+		this.renderJson(commentAry);
 	}
 	
 	public void newf() {
 		render("forum_new.html");
+	}
+	
+	@Before(MemberTokenInterceptor.class)
+	public void newf_post() {
+		BigInteger uid = getAttr("memberID");
+		//BigInteger uid = BigInteger.ZERO;
+		String text = getPara("text", "");
+		String title = getPara("title", "");
+		if(StrKit.isBlank(title)) {
+			this.renderAjaxResult("设个标题吧", 1);
+			return;
+		}
+		if(StrKit.isBlank(text)) {
+			this.renderAjaxResult("写点内容吧", 2);
+			return;
+		}
+		
+		//合法性检查
+		if(Common.checkSensitive(text) || Common.checkSensitive(title) ){
+			this.renderAjaxResult("对不起，您提交的内容可能违反了相关法律法规", 3);
+			return;
+		}
+		Content content = new Content();
+		content.setTitle(title);
+		content.setText(text);
+		content.setModule("article");
+		content.setUserId(uid);
+		content.setCreated(new Date());
+		content.setStatus(Content.STATUS_NORMAL);
+		content.save();
+		this.renderAjaxResult("发布成功", 0);
 	}
 	
 	public void detail() {
@@ -57,14 +123,21 @@ public class ForumController extends BaseFrontController {
 			this.renderText("帖子不存在");
 			return;
 		}
-		Page<Comment> commentAry = CommentQuery.me().paginateByContentId(1, 10, id);
+		int page = 1;
+		int size = 10;
+		setAttr("pageIndex", page);
+		setAttr("pageSize", size);
+		Page<Comment> commentAry = CommentQuery.me().paginateByContentId(page, size, id);
 		setAttr("content", content);
 		setAttr("page", commentAry);
+		
 		render("forum_detail.html");
 	}
 	
+	@Before(MemberTokenInterceptor.class)
 	public void postComment(){
-		BigInteger uid = BigInteger.ONE;
+		BigInteger uid = getAttr("memberID");
+		//BigInteger uid = BigInteger.ONE;
 		User user = UserQuery.me().findById(uid);
 		BigInteger contentId = getParaToBigInteger("contentId", BigInteger.ZERO);
 		Content content = ContentQuery.me().findById(contentId);
@@ -95,6 +168,26 @@ public class ForumController extends BaseFrontController {
 		comment.setStatus(Comment.STATUS_NORMAL);
 		comment.save();
 		this.renderAjaxResult("跟帖成功", 0);
+		return;
+	}
+	
+	@Before(MemberTokenInterceptor.class)
+	public void setNickname() {
+		String nickname = getPara("nickname", "");
+		BigInteger uid = getAttr("memberID");
+		//uid = BigInteger.valueOf(8L);
+		User user = UserQuery.me().findById(uid);
+		if(user == null) {
+			this.renderAjaxResult("对不起，用户不存在", 1);
+			return;
+		}
+		if(Common.checkSensitive(nickname)){
+			this.renderAjaxResult("对不起，您提交的昵称可能违反了相关法律法规", 2);
+			return;
+		}
+		user.setNickname(nickname);
+		user.update();
+		this.renderAjaxResult("昵称设置成功", 0);
 		return;
 	}
 }

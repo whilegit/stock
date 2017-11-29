@@ -26,8 +26,13 @@ body{background-color:#f9faf9;}
 .item>.stat>div:nth-child(4){height:2em;line-height:2em;margin-left:0.2em;font-size:1em;}
 .item>.stat>div:nth-child(3){width:2em;height:2em;margin-left:1em;}
 </style>
+<link rel="stylesheet" href="${CPATH!}/static/bootstrap/css/bootstrap.min.css">
 <script src="${CPATH!}/static/plugins/jquery/jquery-2.1.4.min.js"></script>
 <script src="${CPATH!}/static/plugins/moment.min.js"></script>
+<script src="${CPATH!}/static/bootstrap/js/bootstrap.min.js"></script>
+<script src="${CPATH!}/static/plugins/toastr/toastr.js"></script>
+<link rel="stylesheet" href="${CPATH!}/static/plugins/toastr/toastr.css" />
+
 <script>
 var new_page = 1;
 var new_size = 5;
@@ -37,7 +42,6 @@ var valuable_page = 1;
 var valuable_size = 5;
 var valuable_stop = false;
 var valuable_sync = false;
-
 
 $(document).ready(function(){
 	$(".tab").click(function(){
@@ -68,7 +72,7 @@ $(document).ready(function(){
 			valuable_sync = true;
 		}
 		$.post("${CPATH!}/forum/query",{"page":page,"size":size,"type":type}, function(ret){
-			sync = false;
+			console.log(ret);
 			if(type == "news"){
 				new_sync = false;
 			} else {
@@ -93,6 +97,19 @@ $(document).ready(function(){
 								var valuable = (parseInt(obj["valuable"]) == 1) ? "<span class=\"valuable\">精华</span>" : "";
 								obj["title"] = obj["title"] + valuable;
 							}
+							
+							if(attr == "author"){
+								var tmp = obj["author"].split("@&@");
+								if(tmp.length == 2){
+									item_html = item_html.replace(new RegExp("<%author%>","gm"),tmp[0]);
+									item_html = item_html.replace(new RegExp("<%avatar%>","gm"),tmp[1]);
+								} else {
+									item_html = item_html.replace(new RegExp("<%author%>","gm"),"网友");
+									item_html = item_html.replace(new RegExp("<%avatar%>","gm"),"");
+								}
+								continue;
+							}
+							
 							if(attr == "created"){
 								obj["created"] = moment(obj['created'],'YYYY-MM-DD HH:mm:ss').fromNow();
 							}
@@ -111,26 +128,53 @@ $(document).ready(function(){
 		var scrollTop = $(this).scrollTop();
 		var scrollHeight = $(document).height();
 		var windowHeight = $(this).height();
-		if (scrollTop + windowHeight == scrollHeight) {
+		if (Math.abs((scrollTop + windowHeight) - scrollHeight) < windowHeight * 0.05) {
 			var flag = $("#tab_newArticle_container").is(":visible");
 			if(flag){
 				if(new_stop == true) return;
+				if(new_sync == true) return;
 				new_page++; 
 				loadArticle("#tab_newArticle_container");
 			} else {
 				if(valuable_stop == true) return;
+				if(valuable_sync == true) return;
 				valuable_page++; 
 				loadArticle("#tab_valuableArticle_container");
 			}
 		}
+	});
+	$(".container").on("click", ".item", function(){
+		var idx = $(this).attr("idx");
+		location.href = "${CPATH!}/forum/detail?id=" + idx;
+	});
+	
+	if(${shouldSetNickname!0}){
+		$("#modal_trigger").trigger("click");
+	}
+	
+	$("#nickSetPost").click(function(){
+		var nickname = $("#nicknameInput").val();
+		nickname = $.trim(nickname);
+		if(nickname == ""){
+			toastr.error("昵称不能为空","");
+			return;
+		}
+		$.post("${CPATH!}/forum/setNickname",{"nickname":nickname}, function(ret){
+			if(ret.errorCode == 0){
+				toastr.success(ret.message,'');
+				setTimeout(function(){location.reload();}, 2000);
+			} else {
+				toastr.error(ret.message,'');
+			}
+		});
 	});
 });
 </script>
 <script id="item_template" type="text/template">
 <div class="item" idx="<%id%>">
 	<div class="user">
-		<div class="avatar"><img src="${CPATH!}/attachment/20171121/86.jpg"/></div>
-		<div class="username">xxx</div>
+		<div class="avatar"><img src="${CPATH!}<%avatar%>"/></div>
+		<div class="username"><%author%></div>
 		<div class="created"><%created%></div>
 		<div style="clear:both;"></div>
 	</div>
@@ -140,7 +184,7 @@ $(document).ready(function(){
 	<div class="stat">
 		<div><img src="${CPATH!}/attachment/20171121/visual.png"/></div>
 		<div><%view_count%></div>
-		<div><a href="${CPATH!}/forum/detail?id=<%id%>"><img src="${CPATH!}/attachment/20171121/comment.jpg" /></a></div>
+		<div><img src="${CPATH!}/attachment/20171121/comment.jpg" /></div>
 		<div><%comment_count%></div>
 		<div style="clear:both;"></div>
 	</div>
@@ -155,5 +199,26 @@ $(document).ready(function(){
 	<div class="container" id="tab_newArticle_container"></div>
 	<div class="container" id="tab_valuableArticle_container"></div>
 </div>
+
+<div class="modal fade" id="modal">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-radius:5px;">
+ 			<div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">设置昵称</h4>
+            </div>
+            <div class="modal-body">
+            	<div>进入论坛前，请先设置 昵称</div>
+            	<div style="padding:3%;"><input type="text" id="nicknameInput" placeholder="你的昵称"  class="form-control"/></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="nickSetPost">设置</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button class="btn btn-primary btn-lg" id="modal_trigger" data-toggle="modal" style="display:none;" data-target="#modal">
 
 </@layout>

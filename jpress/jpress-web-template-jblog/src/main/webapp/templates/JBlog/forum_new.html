@@ -4,25 +4,55 @@
 body{background-color:#f9faf9;}
 textarea{border-top:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;border-right:0px;border-left:0px;width:100%;padding:3%;font-size:1.2em;}
 .title-tip,.content-tip{border-left:0.25em solid #439ed5;padding-left:0.4em;font-size:1.1em;margin-bottom:3%;margin-left:3%;margin-top:3%;}
-input{width:100%;background-color:#439ed5;border:0px;color:white;padding:12px;font-size:1.2em;}
+button{width:100%;background-color:#439ed5;border:0px;color:white;padding:12px;font-size:1.2em;}
 </style>
 <script src="${CPATH!}/static/plugins/jquery/jquery-2.1.4.min.js"></script>
-<form>
+<script src="${CPATH!}/static/plugins/toastr/toastr.js"></script>
+<link rel="stylesheet" href="${CPATH!}/static/plugins/toastr/toastr.css" />
+
 <div style="margin-bottom:3%;">
 	<div class="title-tip">标题</div>
 	<div style="background-color:#fff;">
-		<textarea rows="4"></textarea>
+		<textarea rows="4" id="title"></textarea>
 	</div>
 </div>
 <div>
 	<div class="content-tip">内容</div>
 	<div style="background-color:#fff;">
-		<textarea rows="6" placeholder="说点什么吧..."></textarea>
+		<textarea id="text" rows="6" placeholder="说点什么吧..."></textarea>
 	</div>
 </div>
 <div style="position:absolute;bottom:0px;width:100%;">
-	<input type="submit" value="发布" />
+	<button id="post">发布</button>
 </div>
-</form>
+<script>
+$(document).ready(function(){
+	
+	$("#post").click(function(){
+		var title = $("#title").val();
+		title = $.trim(title);
+		if(title == ""){
+			toastr.error("设个标题吧a",'');
+			return;
+		}
+		
+		var text = $("#text").val();
+		text = $.trim(text);
+		if(text == "") {
+			toastr.error("写点内容吧",'');
+			return;
+		}
+		
+		$.post("${CPATH!}/forum/newf_post",{"title":title,"text":text},function(ret){
+			if(ret.errorCode == 0){
+				toastr.success(ret.message,'');
+				setTimeout(function(){location.href="${CPATH!}/forum";}, 2000);
+			} else {
+				toastr.error(ret.message,'');
+			}
+		});
+	});
+});
+</script>
 
 </@layout>

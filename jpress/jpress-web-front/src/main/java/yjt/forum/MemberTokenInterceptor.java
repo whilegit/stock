@@ -1,4 +1,4 @@
-package yjt.api.v1.Interceptor;
+package yjt.forum;
 
 import java.math.BigInteger;
 
@@ -8,9 +8,9 @@ import com.jfinal.aop.Interceptor;
 import com.jfinal.aop.Invocation;
 import com.jfinal.kit.StrKit;
 
+import io.jpress.core.BaseFrontController;
 import io.jpress.model.User;
 import io.jpress.model.query.UserQuery;
-import yjt.api.v1.ApiBaseController;
 
 public class MemberTokenInterceptor implements Interceptor{
 
@@ -20,20 +20,29 @@ public class MemberTokenInterceptor implements Interceptor{
 		boolean pass = false;
 		HttpServletRequest request = inv.getController().getRequest();
 		request.setAttribute("invocation", inv);
-		String memberIDStr = inv.getController().getPara("memberID"); 
-		String memberToken = inv.getController().getPara("memberToken");
+		
+		String memberIDStr = request.getHeader("memberID");
+		String memberToken = request.getHeader("memberToken"); 
+		
 		if(StrKit.notBlank(memberIDStr) && StrKit.notBlank(memberToken)){
 			long userId = Long.parseLong(memberIDStr);
 			User user = UserQuery.me().findByIdNoCache(BigInteger.valueOf(userId));
 			if(user != null && memberToken.equals(user.getMemberToken())){
+				request.setAttribute("memberID", user.getId());
 				pass = true;
 			}
 		}
 		
-		if(pass) inv.invoke();
+		if(pass) {
+			inv.invoke();
+		}
 		else{
-			ApiBaseController bc = (ApiBaseController) inv.getController();
-			bc.memberTokenFail();
+			BaseFrontController bc = (BaseFrontController) inv.getController();
+			if(bc.isAjaxRequest()) {
+				bc.renderAjaxResult("未登陆", -1);
+			} else {
+				bc.renderText("未登陆");
+			}
 		}
 	}
 }
