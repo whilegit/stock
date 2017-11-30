@@ -215,6 +215,23 @@ public class _ContentController extends JBaseCRUDController<Content> {
 			renderAjaxResultForError("restore error!");
 		}
 	}
+	
+	@Before(UCodeInterceptor.class)
+	public void toggle_valuable() {
+		BigInteger id = getParaToBigInteger("id");
+		Content c = ContentQuery.me().findById(id);
+		if(c == null) {
+			renderAjaxResultForError("帖子不存在");
+			return;
+		}
+		int valuable = c.getValuable();
+		valuable = (valuable == 1) ? 0 : 1;
+		c.setValuable(valuable);
+		c.update();
+		renderAjaxResultForSuccess("success");
+	}
+	
+	
 
 	@Before(UCodeInterceptor.class)
 	public void delete() {
