@@ -56,7 +56,7 @@ public class AdminMenuInitListener implements MessageListener {
 		menuMnager.addMenuGroup(createAdMenuGroup());
 		menuMnager.addMenuGroup(createReportMenuGroup());
 		menuMnager.addMenuGroup(createFeedbackMenuGroup());
-		
+		menuMnager.addMenuGroup(createOperationLogMenuGroup());
 		//menuMnager.addMenuGroup(createTemplateMenuGroup());
 		//menuMnager.addMenuGroup(createAddonMenuGroup());
 		menuMnager.addMenuGroup(createSettingMenuGroup());
@@ -180,6 +180,13 @@ public class AdminMenuInitListener implements MessageListener {
 		MenuGroup group = new MenuGroup("feedback", "fa fa-file-text-o", "反馈管理");
 		{
 			group.addMenuItem(new MenuItem("list", "/admin/feedback", "反馈列表", "feedback-list"));
+		}
+		return group;
+	}
+	private MenuGroup createOperationLogMenuGroup(){
+		MenuGroup group = new MenuGroup("oplog", "fa fa-file-text-o", "操作日志");
+		{
+			group.addMenuItem(new MenuItem("list", "/admin/oplog", "日志列表", "oplog-list"));
 		}
 		return group;
 	}

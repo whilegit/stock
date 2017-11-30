@@ -82,5 +82,12 @@
 			{"key":"option-credittable","desc":"年龄信用额度设置"},
 			{"key":"option-sensitive","desc":"敏感词编辑"}
 		]
+	},
+	{
+		"key":"oplog",
+		"desc":"操作日志",
+		"perms":[
+			{"key":"oplog-list","desc":"日志列表"}
+		]
 	}
 ]
