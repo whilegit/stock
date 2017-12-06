@@ -20,6 +20,7 @@ import yjt.ChinaPay.ChinapayTransBean;
 import yjt.ChinaPay.ChinapayUtils;
 import yjt.ChinaPay.ChinapayUtils.PayStatus;
 import yjt.core.perm.PermAnnotation;
+import yjt.model.Oplog;
 import yjt.model.Withdraw;
 import yjt.model.query.WithdrawQuery;
 import yjt.verify.BankcardDetail;
@@ -62,6 +63,7 @@ public class _WithdrawController extends JBaseCRUDController<Withdraw>{
 		
 		setAttr("include", "_index_include.html");
 		render("index.html");
+		Oplog.insertOp(this.getLoginedUser().getId(), "查看提现列表", "withdraw.index", "" , this.getIPAddress());
 	}
 	
 	@PermAnnotation("withdraw-pay")
@@ -206,6 +208,7 @@ public class _WithdrawController extends JBaseCRUDController<Withdraw>{
 		withdraw.setUpdateTime(new Date());
 		withdraw.setClerk(getLoginedUser().getId());
 		withdraw.update();
+		Oplog.insertOp(this.getLoginedUser().getId(), "支付提现", "withdraw.dopay", JSON.toJSONString(withdraw) , this.getIPAddress());
 		
 		setAttr("paystatus", paystatus);
 		render("dopay.html");

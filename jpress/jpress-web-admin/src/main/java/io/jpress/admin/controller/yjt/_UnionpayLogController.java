@@ -1,5 +1,6 @@
 package io.jpress.admin.controller.yjt;
 
+import com.alibaba.fastjson.JSON;
 import com.jfinal.aop.Before;
 import com.jfinal.plugin.activerecord.Page;
 
@@ -9,6 +10,7 @@ import io.jpress.router.RouterMapping;
 import io.jpress.router.RouterNotAllowConvert;
 import yjt.Utils;
 import yjt.core.perm.PermAnnotation;
+import yjt.model.Oplog;
 import yjt.model.UnionpayLog;
 import yjt.model.query.FeedbackQuery;
 import yjt.model.query.UnionpayLogQuery;
@@ -37,5 +39,6 @@ public class _UnionpayLogController extends JBaseCRUDController<UnionpayLog>{
 		
 		setAttr("include", "_index_include.html");
 		render("index.html");
+		Oplog.insertOp(this.getLoginedUser().getId(), "查看银联流水", "unionpaylog.index", "" , this.getIPAddress());
 	}
 }

@@ -41,6 +41,7 @@ import io.jpress.router.RouterNotAllowConvert;
 import io.jpress.utils.StringUtils;
 import yjt.core.Utils.Common;
 import yjt.core.perm.PermAnnotation;
+import yjt.model.Oplog;
 
 @RouterMapping(url = "/admin/option", viewPath = "/WEB-INF/admin/option")
 @Before(ActionCacheClearInterceptor.class)
@@ -142,6 +143,7 @@ public class _OptionController extends JBaseController {
 			}
 			credittableStr = credittableStr.substring(0, credittableStr.length() - 1);
 			OptionQuery.me().saveOrUpdate("credittable", credittableStr);
+			Oplog.insertOp(this.getLoginedUser().getId(), "年龄信用额度设置", "option.credittableEdit.save", "内容 " + credittableStr , this.getIPAddress());
 			this.renderAjaxResult("保存成功", 0);
 		} catch ( Exception e) {
 			this.renderAjaxResult("错误: 格式错误", 2);
@@ -205,7 +207,7 @@ public class _OptionController extends JBaseController {
 		OptionQuery.me().saveOrUpdate("sensitive", finalString);
 		OptionQuery.me().saveOrUpdate("sensitive_file", files.get("file"));
 		Common.loadSensitive();
-		
+		Oplog.insertOp(this.getLoginedUser().getId(), "敏感词库更新", "option.sensitiveEdit", "内容 " + finalString , this.getIPAddress());
 		this.renderAjaxResult("成功更新", 0);
 	}
 }

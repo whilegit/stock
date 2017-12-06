@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.alibaba.fastjson.JSON;
 import com.jfinal.aop.Before;
 import com.jfinal.plugin.activerecord.Page;
 
@@ -15,6 +16,7 @@ import io.jpress.router.RouterNotAllowConvert;
 import yjt.core.perm.PermAnnotation;
 import yjt.core.perm.PermKit;
 import yjt.model.Ad;
+import yjt.model.Oplog;
 import yjt.model.query.AdQuery;
 
 
@@ -80,6 +82,7 @@ public class _AdController extends JBaseCRUDController<Ad>{
 		} else {
 			ad.save();
 		}
+		Oplog.insertOp(this.getLoginedUser().getId(), "编辑广告", "ad.save", JSON.toJSONString(ad) , this.getIPAddress());
 		this.renderAjaxResultForSuccess();
 	}
 	
@@ -98,6 +101,7 @@ public class _AdController extends JBaseCRUDController<Ad>{
 			return;
 		}
 		Ad ad = AdQuery.me().findById(id);
+		Oplog.insertOp(this.getLoginedUser().getId(), "删除广告", "ad.delete", JSON.toJSONString(ad) , this.getIPAddress());
 		ad.delete();
 	}
 }

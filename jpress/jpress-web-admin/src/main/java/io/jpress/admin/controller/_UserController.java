@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.alibaba.fastjson.JSON;
 import com.jfinal.aop.Before;
 import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Db;
@@ -46,6 +47,7 @@ import yjt.core.perm.PermGroup;
 import yjt.core.perm.PermKit;
 import yjt.model.Contract;
 import yjt.model.CreditLog;
+import yjt.model.Oplog;
 import yjt.model.Contract.Status;
 import yjt.model.query.ContractQuery;
 import yjt.model.query.CreditLogQuery;
@@ -234,14 +236,11 @@ public class _UserController extends JBaseCRUDController<User> {
 		});
 
 		if (saved) {
-			renderAjaxResultForSuccess();
+			Oplog.insertOp(this.getLoginedUser().getId(), "编辑或新增用户", "user.editOrCreate", "用户ID [" + user.getId().toString() + "]" , this.getIPAddress());
+			renderAjaxResultForSuccess("提交成功");
 		} else {
-			renderAjaxResultForError();
+			renderAjaxResultForError("提交失败");
 		}
-
-		user.saveOrUpdate();
-
-		renderAjaxResultForSuccess("ok");
 	}
 
 	@PermAnnotation("user-view")
@@ -318,9 +317,10 @@ public class _UserController extends JBaseCRUDController<User> {
 					}
 					user.setPerm(perms);
 					boolean flag = user.update();
-					if(flag) 
+					if(flag) {
 						this.renderAjaxResultForSuccess();
-					else
+						Oplog.insertOp(this.getLoginedUser().getId(), "修改用户权限", "user.perm", "信息 " + JSON.toJSONString(user) , this.getIPAddress());
+					}else
 						this.renderAjaxResultForError("错误: 保存权限失败");
 					return;
 				}
@@ -336,6 +336,7 @@ public class _UserController extends JBaseCRUDController<User> {
 			User user = UserQuery.me().findById(id);
 			user.setStatus(User.STATUS_FROZEN);
 			user.update();
+			Oplog.insertOp(this.getLoginedUser().getId(), "冻结用户", "user.frozen", "信息 " + JSON.toJSONString(user) , this.getIPAddress());
 			renderAjaxResultForSuccess();
 		} else {
 			renderAjaxResultForError();
@@ -349,6 +350,7 @@ public class _UserController extends JBaseCRUDController<User> {
 			User user = UserQuery.me().findById(id);
 			user.setStatus(User.STATUS_NORMAL);
 			user.update();
+			Oplog.insertOp(this.getLoginedUser().getId(), "恢复用户", "user.restore", "信息 " + JSON.toJSONString(user) , this.getIPAddress());
 			renderAjaxResultForSuccess();
 		} else {
 			renderAjaxResultForError();
@@ -369,7 +371,7 @@ public class _UserController extends JBaseCRUDController<User> {
 			renderAjaxResultForError("不能删除自己...");
 			return;
 		}
-
+		Oplog.insertOp(this.getLoginedUser().getId(), "删除用户", "user.delete", "用户ID " + id.intValue() , this.getIPAddress());
 		super.delete();
 	}
 
@@ -404,6 +406,7 @@ public class _UserController extends JBaseCRUDController<User> {
 				user.update();
 			}
 		}
+		Oplog.insertOp(this.getLoginedUser().getId(), "变更角色", "user.changeRole", "用户IDs " + JSON.toJSONString(ids) , this.getIPAddress());
 		this.renderAjaxResultForSuccess("修改角色成功");
 		return;
 	}

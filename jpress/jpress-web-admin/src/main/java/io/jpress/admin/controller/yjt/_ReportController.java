@@ -2,6 +2,7 @@ package io.jpress.admin.controller.yjt;
 
 import java.math.BigInteger;
 
+import com.alibaba.fastjson.JSON;
 import com.jfinal.aop.Before;
 import com.jfinal.plugin.activerecord.Page;
 
@@ -11,6 +12,7 @@ import io.jpress.model.User;
 import io.jpress.router.RouterMapping;
 import io.jpress.router.RouterNotAllowConvert;
 import yjt.core.perm.PermAnnotation;
+import yjt.model.Oplog;
 import yjt.model.Report;
 import yjt.model.query.ReportQuery;
 
@@ -57,6 +59,7 @@ public class _ReportController extends JBaseCRUDController<Report>{
 		}
 		Report ad = ReportQuery.me().findById(id);
 		ad.delete();
+		Oplog.insertOp(this.getLoginedUser().getId(), "删除举报", "report.delete", JSON.toJSONString(ad) , this.getIPAddress());
 	}
 	
 	@PermAnnotation("report-proc")
@@ -72,6 +75,7 @@ public class _ReportController extends JBaseCRUDController<Report>{
 	@PermAnnotation("report-proc")
 	public void doproc(){
 		final Report report = getModel(Report.class);
+		Oplog.insertOp(this.getLoginedUser().getId(), "处理举报", "report.doproc", JSON.toJSONString(report) , this.getIPAddress());
 		report.update();
 		setAttr("include", "_doproc_include.html");
 		setAttr("href", this.getRequest().getHeader("referer"));

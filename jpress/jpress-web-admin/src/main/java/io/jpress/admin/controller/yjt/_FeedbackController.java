@@ -2,6 +2,7 @@ package io.jpress.admin.controller.yjt;
 
 import java.math.BigInteger;
 
+import com.alibaba.fastjson.JSON;
 import com.jfinal.aop.Before;
 import com.jfinal.plugin.activerecord.Page;
 
@@ -12,6 +13,7 @@ import io.jpress.router.RouterMapping;
 import io.jpress.router.RouterNotAllowConvert;
 import yjt.core.perm.PermAnnotation;
 import yjt.model.Feedback;
+import yjt.model.Oplog;
 import yjt.model.query.FeedbackQuery;
 
 
@@ -42,6 +44,7 @@ public class _FeedbackController extends JBaseCRUDController<Feedback>{
 		}
 		Feedback fd = FeedbackQuery.me().findById(id);
 		fd.delete();
+		Oplog.insertOp(this.getLoginedUser().getId(), "删除反馈", "feedback.delete", JSON.toJSONString(fd) , this.getIPAddress());
 	}
 	
 	@PermAnnotation("feedback-proc")
@@ -58,6 +61,7 @@ public class _FeedbackController extends JBaseCRUDController<Feedback>{
 	public void doproc(){
 		final Feedback fd = getModel(Feedback.class);
 		fd.update();
+		Oplog.insertOp(this.getLoginedUser().getId(), "处理反馈", "feedback.doproc", JSON.toJSONString(fd) , this.getIPAddress());
 		setAttr("include", "_doproc_include.html");
 		setAttr("href", this.getRequest().getHeader("referer"));
 		setAttr("p", "feedback");
