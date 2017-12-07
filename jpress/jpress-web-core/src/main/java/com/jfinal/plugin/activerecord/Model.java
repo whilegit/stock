@@ -916,6 +916,13 @@ public abstract class Model<M extends Model> implements Serializable {
 		return com.jfinal.kit.JsonKit.toJson(attrs);
 	}
 	
+<<<<<<< HEAD
+=======
+	/**
+	 * 获取当前模型的对象类（最终的类，用于组装该对象）lzr注
+	 * @return
+	 */
+>>>>>>> devel
 	private Class<? extends Model> getUsefulClass() {
 		Class c = getClass();
 		return c.getName().indexOf("EnhancerByCGLIB") == -1 ? c : c.getSuperclass();	// com.demo.blog.Blog$$EnhancerByCGLIB$$69a17158

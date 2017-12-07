@@ -1,0 +1,19 @@
+## Security properties configuration file
+
+#the location of verify file
+verify.file=E:\\ChinaPay\\key\\secss\\cp_test.cer
+#
+sign.filePath=/opt/secss
+#location of sign file
+sign.file=E:\\ChinaPay\\key\\secss\\000000000000001.pfx
+#
+#sign.file.password=singrand62875008
+sign.file.password=111111
+#
+sign.cert.type=PKCS12
+#
+sign.invalid.fields=Signature,CertId
+#
+signature.field=Signature
+#
+log4j.name=CONSOLE

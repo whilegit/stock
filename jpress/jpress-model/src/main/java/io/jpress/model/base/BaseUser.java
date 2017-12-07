@@ -19,8 +19,11 @@ import io.jpress.message.MessageKit;
 import io.jpress.model.Metadata;
 import io.jpress.model.core.JModel;
 import io.jpress.model.query.MetaDataQuery;
+
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.IBean;
 import com.jfinal.plugin.ehcache.CacheKit;
 import com.jfinal.plugin.ehcache.IDataLoader;
@@ -145,7 +148,8 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	}
 
 	public java.lang.String getUsername() {
-		return get("username");
+		String username = get("username");
+		return username != null ? username : "";
 	}
 
 	public void setNickname(java.lang.String nickname) {
@@ -153,7 +157,8 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	}
 
 	public java.lang.String getNickname() {
-		return get("nickname");
+		String nickname = get("nickname");
+		return nickname != null ? nickname : "";
 	}
 
 	public void setRealname(java.lang.String realname) {
@@ -161,7 +166,8 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	}
 
 	public java.lang.String getRealname() {
-		return get("realname");
+		String realname = get("realname");
+		return realname != null ? realname : "";
 	}
 
 	public void setPassword(java.lang.String password) {
@@ -180,6 +186,22 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 		return get("salt");
 	}
 
+	public void setDealPassword(java.lang.String dealPassword) {
+		set("deal_password", dealPassword);
+	}
+
+	public java.lang.String getDealPassword() {
+		return get("deal_password");
+	}
+
+	public void setDealSalt(java.lang.String dealSalt) {
+		set("deal_salt", dealSalt);
+	}
+
+	public java.lang.String getDealSalt() {
+		return get("deal_salt");
+	}
+	
 	public void setEmail(java.lang.String email) {
 		set("email", email);
 	}
@@ -209,7 +231,8 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	}
 
 	public java.lang.String getMobileStatus() {
-		return get("mobile_status");
+		String mobileStatus = get("mobile_status");
+		return !StrKit.isBlank(mobileStatus) ? mobileStatus : "0";
 	}
 
 	public void setTelephone(java.lang.String telephone) {
@@ -233,7 +256,8 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	}
 
 	public java.lang.String getGender() {
-		return get("gender");
+		String gender = get("gender");
+		return gender != null ? gender : "";
 	}
 
 	public void setRole(java.lang.String role) {
@@ -243,7 +267,15 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	public java.lang.String getRole() {
 		return get("role");
 	}
+	
+	public void setPerm(java.lang.String perm) {
+		set("perm", perm);
+	}
 
+	public java.lang.String getPerm() {
+		return get("perm");
+	}
+	
 	public void setSignature(java.lang.String signature) {
 		set("signature", signature);
 	}
@@ -337,7 +369,8 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	}
 
 	public java.lang.String getAddress() {
-		return get("address");
+		String address = get("address");
+		return address != null ? address : "";
 	}
 
 	public void setZipcode(java.lang.String zipcode) {
@@ -377,7 +410,8 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	}
 
 	public java.lang.String getAvatar() {
-		return get("avatar");
+		String avatar = get("avatar");
+		return avatar != null ? avatar : "";
 	}
 
 	public void setIdcardtype(java.lang.String idcardtype) {
@@ -388,12 +422,37 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 		return get("idcardtype");
 	}
 
+	public void setIdcardFront(java.lang.String idcardFront) {
+		set("idcard_front", idcardFront);
+	}
+	
+	public java.lang.String getIdcardFront() {
+		return get("idcard_front");
+	}
+
+	public void setIdcardBack(java.lang.String idcardBack) {
+		set("idcard_back", idcardBack);
+	}
+	
+	public java.lang.String getIdcardBack() {
+		return get("idcard_back");
+	}
+
+	public void setFaceimg(java.lang.String faceimg) {
+		set("faceimg", faceimg);
+	}
+	
+	public java.lang.String getFaceimg() {
+		return get("faceimg");
+	}
+	
 	public void setIdcard(java.lang.String idcard) {
 		set("idcard", idcard);
 	}
 
 	public java.lang.String getIdcard() {
-		return get("idcard");
+		String idCard = get("idcard");
+		return idCard != null ? idCard : "";
 	}
 
 	public void setStatus(java.lang.String status) {
@@ -435,5 +494,225 @@ public abstract class BaseUser<M extends BaseUser<M>> extends JModel<M> implemen
 	public java.util.Date getActivated() {
 		return get("activated");
 	}
+	
+	public void setMemberToken(String memberToken){
+		set("member_token", memberToken);
+	}
+	public String getMemberToken(){
+		return get("member_token");
+	}
+	
+	public void setDeviceToken(String deviceToken){
+		set("device_token", deviceToken);
+	}
+	public String getDeviceToken(){
+		return get("device_token");
+	}
+	
+	public void setScore(java.lang.Integer score){
+		set("score", score);
+	}
+	
+	public java.lang.Integer getScore(){
+		return get("score");
+	}
+	
+	public void setCanBorrowMoney(java.lang.Integer canBorrowMoney){
+		set("can_borrow_money", canBorrowMoney);
+	}
+	
+	public java.lang.Integer getCanBorrowMoney(){
+		return get("can_borrow_money");
+	}
+	
+	public void setSysPush(java.lang.Integer sysPush){
+		set("sys_push", sysPush);
+	}
+	
+	public java.lang.Integer getSysPush(){
+		Integer sysPush = get("sys_push");
+		return sysPush != null ? sysPush : Integer.valueOf(0);
+	}
+	
+	public void setSalePush(java.lang.Integer salePush){
+		set("sale_push", salePush);
+	}
+	
+	public java.lang.Integer getSalePush(){
+		return get("sale_push");
+	}
+	
+	public void setInPush(java.lang.Integer inPush){
+		set("in_push", inPush);
+	}
+	
+	public java.lang.Integer getInPush(){
+		return get("in_push");
+	}
+	
+	public void setOutPush(java.lang.Integer outPush){
+		set("out_push", outPush);
+	}
+	
+	public java.lang.Integer getOutPush(){
+		return get("out_push");
+	}
+	
+	public void setOverdue(java.lang.Integer overdue){
+		set("overdue", overdue);
+	}
+	
+	public java.lang.Integer getOverdue(){
+		return get("overdue");
+	}
+	
+	public void setCreditRecord(java.lang.String creditRecord){
+		set("credit_record", creditRecord);
+	}
+	
+	public String getCreditRecord(){
+		String creditRecord = get("credit_record");
+		return creditRecord != null ? creditRecord : "";
+	}
+	
+	public void setCanLend(java.lang.Integer canLend){
+		set("can_lend", canLend);
+	}
+	
+	public java.lang.Integer getCanLend(){
+		return get("can_lend");
+	}
+	
+	public void setLat(double lat){
+		set("lat", BigDecimal.valueOf(lat));
+	}
+	
+	public java.math.BigDecimal getLat(){
+		return get("lat");
+	}
+	
+	public void setLng(double lng){
+		set("lng", BigDecimal.valueOf(lng));
+	}
+	
+	public java.math.BigDecimal getLng(){
+		return get("lng");
+	}
+	
+	public void setBankcard(java.lang.String bankcard){
+		set("bankcard", bankcard);
+	}
+	
+	public String getBankcard(){
+		String bankcard = get("bankcard");
+		return bankcard != null ? bankcard : "";
+	}
+	
+	public void setBanktype(java.lang.String banktype){
+		set("banktype", banktype);
+	}
+	
+	public String getBanktype(){
+		String banktype = get("banktype");
+		return banktype != null ? banktype : "";
+	}
+	
+	public void setBooks(java.lang.String books){
+		set("books", books);
+	}
+	
+	public String getBooks(){
+		String books = get("books");
+		return books != null ? books : "";
+	}
+	
+	
+	public void setZhimaScore(java.lang.Integer zhimaScore){
+		set("zhima_score", zhimaScore);
+	}
+	
+	public java.lang.Integer getZhimaScore(){
+		return get("zhima_score");
+	}
+	
+	public void setAuthExpire(java.util.Date authExpire) {
+		set("auth_expire", authExpire);
+	}
 
+	public java.util.Date getAuthExpire() {
+		return get("auth_expire");
+	}
+	
+	public void setAuthBank(java.lang.Integer authBank){
+		set("auth_bank", authBank);
+	}
+	
+	public java.lang.Integer getAuthBank(){
+		return get("auth_bank");
+	}
+	
+	public void setAuthZhima(java.lang.Integer authZhima){
+		set("auth_zhima", authZhima);
+	}
+	
+	public java.lang.Integer getAuthZhima(){
+		return get("auth_zhima");
+	}
+	
+	public void setAuthAlipay(java.lang.Integer authAlipay){
+		set("auth_alipay", authAlipay);
+	}
+	
+	public java.lang.Integer getAuthAlipay(){
+		return get("auth_alipay");
+	}
+	
+	public void setAuthXuexing(java.lang.Integer authXuexing){
+		set("auth_xuexing", authXuexing);
+	}
+	
+	public java.lang.Integer getAuthXuexing(){
+		return get("auth_xuexing");
+	}
+	
+	public void setAuthBook(java.lang.Integer authBook){
+		set("auth_book", authBook);
+	}
+	
+	public java.lang.Integer getAuthBook(){
+		return get("auth_book");
+	}
+	
+	public void setAuthCard(java.lang.Integer authCard){
+		set("auth_card", authCard);
+	}
+	
+	public java.lang.Integer getAuthCard(){
+		return get("auth_card");
+	}
+	
+	public void setAuthFace(java.lang.Integer authFace){
+		set("auth_face", authFace);
+	}
+	
+	public java.lang.Integer getAuthFace(){
+		return get("auth_face");
+	}
+	
+	public void setAuthGjj(java.lang.Integer authGjj){
+		set("auth_gjj", authGjj);
+	}
+	
+	public java.lang.Integer getAuthGjj(){
+		return get("auth_gjj");
+	}
+	
+	public void setInterest(double interest){
+		set("interest", BigDecimal.valueOf(interest));
+	}
+	
+	public java.math.BigDecimal getInterest(){
+		return get("interest");
+	}
+	
 }

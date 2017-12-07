@@ -17,8 +17,13 @@ function doSubmit(){
 	});
  }
  
+
+ 
  $(document).ready(function(){
   	$("#password").show();
+  	<#if !(hasEditPerm?? && hasEditPerm)>
+  	$("input").prop("disabled", true);
+  	</#if>
 });
 
 </#macro>

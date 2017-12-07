@@ -1,0 +1,91 @@
+<#include "../_inc/_layout.html"/> 
+<#include "_option_script.html"/> 
+<@layout active_id=p child_active_id=c>
+<section class="content-header">
+	<h1>信用额度设置</h1>
+</section>
+<style>
+	td{border:1px solid #ccc;padding:10px;}
+	.del{cursor:pointer;background-color:#b00;color:white;padding:3px;border-radius:2px;}
+</style>
+<!-- Main content -->
+<section class="content">
+	<p class="content-msg">
+	以年龄区分用户的信用额度 <br><button type="button" id="add" class="btn btn-primary">增加年龄段</button>
+	</p>
+	<form>
+		<input type="hidden" name="ucode" value="${ucode}"> 
+		<#if credittable??> 
+		<table width="100%" id="creditable">
+			<thead><tr><th width="30%">年龄</th><th width="30%">额度</th><th width="30%">操作</th></tr></thead>
+			<tbody>
+				<#list credittable as bean>
+					<tr><td class="editable">${bean.age!}</td><td class="editable">${bean.amount!}</td><td><span class="del">删除</span></td></tr>
+				</#list>
+			</tbody>
+		</table>
+		</#if>
+		<div class="row" style="margin-top:20px;">
+			<div class="col-xs-12">
+				<button type="button" onclick="return doSubmit()" class="btn btn-danger">保存更改</button>
+			</div>
+		</div>
+		<!-- /.row -->
+	</form>
+</section>
+<!-- /.content -->
+</@layout>
+<script>
+$(document).ready(function(){
+	$("#creditable").on("click","td.editable", function(){
+		var $input = $(this).find("input.editable");
+		if($input.length > 0) return;
+		var text = $(this).text();
+		$(this).html("<input class=\"editable\" value=\""+text+"\">");
+		$(this).find("input.editable").focus();
+	});
+	
+	$("#creditable").on("blur", "input.editable", function(){
+		var val = $(this).val();
+		var $td = $(this).parent();
+		$td.html(val);
+		$(this).remove();
+	});
+	$("#creditable").on("click", "span.del", function(){
+		$(this).parents("tr").remove();
+	});
+	
+	$(document).on("click", "#add", function(){
+		$("#creditable tbody").append("<tr><td class=\"editable\">-</td><td class=\"editable\">-</td><td><span class=\"del\">删除</span></td></tr>");
+	});
+});
+function doSubmit(){
+	var $trs = $("#creditable tbody").find("tr");
+	if($trs.length <= 0) return false;
+	var ages = "";
+	var credits = "";
+	for(var i = 0; i<$trs.length; i++){
+		var $tds = $($trs[i]).find("td");
+		var age = $($tds[0]).text();
+		var credit = $($tds[1]).text();
+		if(isNaN(age) || isNaN(credit)){
+			toastr.error("必须设置成数字。" + age + " " + credit,'操作失败');
+			return false;
+		}
+		ages += age + ",";
+		credits += credit + ",";
+	}
+	ages = ages.substring(0, ages.length - 1);
+	credits = credits.substring(0, credits.length - 1);
+	if(ages.length > 0){
+		$.post("${CPATH}/admin/option/credittable_edit", {"ages":ages,"credits":credits}, function(ret){
+			if(ret.errorCode == 0){
+				toastr.success(ret.message,'操作成功');
+			} else {
+				toastr.error(ret.message,'操作失败');
+			}
+		});
+	}
+	return false;
+}
+</script>

@@ -34,6 +34,7 @@ import io.jpress.router.RouterNotAllowConvert;
 import io.jpress.template.TemplateManager;
 import io.jpress.utils.JsoupUtils;
 import io.jpress.utils.StringUtils;
+import yjt.model.Oplog;
 
 @RouterMapping(url = "/admin/comment", viewPath = "/WEB-INF/admin/comment")
 @Before(ActionCacheClearInterceptor.class)
@@ -90,6 +91,7 @@ public class _CommentController extends JBaseCRUDController<Comment> {
 			c.setStatus(Comment.STATUS_DELETE);
 			if (c.saveOrUpdate()) {
 				renderAjaxResultForSuccess();
+				Oplog.insertOp(this.getLoginedUser().getId(), "评论丢入垃圾箱", "comment.trash", "评论ID " + c.getId().intValue() , this.getIPAddress());
 			} else {
 				renderAjaxResultForError("restore error!");
 			}
@@ -106,6 +108,8 @@ public class _CommentController extends JBaseCRUDController<Comment> {
 			c.setStatus(Content.STATUS_DRAFT);
 			if (c.saveOrUpdate()) {
 				renderAjaxResultForSuccess("success");
+				Oplog.insertOp(this.getLoginedUser().getId(), "恢复评论", "comment.restore", "评论ID " + c.getId().intValue() , this.getIPAddress());
+
 			} else {
 				renderAjaxResultForError("restore error!");
 			}
@@ -122,6 +126,8 @@ public class _CommentController extends JBaseCRUDController<Comment> {
 			c.setStatus(Content.STATUS_NORMAL);
 			if (c.saveOrUpdate()) {
 				renderAjaxResultForSuccess("success");
+				Oplog.insertOp(this.getLoginedUser().getId(), "发布评论", "comment.pub", "评论ID " + c.getId().intValue() , this.getIPAddress());
+
 			} else {
 				renderAjaxResultForError("pub fail!");
 			}
@@ -138,6 +144,7 @@ public class _CommentController extends JBaseCRUDController<Comment> {
 			c.setStatus(Content.STATUS_DRAFT);
 			if (c.saveOrUpdate()) {
 				renderAjaxResultForSuccess("success");
+				Oplog.insertOp(this.getLoginedUser().getId(), "评论存为草稿", "comment.draft", "评论ID " + c.getId().intValue() , this.getIPAddress());
 			} else {
 				renderAjaxResultForError("draft fail!");
 			}
@@ -153,6 +160,7 @@ public class _CommentController extends JBaseCRUDController<Comment> {
 		if (c != null) {
 			if (c.delete()) {
 				renderAjaxResultForSuccess();
+				Oplog.insertOp(this.getLoginedUser().getId(), "删除评论", "comment.delete", "评论ID " + c.getId().intValue() , this.getIPAddress());
 				return;
 			}
 		}
@@ -172,6 +180,7 @@ public class _CommentController extends JBaseCRUDController<Comment> {
 			comment.setUserId(user.getId());
 		}
 		if (comment.saveOrUpdate()) {
+			Oplog.insertOp(this.getLoginedUser().getId(), "保存评论", "comment.save", "评论ID " + comment.getId().intValue() , this.getIPAddress());
 			comment.updateCommentCount();
 			renderAjaxResultForSuccess();
 		} else {
@@ -201,6 +210,7 @@ public class _CommentController extends JBaseCRUDController<Comment> {
 		comment.setText(JsoupUtils.getBodyHtml(comment.getText()));
 
 		comment.save();
+		Oplog.insertOp(user.getId(), "回复评论", "comment.reply", "评论ID " + comment.getId().intValue() , this.getIPAddress());
 		renderAjaxResultForSuccess();
 	}
 }

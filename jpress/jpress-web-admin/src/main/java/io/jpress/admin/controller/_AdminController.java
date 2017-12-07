@@ -15,6 +15,7 @@
  */
 package io.jpress.admin.controller;
 
+import java.util.Date;
 import java.util.List;
 
 import com.jfinal.aop.Before;
@@ -41,6 +42,10 @@ import io.jpress.template.TemplateManager;
 import io.jpress.utils.CookieUtils;
 import io.jpress.utils.EncryptUtils;
 import io.jpress.utils.StringUtils;
+import yjt.Utils;
+import yjt.model.query.ContractQuery;
+import yjt.model.query.UnionpayLogQuery;
+import yjt.model.query.WithdrawQuery;
 
 @RouterMapping(url = "/admin", viewPath = "/WEB-INF/admin")
 @RouterNotAllowConvert
@@ -68,6 +73,17 @@ public class _AdminController extends JBaseController {
 			setAttr("comments", commentPage.getList());
 		}
 
+		
+		long todayContractsNum = ContractQuery.me().findCount(null, null, null, null, Utils.getTodayStartTime(), null);
+		setAttr("todayContractsNum", todayContractsNum);
+		double todayCharge = UnionpayLogQuery.me().queryAmount(1, Utils.getDayStartTime(new Date()), null);
+		setAttr("todayCharge", todayCharge);
+		double todayWithdraw = WithdrawQuery.me().queryAmount(null, Utils.getDayStartTime(new Date()), null);
+		setAttr("todayWithdraw", todayWithdraw);
+		long todayUserCount = UserQuery.me().findTodayCount();
+		setAttr("todayUserCount", todayUserCount);
+		double todayContractAmount = ContractQuery.me().queryTodayAmount();
+		setAttr("todayContractAmount", todayContractAmount);
 		render("index.html");
 	}
 
@@ -99,7 +115,7 @@ public class _AdminController extends JBaseController {
 			renderAjaxResultForError("密码错误");
 		}
 	}
-
+	
 	@Before(UCodeInterceptor.class)
 	public void logout() {
 		CookieUtils.remove(this, Consts.COOKIE_LOGINED_USER);

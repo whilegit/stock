@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.alibaba.fastjson.JSON;
 import com.jfinal.aop.Before;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.IAtom;
@@ -51,6 +52,8 @@ import io.jpress.template.TplModule;
 import io.jpress.template.TplTaxonomyType;
 import io.jpress.utils.JsoupUtils;
 import io.jpress.utils.StringUtils;
+import yjt.core.Utils.Common;
+import yjt.model.Oplog;
 
 @RouterMapping(url = "/admin/content", viewPath = "/WEB-INF/admin/content")
 @Before(ActionCacheClearInterceptor.class)
@@ -103,6 +106,7 @@ public class _ContentController extends JBaseCRUDController<Content> {
 		setAttr("page", page);
 
 		String templateHtml = String.format("admin_content_index_%s.html", module.getName());
+
 		for (int i = 0; i < 2; i++) {
 			if (TemplateManager.me().existsFile(templateHtml)) {
 				setAttr("include", TemplateManager.me().currentTemplatePath() + "/" + templateHtml);
@@ -111,7 +115,6 @@ public class _ContentController extends JBaseCRUDController<Content> {
 			templateHtml = templateHtml.substring(0, templateHtml.lastIndexOf("_")) + ".html";
 		}
 		setAttr("include", "_index_include.html");
-
 	}
 
 	private void filterUI(BigInteger[] tids) {
@@ -161,6 +164,7 @@ public class _ContentController extends JBaseCRUDController<Content> {
 		if (c != null) {
 			c.setStatus(Content.STATUS_DELETE);
 			c.saveOrUpdate();
+			Oplog.insertOp(this.getLoginedUser().getId(), "文章丢入垃圾箱", "content.trash", "文章ID " + c.getId().intValue() , this.getIPAddress());
 			renderAjaxResultForSuccess("success");
 		} else {
 			renderAjaxResultForError("trash error!");
@@ -173,6 +177,7 @@ public class _ContentController extends JBaseCRUDController<Content> {
 		if (c != null) {
 			c.setStatus(Content.STATUS_DRAFT);
 			c.saveOrUpdate();
+			Oplog.insertOp(this.getLoginedUser().getId(), "文章存为草稿", "content.draft", "文章ID " + c.getId().intValue() , this.getIPAddress());
 			renderAjaxResultForSuccess("success");
 		} else {
 			renderAjaxResultForError("trash error!");
@@ -184,6 +189,7 @@ public class _ContentController extends JBaseCRUDController<Content> {
 		BigInteger[] ids = getParaValuesToBigInteger("dataItem");
 		int count = ContentQuery.me().batchTrash(ids);
 		if (count > 0) {
+			Oplog.insertOp(this.getLoginedUser().getId(), "文章批量丢入垃圾箱", "content.batchDraft", "文章IDs " + JSON.toJSONString(ids) , this.getIPAddress());
 			renderAjaxResultForSuccess("success");
 		} else {
 			renderAjaxResultForError("trash error!");
@@ -195,6 +201,7 @@ public class _ContentController extends JBaseCRUDController<Content> {
 		BigInteger[] ids = getParaValuesToBigInteger("dataItem");
 		int count = ContentQuery.me().batchDelete(ids);
 		if (count > 0) {
+			Oplog.insertOp(this.getLoginedUser().getId(), "文章批量删除", "content.batchDelete", "文章IDs " + JSON.toJSONString(ids) , this.getIPAddress());
 			renderAjaxResultForSuccess("success");
 		} else {
 			renderAjaxResultForError("trash error!");
@@ -209,10 +216,27 @@ public class _ContentController extends JBaseCRUDController<Content> {
 			c.setStatus(Content.STATUS_DRAFT);
 			c.setModified(new Date());
 			c.saveOrUpdate();
+			Oplog.insertOp(this.getLoginedUser().getId(), "文章恢复", "content.restore", "文章ID " + c.getId().intValue() , this.getIPAddress());
 			renderAjaxResultForSuccess("success");
 		} else {
 			renderAjaxResultForError("restore error!");
 		}
+	}
+	
+	@Before(UCodeInterceptor.class)
+	public void toggle_valuable() {
+		BigInteger id = getParaToBigInteger("id");
+		Content c = ContentQuery.me().findById(id);
+		if(c == null) {
+			renderAjaxResultForError("帖子不存在");
+			return;
+		}
+		int valuable = c.getValuable();
+		valuable = (valuable == 1) ? 0 : 1;
+		c.setValuable(valuable);
+		c.update();
+		Oplog.insertOp(this.getLoginedUser().getId(), "文章" + (valuable == 0 ? "取消精华" : "加上精华"), "content.valuable", "文章ID " + c.getId().intValue() , this.getIPAddress());
+		renderAjaxResultForSuccess("success");
 	}
 
 	@Before(UCodeInterceptor.class)
@@ -235,6 +259,7 @@ public class _ContentController extends JBaseCRUDController<Content> {
 		});
 
 		if (isSuccess) {
+			Oplog.insertOp(this.getLoginedUser().getId(), "删除文章", "content.delete", "文章ID " + c.getId().intValue() , this.getIPAddress());
 			renderAjaxResultForSuccess();
 			return;
 		}
@@ -357,6 +382,16 @@ public class _ContentController extends JBaseCRUDController<Content> {
 			renderAjaxResultForError("内容标题不能为空！");
 			return;
 		}
+		
+		if(Common.checkSensitive(content.getTitle())) {
+			renderAjaxResultForError("标题不合适！");
+			return;
+		}
+		
+		if(Common.checkSensitive(content.getText())) {
+			renderAjaxResultForError("内容不合适！");
+			return;
+		}
 
 		String slug = StringUtils.isBlank(content.getSlug()) ? content.getTitle() : content.getSlug();
 		content.setSlug(slug);
@@ -430,6 +465,7 @@ public class _ContentController extends JBaseCRUDController<Content> {
 		AjaxResult ar = new AjaxResult();
 		ar.setErrorCode(0);
 		ar.setData(content.getId());
+		Oplog.insertOp(this.getLoginedUser().getId(), "文章编辑", "content.save", "文章ID " + content.getId().intValue() , this.getIPAddress());
 		renderAjaxResult("save ok", 0, content.getId());
 	}
 

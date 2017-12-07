@@ -1,0 +1,31 @@
+<#include "../_inc/_layout.html"/> 
+<#macro script>
+$(document).ready(function(){
+	$("#update").click(function(){
+		var objs = $(".content").find("input[type=checkbox]:checked");
+		var perms = "";
+		for(var i = 0; i<objs.length; i++){
+			var p = $(objs[i]).attr("value");
+			if(perms.length > 0) perms += ",";
+			perms += p;
+		}
+		$.post(window.location.href, {"perms":perms}, function(ret){
+			if(ret != null){
+				if(ret.errorCode == 0) alert("编辑成功");
+				else alert("失败：" + ret.message);
+			}else{
+				alert("通讯错误");
+			}
+		});
+
+	});
+});
+
+	
+</#macro>
+<@layout active_id=p child_active_id=c>
+<#include include/>
+</@layout>
+
+
+

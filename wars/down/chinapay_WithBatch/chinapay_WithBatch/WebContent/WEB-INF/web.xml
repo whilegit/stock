@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
+  <display-name>chinapay_WithBatch</display-name>
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+  <servlet>
+    <description></description>
+    <display-name>CreateFile</display-name>
+    <servlet-name>CreateFile</servlet-name>
+    <servlet-class>chinapay.servlet.CreateFileServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>CreateFile</servlet-name>
+    <url-pattern>/CreateFile</url-pattern>
+  </servlet-mapping>
+<servlet>
+    <description></description>
+    <display-name>DownloadFile</display-name>
+    <servlet-name>DownloadFile</servlet-name>
+    <servlet-class>chinapay.servlet.DownloadFileServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>DownloadFile</servlet-name>
+    <url-pattern>/DownloadFile</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>UploadOrder</display-name>
+    <servlet-name>UploadOrder</servlet-name>
+    <servlet-class>chinapay.servlet.UploadOrderServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>UploadOrder</servlet-name>
+    <url-pattern>/UploadOrder</url-pattern>
+  </servlet-mapping>
+<servlet>
+    <description></description>
+    <display-name>GetNotice</display-name>
+    <servlet-name>GetNotice</servlet-name>
+    <servlet-class>chinapay.servlet.GetNoticeServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>GetNotice</servlet-name>
+    <url-pattern>/GetNotice</url-pattern>
+  </servlet-mapping>
+<servlet>
+    <description></description>
+    <display-name>QueryFile</display-name>
+    <servlet-name>QueryFile</servlet-name>
+    <servlet-class>chinapay.servlet.QueryFileServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>QueryFile</servlet-name>
+    <url-pattern>/QueryFile</url-pattern>
+  </servlet-mapping>
+</web-app>

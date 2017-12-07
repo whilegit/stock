@@ -1,0 +1,22 @@
+<div style="position: absolute;top: 50%;left: 50%;transform: translate(-50%, -50%);border:1px solid <#if paystatus?? && paystatus.success>#0b0;<#else>#b00</#if>;border-radius:5px;padding:10px;">
+	<#if errMsg??>
+		<div style="color:#b00">${errMsg!}</div>
+	<#elseif paystatus??>
+		<#if paystatus.success>
+		<div style="color:#0b0;">打款成功，稍候注意帐户金额变动。</div>
+		<#else>
+		<div style="color:#b00;">打款失败</div>
+		<hr style="height:1px;background-color:#ccc;">
+		<div>
+			<b>失败原因：${paystatus.tips}(${paystatus.responseCode})</b>
+			<br><br>
+			<b>提示：失败后请转为手动转款，不要尝试再次打款。</b>
+		</div>
+		</#if>
+	</#if>
+	
+	<div><a href="${href!}">返回前一页</a></div>
+</div>
+
+
+

@@ -1,0 +1,107 @@
+<section class="content-header">
+	<h1>
+		所有举报
+	</h1>
+</section>
+
+<!-- Main content -->
+<section class="content">
+
+	<div class="row content-row">
+		<ul class="list-inline" style="float: left">
+			<li class="all">
+				<a class="current" href="${CPATH}/admin/report?m=${m!}&p=${p!}&c=${c!}">
+					所有 <span class="count">(${count!"0"})</span>
+				</a>
+				|
+			</li>
+			<li class="publish">
+				<a href="${CPATH}/admin/report?m=${m!}&p=${p!}&c=${c!}&s=${StatusBeforeCode}">
+					未处理 <span class="count">(${before_count!"0"})</span>
+				</a>
+				|
+			</li>
+			<li class="publish">
+				<a href="${CPATH}/admin/report?m=${m!}&p=${p!}&c=${c!}&s=${StatusAfterCode}">
+					已处理 <span class="count">(${after_count!"0"})</span>
+				</a>
+				|
+			</li>
+		</ul>
+		<form class="form-horizontal" method="POST" style="float: right" action="${CPATH}/admin/report?m=${m!}&p=${p!}&c=${c!}&s=${s!}">
+			<div class="input-group input-group-sm">
+				<input id="post-search-input" class="form-control" type="search" value="${k!}" name="k" placeholder="举报人、被举报人、内容">&nbsp;&nbsp;
+				<input id="search-submit" class="btn btn-default btn-sm" type="submit" value="搜索">
+			</div>
+		</form>
+	</div>
+					
+	<div class="box">
+		<!-- /.box-header -->
+		<div class="box-body">
+			<form action="" method="POST" id="form">
+				<input type="hidden" name="ucode" value="${ucode}">
+				<table class="table table-striped" style="word-break:break-all">
+					<thead>
+						<tr>
+							<th style="width:20px;"><input name="dataItem" onclick="checkAll(this)" type="checkbox" value="0"></th>
+							<th style="width:10%">举报人</th>
+							<th style="width:10%">被举报人</th>
+							<th style="width:20%">内容</th>
+							<th style="width:20%">图片</th>
+							<th style="width:10%">举报日期</th>
+							<th style="width:20%">处理意见</th>
+							<th style="width:10%">当前状态</th>
+						</tr>
+					</thead>
+					<tbody>
+						<#if page??> 
+							<#list page.getList() as bean>
+								<tr class="jp-onmouse">
+									<td><input name="dataItem" type="checkbox" value="${bean.id}"></td>
+									<td>
+										<strong><a target="_blank" href="${CPATH}/admin/user/edit?id=${(bean.fromUser.id)!}&c=${c!}&p=${p!}">${bean.fromUser.realname!}</a></strong>
+										<div class="jp-flash-comment">
+											<p class="row-actions jp-cancel-pad">
+												<a data-toggle="modal" href="${CPATH}/admin/report/proc?id=${bean.id}" data-target="#modal">处理</a>
+												<span class="spam"> | <a class="vim-s vim-destructive" href="javascript:;" onclick="del('${bean.id}')">删除</a></span> 
+											</p>
+										</div>
+									</td>
+									<td><a target="_blank" href="${CPATH}/admin/user/edit?id=${(bean.toUser.id)!}&c=${c!}&p=${p!}">${bean.toUser.realname!}</a></td>
+									<td>${bean.content!}</td>
+									<td>${bean.imgsHtml!}</td>
+									<td>${bean.create_time?string("yyyy-MM-dd HH:mm")}</td>
+									<td>${bean.feedback!}</td>
+									<td><#if bean.status==1><span style="color:#0b0;">已处理</span><#else><span style="color:#ccc;">未处理</span></#if></td>
+								</tr>
+							</#list> 
+						</#if>
+					</tbody>
+				</table>
+				</form>
+		</div>
+		<!-- /.box-body -->
+	</div>
+	
+	<div class="cf">
+		<div class="pull-right " >
+			
+			<#if page??> 
+			<#include "../_inc/_paginate.html" /> 
+			<@paginate currentPage=page.pageNumber totalPage=page.totalPage actionUrl="?p="+(p!)+"&c="+(c!)+"&m="+(m!)+"&t="+(t!)+"&s="+(s!)+"&k="+(k!)+"&tids="+(tids!)+"&page="/> 
+			</#if>
+
+		</div>
+	</div>
+		
+	<!-- /.row -->
+</section>
+<!-- /.content -->
+
+<div class="modal" id="modal">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-radius:5px;"></div>
+    </div>
+</div>
+

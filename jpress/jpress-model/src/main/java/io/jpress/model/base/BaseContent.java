@@ -419,5 +419,13 @@ public abstract class BaseContent<M extends BaseContent<M>> extends JModel<M> im
 	public java.lang.String getRemarks() {
 		return get("remarks");
 	}
+	
+	public void setValuable(java.lang.Integer valuable) {
+		set("valuable", valuable);
+	}
+
+	public java.lang.Integer getValuable() {
+		return get("valuable");
+	}
 
 }

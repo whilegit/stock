@@ -1,0 +1,66 @@
+<section class="content-header">
+	<h1>
+		用户收支明细
+	</h1>
+</section>
+
+<!-- Main content -->
+<section class="content">
+	<div class="row content-row">
+		<ul class="jp-common-pad list-inline" style="float: left">
+			<li class="all">
+				用户姓名： <a class="current" href="${CPATH}/admin/user/edit?id=${user.id!}&p=user&c=list">${user.realname!}</a>&nbsp;&nbsp;&nbsp;&nbsp;
+				手机号码： <span class="text">${user.mobile!}</span>&nbsp;&nbsp;&nbsp;&nbsp;
+				账户余额： <span class="money">${user.amount?string("0.00")}元</span>&nbsp;&nbsp;&nbsp;&nbsp;
+				注册时间： <span class="money"><#if user.created??>${user.created?string("yyyy-MM-dd HH:mm")}<#else>-</#if></span>&nbsp;&nbsp;&nbsp;&nbsp;
+			</li>
+		</ul>
+	</div>
+
+	<div class="box ">
+
+		<!-- /.box-header -->
+		<div class="box-body jp-common-pad">
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th style="width: 20px"><label class="jp-common-pad "> <input class="jp-common-pad " id="dataItem" onclick="checkAll(this)" title="全选" type="checkbox"></label></th>
+						<th style="width: 15%">日期</th>
+						<th style="width: 10%">类型</th>
+						<th style="width: 10%">变动金额</th>
+						<th style="width: 30%">变动原因</th>
+						<th style="width: 15%">操作平台</th>
+						<th style="width: 10%">变动后余额</th>
+						<th style="width: 10%">操作员</th>
+					</tr>
+				</thead>
+				<tbody>
+					<#if page??> <#list page.getList() as bean>
+					<tr class="jp-onmouse">
+						<td><input name="dataItem" type="checkbox" value="${bean.id}"></td>
+						<td>${bean.create_time?string("yyyy-MM-dd HH:mm")}</td>
+						<td><#if bean.credit_type==1>余额<#else>积分</#if></td>
+						<td>${bean.change?string("0.00")}</td>
+						<td>${bean.log!}</td>
+						<td><#if bean.platform==0>未知<#elseif bean.platform==1>微信<#elseif bean.platform==2>支付宝<#elseif bean.platform==3>银联<#else>360借条</#if></td>
+						<td>${bean.cur?string("0.00")}</td>
+						<td><#if bean.clerkUser??><a target="_blank" class="current" href="${CPATH}/admin/user/edit?id=${user.id!}&p=user&c=list">${bean.clerkUser.realname!}</a><#else>-</#if></td>
+					</tr>
+					</#list> </#if>
+				</tbody>
+			</table>
+		</div>
+		<!-- /.box-body -->
+	</div>
+	<!-- /.box -->
+
+	<div class="cf">
+		<div class="pull-right">
+			<#if page??> 
+			<#include "../_inc/_paginate.html" /> 
+			<@paginate currentPage=page.pageNumber totalPage=page.totalPage actionUrl="?p="+(p!)+"&c="+(c!)+"&m="+(m!)+"&t="+(t!)+"&s="+(s!)+"&k="+(k!)+"&id="+(id!)+"&tids="+(tids!)+"&page="/> 
+			</#if>
+		</div>
+	</div>
+	<!-- /.row -->
+</section>

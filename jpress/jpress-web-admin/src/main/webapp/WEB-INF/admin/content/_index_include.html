@@ -104,7 +104,7 @@
 						<tr class="jp-onmouse">
 							<td><input name="dataItem" type="checkbox" value="${bean.id}"></td>
 							<td><strong><a href="${CPATH}/admin/content/edit?id=${bean.id}&c=edit&p=${p!}">
-							<span class="article-title">${bean.title!}</span></a> <#if "draft" == bean.status!>(草稿)</#if></strong>
+							<span class="article-title">${bean.title!}</span></a> <#if "draft" == bean.status!>(草稿)</#if><#if bean.valuable==1><span style="margin-left:0.8em;background-color:#b00;color:white;border-radius:5px;padding:3px;">精华</span></#if></strong>
 								<div class="jp-flash-comment">
 									<p class="row-actions jp-cancel-pad">
 										<#if "delete" != s!> 
@@ -114,7 +114,7 @@
 											</#if>
 										<span class="spam">|<a class="vim-s vim-destructive" href="javascript:trash('${bean.id}')">垃圾箱</a></span> 
 										<span class="trash">|<a class="delete vim-d vim-destructive" href="${bean.url!}" target="_blank">查看</a>
-										</span> 
+										<span class="approve">| <a class="delete vim-d vim-destructive" href="javascript:toggle_valuable('${bean.id}')" target="_blank"><#if bean.valuable==1 >取消精华<#else>设为精华</#if></a></span> 
 										<#else> 
 										<span class="approve"> <a class="vim-a" href="javascript:restore('${bean.id}')">还原</a></span> 
 										<span class="spam">|<a class="vim-s vim-destructive" href="javascript:del('${bean.id}')">永久删除</a></span> 

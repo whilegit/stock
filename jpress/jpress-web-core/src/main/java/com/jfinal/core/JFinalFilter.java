@@ -45,6 +45,10 @@ public final class JFinalFilter implements Filter {
 	
 	public void init(FilterConfig filterConfig) throws ServletException {
 		createJFinalConfig(filterConfig.getInitParameter("configClass"));		
+<<<<<<< HEAD
+=======
+		System.out.println(filterConfig.getServletContext().getContextPath());
+>>>>>>> devel
 		if (jfinal.init(jfinalConfig, filterConfig.getServletContext()) == false)
 			throw new RuntimeException("JFinal init error!");
 		
@@ -55,7 +59,10 @@ public final class JFinalFilter implements Filter {
 		
 		String contextPath = filterConfig.getServletContext().getContextPath();
 		contextPathLength = (contextPath == null || "/".equals(contextPath) ? 0 : contextPath.length());
+<<<<<<< HEAD
 		System.out.println("--------------------------contextPathLength: "+ contextPathLength +"----------------------------");
+=======
+>>>>>>> devel
 	}
 	
 	public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
@@ -66,10 +73,15 @@ public final class JFinalFilter implements Filter {
 		String target = request.getRequestURI();
 		if (contextPathLength != 0)
 			target = target.substring(contextPathLength);
+<<<<<<< HEAD
 		System.out.println("-------------target: "+target+"------------------------");
 		boolean[] isHandled = {false};
 		try {
 			System.out.println("-------------handler.class.name: "+handler.getClass().getName()+"------------------------");
+=======
+		boolean[] isHandled = {false};
+		try {
+>>>>>>> devel
 			handler.handle(target, request, response, isHandled);
 		}
 		catch (Exception e) {
@@ -78,7 +90,10 @@ public final class JFinalFilter implements Filter {
 				log.error(qs == null ? target : target + "?" + qs, e);
 			}
 		}
+<<<<<<< HEAD
 		
+=======
+>>>>>>> devel
 		if (isHandled[0] == false)
 			chain.doFilter(request, response);
 	}

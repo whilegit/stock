@@ -30,6 +30,7 @@ import io.jpress.model.query.UserQuery;
 import io.jpress.router.RouterMapping;
 import io.jpress.utils.CookieUtils;
 import io.jpress.utils.StringUtils;
+import yjt.core.Utils.Common;
 
 @RouterMapping(url = "/comment")
 public class CommentController extends BaseFrontController {
@@ -102,6 +103,11 @@ public class CommentController extends BaseFrontController {
 		String text = getPara("text");
 		if (StringUtils.isBlank(text)) {
 			renderForCommentError("comment fail,text is blank.", 2);
+			return;
+		}
+		
+		if(Common.checkSensitive(text)) {
+			renderForCommentError("内容不合适", 3);
 			return;
 		}
 

@@ -15,10 +15,13 @@
  */
 package io.jpress.menu;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import io.jpress.model.User;
 import io.jpress.utils.StringUtils;
+import yjt.core.perm.PermKit;
 
 public class MenuGroup {
 
@@ -128,11 +131,29 @@ public class MenuGroup {
 		}
 	}
 
-	public String generateHtml() {
+	public String generateHtml(User user) {
 		if (TYPE_BLOCK.equals(type)) {
 			return "<li class=\"jpress_block\"></li>";
 		}
-
+		MenuGroup copy = null;
+		if(user.isSuperAdministrator() == false) {
+			try {
+				copy = (MenuGroup) this.clone();
+				if(copy == null) return "";
+				PermKit.permFilter(copy, user.getPerm());
+			} catch (CloneNotSupportedException e) {
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
+				return "";
+			}
+		} else {
+			copy = this;
+		}
+		
+		if(copy.menuItems == null || copy.menuItems.size() == 0) {
+			return "";
+		}
+		
 		StringBuilder htmlBuilder = new StringBuilder();
 		htmlBuilder.append("<li class=\"treeview\" id=\"" + id + "\">");
 		{
@@ -143,8 +164,8 @@ public class MenuGroup {
 			htmlBuilder.append("</a>");
 			htmlBuilder.append("<ul class=\"treeview-menu\">");
 
-			if (menuItems != null && menuItems.size() > 0) {
-				for (MenuItem item : menuItems) {
+			if (copy.menuItems != null && copy.menuItems.size() > 0) {
+				for (MenuItem item : copy.menuItems) {
 					htmlBuilder.append(item.generateHtml());
 				}
 			}
@@ -154,5 +175,24 @@ public class MenuGroup {
 		htmlBuilder.append("</li>");
 		return htmlBuilder.toString();
 	}
+
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		// TODO Auto-generated method stub
+		MenuGroup menuGrp = new MenuGroup();
+		menuGrp.id = this.id;
+		menuGrp.iconClass = this.iconClass;
+		menuGrp.text = this.text;
+		menuGrp.type = TYPE_NORMAL;
+		menuGrp.menuItems = new ArrayList<MenuItem>();
+		if(this.menuItems != null && this.menuItems.size() > 0) {
+			for(MenuItem item : this.menuItems) {
+				menuGrp.addMenuItem(item);
+			}
+		}
+			
+		return menuGrp;
+	}
+	
 
 }

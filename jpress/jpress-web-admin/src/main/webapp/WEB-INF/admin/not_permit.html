@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>出错：权限不足</title>
+
+  <meta name=”renderer” content=”webkit”>
+  <meta http-equiv=”X-UA-Compatible” content=”IE=Edge,chrome=1″ >
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" >
+  
+<!-- Bootstrap 3.3.5 -->
+<link rel="stylesheet" href="${CPATH}/static/bootstrap/css/bootstrap.min.css">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="${CPATH}/static/font-awesome/css/font-awesome.css">
+
+<!-- Theme style -->
+<link rel="stylesheet" href="${CPATH}/static/lte/css/AdminLTE.min.css">
+<link rel="stylesheet" href="${CPATH}/static/plugins/pace/pace.min.css">
+</head>
+<body class="hold-transition login-page">
+	<div class="login-box">
+		<!--div class="login-logo">
+			<a href="#"><b>拒绝操作：权限不足</b></a>
+		</div-->
+		<!-- /.login-logo -->
+		<div class="login-box-body">
+			<p class="login-box-msg">拒绝操作：权限不足</p>
+
+			<div class="form-group has-feedback">
+				<label>缺少权限：</label> <span>${perm!}</span>
+				<p><a href="${ref!}">返回上一个链接</a></p>
+			</div>
+			<!-- /.social-auth-links -->
+
+		</div>
+		<!-- /.login-box-body -->
+	</div>
+	<!-- /.login-box -->
+</body>
+</html>

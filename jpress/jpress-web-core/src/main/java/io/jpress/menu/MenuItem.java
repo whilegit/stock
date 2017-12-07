@@ -22,7 +22,8 @@ public class MenuItem {
 	private String id;
 	private String url;
 	private String text;
-
+	private String perm;
+	
 	public MenuItem() {
 	}
 
@@ -30,6 +31,13 @@ public class MenuItem {
 		this.id = id;
 		this.url = url;
 		this.text = text;
+	}
+	
+	public MenuItem(String id, String url, String text, String perm) {
+		this.id = id;
+		this.url = url;
+		this.text = text;
+		this.perm = perm;
 	}
 
 	public String getId() {
@@ -55,6 +63,14 @@ public class MenuItem {
 	public void setText(String text) {
 		this.text = text;
 	}
+	
+	public String getPerm() {
+		return perm;
+	}
+
+	public void setPerm(String perm) {
+		this.perm = perm;
+	}
 
 	public String generateHtml() {
 		return String.format("<li id=\"%s\"><a href=\"%s\">%s</a></li>", id, JFinal.me().getContextPath()+url, text);
@@ -62,7 +78,7 @@ public class MenuItem {
 
 	@Override
 	public String toString() {
-		return "MenuItem [id=" + id + ", url=" + url + ", text=" + text + "]";
+		return "MenuItem [id=" + id + ", url=" + url + ", text=" + text + ", perm="+ perm +"]";
 	}
 
 }

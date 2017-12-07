@@ -1,0 +1,16 @@
+<section class="content-header">
+	<h1>
+		借条视频<span style="font-size:14px;color:gray;">(${contract.contract_number!})</span>
+	</h1>
+</section>
+<hr>
+
+<!-- Main content -->
+<section class="content" style="padding-top:10px;">
+	<#if !href??>
+	该视频不存在。
+	<#else>
+	<div style="width:100%;text-align:center;"><video src="${href!}" controls="controls"></video></div>
+	</#if>
+	<!-- /.row -->
+</section>

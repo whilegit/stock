@@ -1,0 +1,61 @@
+<#include "../_inc/_layout.html"/> 
+<#macro script>
+$(document).ready(function(){
+	$("tr:even").addClass("bg");
+	
+	$("#modal").on("hidden.bs.modal", function() {
+	    $(this).removeData("bs.modal");
+	});
+});
+/**
+ * 重写确认框 fun:函数对象 params:参数列表， 可以是数组
+ */
+function confirm(fun, params) {
+    if ($("#myConfirm").length > 0) {
+        $("#myConfirm").remove();
+    } 
+    var html = "<div class='modal fade' id='myConfirm' >"
+            + "<div class='modal-backdrop in' style='opacity:0; '></div>"
+            + "<div class='modal-dialog' style='z-index:2901; margin-top:60px; width:400px; '>"
+            + "<div class='modal-content'>"
+            + "<div class='modal-header'  style='font-size:16px; '>"
+            + "<span class='glyphicon glyphicon-envelope'>&nbsp;</span>信息！<button type='button' class='close' data-dismiss='modal'>"
+            + "<span style='font-size:20px;  ' class='glyphicon glyphicon-remove'></span><tton></div>"
+            + "<div class='modal-body text-center' id='myConfirmContent' style='font-size:18px; '>"
+            + "是否确定要删除？"
+            + "</div>"
+            + "<div class='modal-footer ' style=''>"
+            + "<button class='btn btn-danger ' id='confirmOk' >确定<tton>"
+            + "<button class='btn btn-info ' data-dismiss='modal'>取消<tton>"
+            + "</div>" + "</div></div></div>";
+    $("body").append(html);
+
+    $("#myConfirm").modal("show");
+
+    $("#confirmOk").on("click", function() {
+        $("#myConfirm").modal("hide");
+        fun(params); // 执行函数
+    });
+}
+
+function del(id){
+	confirm(real_del, id);
+}
+
+function real_del(id){
+	$.get("${CPATH}/admin/feedback/delete?ucode=${ucode}&id="+id, function(data){
+		if(data.errorCode > 0){
+			toastr.error(data.message,'操作失败');
+		}else{
+			location.reload();
+		}
+	});
+}
+
+</#macro> 
+<@layout active_id=p child_active_id=c>
+<#include include/>
+</@layout>
+
+
+

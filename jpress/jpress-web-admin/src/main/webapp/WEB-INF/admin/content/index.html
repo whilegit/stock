@@ -62,6 +62,16 @@ function del(id){
 	});
 }
 
+function toggle_valuable(id){
+	$.post("${CPATH}/admin/content/toggle_valuable?ucode=${ucode}&id="+id, function(result){
+		if(result.errorCode > 0){
+			toastr.error(result.message,'操作失败');
+		}else{
+			location.reload();
+		}
+	});
+}
+
 
 $(document).ready(function(){
   $(".jp-selected").change(function(){

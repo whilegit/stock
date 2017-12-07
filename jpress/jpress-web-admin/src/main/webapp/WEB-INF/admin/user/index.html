@@ -1,5 +1,12 @@
 <#include "../_inc/_layout.html"/> 
 <#macro script>
+function alertTips(title, body, update_flag){
+	$(".myModalLabel").text(title);
+	$(".myModalBody").text(body);
+	update_flag ? $(".myModalUpdate").show() : $(".myModalUpdate").hide()
+	$('#myModal').modal();
+}
+
 function frozen(id){
 	$.get("${CPATH}/admin/user/frozen?ucode=${ucode}&id="+id, function(data){
 		if(data.errorCode > 0){
@@ -22,6 +29,35 @@ function restore(id){
 
 function del(id){
 	$.get("${CPATH}/admin/user/delete?ucode=${ucode}&id="+id, function(data){
+		if(data.errorCode > 0){
+			toastr.error(data.message,'操作失败');
+		}else{
+			location.reload();
+		}
+	});
+}
+
+function changeRole(){
+	var $objs = $("input[name=dataItem][idx]:checked");
+	console.log($objs);
+	var ids='';
+	for(var i = 0; i<$objs.length; i++){
+		var idx = $($objs[i]).attr("idx");
+		ids += ',' + idx;
+	}
+	if(ids == '') {
+		toastr.error('请选择要转变的用户','提示：');
+		return;
+	}
+	ids = ids.substring(1);
+	
+	var toRole = $("#role_select").val();
+	if(toRole == '10'){
+		toastr.error('请选择要转变的角色，管理员或客户','提示：');
+		return;
+	}
+	
+	$.get("${CPATH}/admin/user/changeRole?ucode=${ucode}&ids="+ids+"&toRole="+toRole, function(data){
 		if(data.errorCode > 0){
 			toastr.error(data.message,'操作失败');
 		}else{

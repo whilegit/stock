@@ -1,0 +1,75 @@
+<section class="content-header">
+	<h1>
+		用户借出列表
+	</h1>
+</section>
+
+<!-- Main content -->
+<section class="content">
+	<div class="row content-row">
+		<ul class="jp-common-pad list-inline" style="float: left">
+			<li class="all">
+				用户姓名： <a class="current" href="${CPATH}/admin/user/edit?id=${user.id!}&p=user&c=list">${user.realname!}</a>&nbsp;&nbsp;&nbsp;&nbsp;
+				手机号码： <span class="text">${user.mobile!}</span>&nbsp;&nbsp;&nbsp;&nbsp;
+				账户余额： <span class="money">${user.amount?string("0.00")}元</span>&nbsp;&nbsp;&nbsp;&nbsp;
+				当前贷出： <span class="money"> ${curCredit?string("0.00")}元 (共 ${curCreditCount!0} 笔)</span>&nbsp;&nbsp;&nbsp;&nbsp;
+				总共贷出： <span class="money">${totalCredit?string("0.00")}元 (共 ${totalCreditCount!0} 笔)</span>&nbsp;&nbsp;&nbsp;&nbsp;
+				注册时间： <span class="money"><#if user.created??>${user.created?string("yyyy-MM-dd HH:mm")}<#else>-</#if></span>&nbsp;&nbsp;&nbsp;&nbsp;
+			</li>
+		</ul>
+	</div>
+
+	<div class="box ">
+
+		<!-- /.box-header -->
+		<div class="box-body jp-common-pad">
+			<table class="table table-striped">
+				<thead>
+					<tr>
+						<th style="width:20px;"><input name="dataItem" onclick="checkAll(this)" type="checkbox" value="0"></th>
+						<th style="width:15%">借条编号</th>
+						<th style="width:8%">借款人</th>
+						<!--th style="width:8%">放款人</th-->
+						<th style="width:5%">金额</th>
+						<th>起止日期</th>
+						<th>借款期限</th>
+						<th>年化利率</th>
+						<th>到期本金</th>
+						<th>创建时间</th>
+						<th>借条进度</th>
+						<!--th>不良分级</th-->
+					</tr>
+				</thead>
+				<tbody>
+					<#if page??> <#list page.getList() as bean>
+					<tr class="jp-onmouse">
+						<td><input name="dataItem" type="checkbox" value="${bean.contract_number}"></td>
+						<td>${bean.contract_number!}</td>
+						<td><#if bean.debitUser??><a target="_blank" href="${bean.debitUser.userLink!}">${bean.debitUser.realname!}</a></#if></td>
+						<!-- td><#if bean.creditUser??><a target="_blank" href="${bean.creditUser.userLink!}">${bean.creditUser.realname!}</a></#if></td-->
+						<td>${bean.amount?string("0.00")}</td>
+						<td>${bean.value_date?string("yyyy-MM-dd")}~${bean.maturity_date?string("yyyy-MM-dd")}</td>
+						<td>${bean.loan_term}</td>
+						<td>${bean.annual_rate}%</td>
+						<td>${bean.capitalAndInterest?string("0.00")}</td>
+						<td>${bean.create_time?string("yyyy-MM-dd HH:mm")}</td>
+						<td>${bean.statusDesc!}</td>
+					</tr>
+					</#list> </#if>
+				</tbody>
+			</table>
+		</div>
+		<!-- /.box-body -->
+	</div>
+	<!-- /.box -->
+
+	<div class="cf">
+		<div class="pull-right">
+			<#if page??> 
+			<#include "../_inc/_paginate.html" /> 
+			<@paginate currentPage=page.pageNumber totalPage=page.totalPage actionUrl="?p="+(p!)+"&c="+(c!)+"&m="+(m!)+"&t="+(t!)+"&s="+(s!)+"&k="+(k!)+"&id="+(id!)+"&tids="+(tids!)+"&page="/> 
+			</#if>
+		</div>
+	</div>
+	<!-- /.row -->
+</section>

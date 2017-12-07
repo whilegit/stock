@@ -1,0 +1,33 @@
+
+2017-08-17 11:03:16
+[ERROR]-[Thread: main]-[io.jpress.utils.ClassUtils.classForName()]: classForName is error£¬className:com.jfinal.server.JFinalClassLoader
+
+2017-08-31 11:43:02
+[ERROR]-[Thread: main]-[io.jpress.utils.ClassUtils.classForName()]: classForName is error£¬className:com.jfinal.server.JFinalClassLoader
+
+2017-08-31 11:43:02
+[ERROR]-[Thread: main]-[io.jpress.utils.ClassUtils.classForName()]: classForName is error£¬className:com.jfinal.server.JFinalClassLoader
+
+2017-08-31 11:43:03
+[ERROR]-[Thread: main]-[io.jpress.utils.ClassUtils.classForName()]: classForName is error£¬className:com.jfinal.server.JFinalClassLoader
+
+2017-08-31 11:43:03
+[ERROR]-[Thread: main]-[io.jpress.plugin.search.SearcherPlugin.start()]: cant scan ISearcher implement class in class path.
+
+2017-08-31 11:43:03
+[ERROR]-[Thread: main]-[io.jpress.utils.ClassUtils.classForName()]: classForName is error£¬className:com.jfinal.server.JFinalClassLoader
+
+2017-08-31 11:44:49
+[ERROR]-[Thread: main]-[io.jpress.utils.ClassUtils.classForName()]: classForName is error£¬className:com.jfinal.server.JFinalClassLoader
+
+2017-08-31 11:44:50
+[ERROR]-[Thread: main]-[io.jpress.utils.ClassUtils.classForName()]: classForName is error£¬className:com.jfinal.server.JFinalClassLoader
+
+2017-08-31 11:44:50
+[ERROR]-[Thread: main]-[io.jpress.utils.ClassUtils.classForName()]: classForName is error£¬className:com.jfinal.server.JFinalClassLoader
+
+2017-08-31 11:44:50
+[ERROR]-[Thread: main]-[io.jpress.plugin.search.SearcherPlugin.start()]: cant scan ISearcher implement class in class path.
+
+2017-08-31 11:44:50
+[ERROR]-[Thread: main]-[io.jpress.utils.ClassUtils.classForName()]: classForName is error£¬className:com.jfinal.server.JFinalClassLoader

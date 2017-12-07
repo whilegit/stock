@@ -61,11 +61,22 @@ public final class JFinal {
 		// start plugin and init log factory in this method
 		Config.configJFinal(jfinalConfig);	
 		constants = Config.getConstants();
+<<<<<<< HEAD
 		
 		initActionMapping();
 		initHandler();
 		initRender();
 		initOreillyCos();
+=======
+		//初始化url->controller映射
+		initActionMapping();
+		//添加请求的处理句柄
+		initHandler();
+		//添加模版引擎
+		initRender();
+		initOreillyCos();
+		//令牌管理器，在表单中植入隐藏域，防止重复提交
+>>>>>>> devel
 		initTokenManager();
 		
 		return true;

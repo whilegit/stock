@@ -16,9 +16,12 @@
 package io.jpress.model.query;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.jfinal.kit.StrKit;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.ehcache.IDataLoader;
 
@@ -26,6 +29,7 @@ import io.jpress.model.Metadata;
 import io.jpress.model.User;
 import io.jpress.template.TemplateManager;
 import io.jpress.template.TplModule;
+import yjt.Utils;
 
 public class UserQuery extends JBaseQuery {
 	protected static final User DAO = new User();
@@ -57,6 +61,27 @@ public class UserQuery extends JBaseQuery {
 		}
 
 	}
+	
+	public List<User> findList(BigInteger[] ids){
+		if(ids == null) return null;
+		if(ids.length == 0) return null;
+		StringBuilder bd = new StringBuilder();
+		for(int i = 0; i<ids.length; i++){
+			if(i != 0) bd.append(",");
+			if(ids[i] == null) continue;
+			bd.append(ids[i].toString());
+		}
+		StringBuilder sqlBuilder = new StringBuilder("select u.* from user u Where u.id in ("+bd.toString()+")");
+		return DAO.find(sqlBuilder.toString());
+	}
+	
+	public List<User> findList(List<BigInteger> ids){
+		if(ids == null) return new ArrayList<User>();
+		int count = ids.size();
+		if(count == 0) return new ArrayList<User>();
+		BigInteger[] tmp = new BigInteger[count];
+		return findList(ids.toArray(tmp));
+	}
 
 	public User findFirstFromMetadata(String key, Object value) {
 //		return DAO.findFirstFromMetadata(key, value);
@@ -68,28 +93,57 @@ public class UserQuery extends JBaseQuery {
 		return null;
 	}
 
-	public Page<User> paginate(int pageNumber, int pageSize , String orderby) {
+	public Page<User> paginate(int pageNumber, int pageSize ,String role, String keyword) {
 		String select = "select * ";
 		StringBuilder fromBuilder = new StringBuilder(" from user u ");
-		buildOrderBy(orderby, fromBuilder);
-		return DAO.paginate(pageNumber, pageSize, select, fromBuilder.toString());
+		LinkedList<Object> params = new LinkedList<Object>();
+		
+		boolean needWhere = true;
+		needWhere = appendIfNotEmpty(fromBuilder, "u.role", role, params, needWhere);
+		if(StrKit.notBlank(keyword)) {
+			needWhere = appendWhereOrAnd(fromBuilder, needWhere);
+			fromBuilder.append(" (u.`realname` like ?)");
+			params.add("%" + keyword + "%");
+		}
+		fromBuilder.append(" group by u.id");
+		fromBuilder.append(" ORDER BY u.id DESC");
+		
+		return DAO.paginate(pageNumber, pageSize, true, select, fromBuilder.toString(), params.toArray());
 	}
 
 	public long findCount() {
 		return DAO.doFindCount();
 	}
+	
+	public long findTodayCount() {
+		long t = Utils.getDayStartTime(new Date());
+		String today = Utils.toYmdHms(new Date(t));
+		return DAO.doFindCount(" created >= ? ", today);
+	}
+	
 
 	public long findAdminCount() {
 		return DAO.doFindCount(" role = ? ", "administrator");
 	}
 
 	public User findById(final BigInteger userId) {
-		return DAO.getCache(userId, new IDataLoader() {
+		/*return DAO.getCache(userId, new IDataLoader() {
 			@Override
 			public Object load() {
 				return DAO.findById(userId);
 			}
-		});
+		});*/
+		return DAO.findById(userId);
+	}
+	
+	/**
+	 * 不访问缓布，从数据库直接加载
+	 * @author lzr
+	 * @param userId
+	 * @return
+	 */
+	public User findByIdNoCache(final BigInteger userId){
+		return DAO.findById(userId);
 	}
 
 	public User findUserByEmail(final String email) {
@@ -111,12 +165,14 @@ public class UserQuery extends JBaseQuery {
 	}
 
 	public User findUserByMobile(final String mobile) {
+		/*
 		return DAO.getCache(mobile, new IDataLoader() {
 			@Override
 			public Object load() {
 				return DAO.doFindFirst("mobile = ?", mobile);
 			}
-		});
+		});*/
+		return DAO.doFindFirst("mobile = ?", mobile);
 	}
 
 	public boolean updateContentCount(User user) {
@@ -167,7 +223,9 @@ public class UserQuery extends JBaseQuery {
 		else if ("activated".equals(orderBy)) {
 			fromBuilder.append(" ORDER BY u.activated DESC");
 		}
-
+		else if("id".equals(orderBy)) {
+			fromBuilder.append(" ORDER BY u.id DESC");
+		}
 		else {
 			fromBuilder.append(" ORDER BY u.created DESC");
 		}

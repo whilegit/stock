@@ -1,0 +1,128 @@
+<section class="content-header">
+	<h1>
+		<#if today??>今日<#else>所有</#if>借条
+	</h1>
+</section>
+
+<!-- Main content -->
+<section class="content">
+	<div class="row content-row">
+		<ul class="list-inline" style="float: left">
+			<li class="all">
+				<a class="current" href="${CPATH}/admin/contract?m=${m!}&p=${p!}&c=${c!}&today=${today!}">
+					全部 <span class="count">(${count!"0"})</span>
+				</a>
+				|
+			</li>
+			<#if !today?? || today!=1>
+			<li class="publish">
+				<a href="${CPATH}/admin/contract?m=${m!}&p=${p!}&c=${c!}&s=${StatusESTABLISHCode}&today=${today!}">
+					还款期 <span class="count">(${establish_count!"0"})</span>
+				</a>
+				|
+			</li>
+			<li class="publish">
+				<a href="${CPATH}/admin/contract?m=${m!}&p=${p!}&c=${c!}&s=${StatusFINISHCode}&today=${today!}">
+					正常结束 <span class="count">(${finish_count!"0"})</span>
+				</a>
+				|
+			</li>
+			<li class="trash">
+				<a href="${CPATH}/admin/contract?m=${m!}&p=${p!}&c=${c!}&s=${StatusEXTENDCode}&today=${today!}">
+					逾期 <span class="count">(${extend_count!"0"})</span>
+				</a>
+			</li>
+			<li class="trash">
+				<a href="${CPATH}/admin/contract?m=${m!}&p=${p!}&c=${c!}&s=${StatusLOSTCode}&today=${today!}">
+					损失 <span class="count">(${lost_count!"0"})</span>
+				</a>
+			</li>
+			</#if>
+		</ul>
+
+
+		<form class="form-horizontal" method="POST" style="float: right" action="${CPATH}/admin/contract?m=${m!}&p=${p!}&c=${c!}&s=${s!}">
+			<div class="input-group input-group-sm">
+				<input id="post-search-input" class="form-control" type="search" value="${k!}" name="k" placeholder="借款人、放款人或借条编号">&nbsp;&nbsp;
+				<input id="search-submit" class="btn btn-default btn-sm" type="submit" value="搜索">
+			</div>
+		</form>
+	</div>
+	
+	<div class="box">
+		<!-- /.box-header -->
+		<div class="box-body">
+			<form action="" method="POST" id="form">
+				<input type="hidden" name="ucode" value="${ucode}">
+				<table class="table table-striped" style="word-break:break-all">
+					<thead>
+						<tr>
+							<th style="width:20px;"><input name="dataItem" onclick="checkAll(this)" type="checkbox" value="0"></th>
+							<th style="width:15%">借条编号</th>
+							<th style="width:8%">借款人</th>
+							<th style="width:8%">放款人</th>
+							<th style="width:5%">金额</th>
+							<th>起止日期</th>
+							<th>借款期限</th>
+							<th>年化利率</th>
+							<th>到期本金</th>
+							<th>创建时间</th>
+							<th>借条进度</th>
+							<!--th>不良分级</th-->
+						</tr>
+					</thead>
+					<tbody>
+						<#if page??> 
+							<#list page.getList() as bean>
+								<tr class="jp-onmouse">
+									<td><input name="dataItem" type="checkbox" value="${bean.contract_number}"></td>
+									<td>
+										<strong>${bean.contract_number!}</strong>
+										<div class="jp-flash-comment">
+											<p class="row-actions jp-cancel-pad">
+												<a data-toggle="modal" href="${CPATH}/admin/contract/edit?id=${bean.id}" data-target="#modal">详细</a>
+												<#if bean.apply ?? && bean.apply.video!=''><a data-toggle="modal" href="${CPATH}/admin/contract/video?id=${bean.id}" data-target="#modal">视频</a></#if>
+											</p>
+										</div>
+									</td>
+									<td><#if bean.debitUser??><a target="_blank" href="${bean.debitUser.userLink!}">${bean.debitUser.realname!}</a></#if></td>
+									<td><#if bean.creditUser??><a target="_blank" href="${bean.creditUser.userLink!}">${bean.creditUser.realname!}</a></#if></td>
+									<td>${bean.amount?string("0.00")}</td>
+									<td>${bean.value_date?string("yyyy-MM-dd")}~${bean.maturity_date?string("yyyy-MM-dd")}</td>
+									<td>${bean.loan_term}</td>
+									<td>${bean.annual_rate}%</td>
+									<td>${bean.capitalAndInterest?string("0.00")}</td>
+									<td>${bean.create_time?string("yyyy-MM-dd HH:mm")}</td>
+									<td>${bean.statusDesc!}</td>
+									<!-- td><#switch bean.repayment_status><#case 0>N/A<#break><#case 1>正常<#break><#case 2>关注<#break><#case 3>次级<#break><#case 3>可疑<#break><#default>未知<#break></#switch></td-->
+								</tr>
+								
+							</#list> 
+						</#if>
+					</tbody>
+				</table>
+				</form>
+		</div>
+		<!-- /.box-body -->
+	</div>
+	
+	<div class="cf">
+		<div class="pull-right " >
+			
+			<#if page??> 
+			<#include "../_inc/_paginate.html" /> 
+			<@paginate currentPage=page.pageNumber totalPage=page.totalPage actionUrl="?p="+(p!)+"&c="+(c!)+"&m="+(m!)+"&t="+(t!)+"&today="+(today!)+"&s="+(s!)+"&k="+(k!)+"&tids="+(tids!)+"&page="/> 
+			</#if>
+
+		</div>
+	</div>
+		
+	<!-- /.row -->
+</section>
+<!-- /.content -->
+
+<div class="modal" id="modal">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-radius:5px;"></div>
+    </div>
+</div>

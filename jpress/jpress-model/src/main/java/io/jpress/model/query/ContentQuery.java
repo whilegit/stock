@@ -166,6 +166,7 @@ public class ContentQuery extends JBaseQuery {
 
 		return paginate(page, pagesize, modules, keyword, status, taxonomyIds, userId, null, orderBy);
 	}
+	
 
 	public Page<Content> paginate(int page, int pagesize, String[] modules, String keyword, String status,
 			BigInteger[] taxonomyIds, BigInteger userId, String month, String orderBy) {
@@ -203,6 +204,32 @@ public class ContentQuery extends JBaseQuery {
 		sql.append(" group by c.id");
 
 		buildOrderBy(orderBy, sql);
+
+		if (params.isEmpty()) {
+			return DAO.paginate(page, pagesize, true, select, sql.toString());
+		}
+
+		return DAO.paginate(page, pagesize, true, select, sql.toString(), params.toArray());
+	}
+	
+	public Page<Content> paginate(int page, int pagesize, String[] modules, String status, boolean valuable) {
+
+		String select = "select c.*";
+
+		StringBuilder sql = new StringBuilder(" from content c");
+		sql.append(" left join mapping m on c.id = m.`content_id`");
+		sql.append(" left join taxonomy  t on  m.`taxonomy_id` = t.id");
+
+		LinkedList<Object> params = new LinkedList<Object>();
+
+		boolean needWhere = true;
+		needWhere = appendIfNotEmpty(sql, "c.module", modules, params, needWhere);
+		needWhere = appendIfNotEmpty(sql, "c.status", status, params, needWhere);
+		if(valuable) needWhere = appendIfNotEmpty(sql, "c.valuable", "1", params, needWhere);
+
+		sql.append(" group by c.id");
+
+		buildOrderBy(null, sql);
 
 		if (params.isEmpty()) {
 			return DAO.paginate(page, pagesize, true, select, sql.toString());

@@ -35,6 +35,7 @@ public abstract class Dialect {
 	
 	// Methods for common
 	public abstract String forTableBuilderDoBuild(String tableName);
+<<<<<<< HEAD
 	public abstract String forPaginate(int pageNumber, int pageSize, String select, String sqlExceptSelect);
 	
 	// Methods for Model
@@ -47,6 +48,88 @@ public abstract class Dialect {
 	public abstract String forDbFindById(String tableName, String[] pKeys);
 	public abstract String forDbDeleteById(String tableName, String[] pKeys);
 	public abstract void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras);
+=======
+	
+	/**
+	 * 分页查询　在sql后面增加 limit (pageNum-1) * pageSize,pageSize
+	 * @param pageNumber　输入参数，页码，从1开始
+	 * @param pageSize　　　输入参数，每页的记录数
+	 * @param select 　　　　输入参数，原查询语句
+	 * @param sqlExceptSelect　附加在原查询语句后面
+	 * @return　返回附加了limit后的分页sql
+	 */
+	public abstract String forPaginate(int pageNumber, int pageSize, String select, String sqlExceptSelect);
+	
+	/**
+	 * 生成以主键为条件的sql查询语句
+	 * @param table
+	 * @param columns 输入参数，以逗号隔开不同字段,也可以是*号
+	 * @return　输出，例：　select column1,column2,... Where pkey1=? And pkey2=?
+	 */
+	public abstract String forModelFindById(Table table, String columns);
+	
+	/**
+	 * 生成 Delete from 语句。类似　forDbDeleteById（...）
+	 * @param table
+	 * @return 返回如　delete from table_xxx where pkey1=? and pkey2=? ...
+	 */
+	public abstract String forModelDeleteById(Table table);
+	
+	/**
+	 *  Insert Into 
+	 * @param table　输入参数
+	 * @param attrs 输入参数，字段名和字段值组成的Map
+	 * @param sql   输出，sql存放于此，生成如　insert into table_xxx (col1,col2,...) Values (?, ?, ...)
+	 * @param paras 输出，sql绑定的对象存放于此,用于上面的？替换
+	 */
+	public abstract void forModelSave(Table table, Map<String, Object> attrs, StringBuilder sql, List<Object> paras);
+	
+	/**
+	 * 生成 Update .. set 语句
+	 * @param table 输入参数
+	 * @param attrs 输入参数 字段名和字段值组成的Map
+	 * @param modifyFlag 输入参数，以字段名为值的Set
+	 * @param sql 输出，例　Update table_xxx Set col1=?,col2=?... Where pkey1=? And pkey2=? 
+	 * @param paras 输出, 获得attrs存放的字段值
+	 */
+	public abstract void forModelUpdate(Table table, Map<String, Object> attrs, Set<String> modifyFlag, StringBuilder sql, List<Object> paras);
+	
+	/**
+	 * 生成以主键为条件的sql查询语句
+	 * @param table
+	 * @param columns 输出参数，以逗号隔开不同字段,也可以是*号
+	 * @return　输出，例：　select ＊ Where pkey1=? And pkey2=?
+	 */
+	public abstract String forDbFindById(String tableName, String[] pKeys);
+	
+	/**
+	 * 生成 Delete from语句，类似　类似　forModelDeleteById（...）
+	 * @param tableName
+	 * @param pKeys 主键列表
+	 * @return 返回如　delete from table_xxx where pkey1=? and pkey2=? ...
+	 */
+	public abstract String forDbDeleteById(String tableName, String[] pKeys);
+	
+	/**
+	 * 生成Insert into语句
+	 * @param tableName　输入参数，表名
+	 * @param pKeys　　输入参数，主键列表
+	 * @param record 输入参数，一条记录，存放键值对
+	 * @param sql　输出结果,sql
+	 * @param paras　输出结果，sql绑定的值
+	 */
+	public abstract void forDbSave(String tableName, String[] pKeys, Record record, StringBuilder sql, List<Object> paras);
+	
+	/**
+	 * 生成 Update .. set 语句
+	 * @param tableName  输入参数，表名
+	 * @param pKeys      输入参数，主键列表
+	 * @param ids        输入参数，主键列表的值
+	 * @param record　　　　　输入参数，记录
+	 * @param sql　　　　　　　　输出结果
+	 * @param paras　　　　　　输出结果，绑定值列表
+	 */
+>>>>>>> devel
 	public abstract void forDbUpdate(String tableName, String[] pKeys, Object[] ids, Record record, StringBuilder sql, List<Object> paras);
 	
 	public boolean isOracle() {
@@ -70,12 +153,30 @@ public abstract class Dialect {
 		throw new RuntimeException("You should implements this method in " + getClass().getName());
 	}
 	
+<<<<<<< HEAD
+=======
+	/**
+	 * 将参数绑定到预编译的sql语句上
+	 * @param pst　输入输出参数
+	 * @param paras　输入参数
+	 * @throws SQLException
+	 */
+>>>>>>> devel
 	public void fillStatement(PreparedStatement pst, List<Object> paras) throws SQLException {
 		for (int i=0, size=paras.size(); i<size; i++) {
 			pst.setObject(i + 1, paras.get(i));
 		}
 	}
 	
+<<<<<<< HEAD
+=======
+	/**
+	 * 将参数绑定到预编译的sql语句上
+	 * @param pst　输入输出参数
+	 * @param paras　输入参数
+	 * @throws SQLException
+	 */
+>>>>>>> devel
 	public void fillStatement(PreparedStatement pst, Object... paras) throws SQLException {
 		for (int i=0; i<paras.length; i++) {
 			pst.setObject(i + 1, paras[i]);
@@ -117,6 +218,14 @@ public abstract class Dialect {
 			Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 	}
 	
+<<<<<<< HEAD
+=======
+	/**
+	 * 删除sql语句的Order By或Order by ... desc部分
+	 * @param sql
+	 * @return
+	 */
+>>>>>>> devel
 	public String replaceOrderBy(String sql) {
 		return Holder.ORDER_BY_PATTERN.matcher(sql).replaceAll("");
 	}

@@ -15,6 +15,8 @@
  */
 package io.jpress;
 
+import com.unionpay.acp.sdk.SDKConfig;
+
 import io.jpress.core.Jpress;
 import io.jpress.core.JpressConfig;
 import io.jpress.message.Actions;
@@ -33,9 +35,12 @@ import io.jpress.ui.freemarker.tag.TagsTag;
 import io.jpress.ui.freemarker.tag.TaxonomyTag;
 import io.jpress.ui.freemarker.tag.TaxonomysTag;
 import io.jpress.ui.freemarker.tag.UsersTag;
+import yjt.ChinaPay.ChinapayUtils;
+import yjt.core.perm.PermKit;
+import yjt.core.push.Push;
+import yjt.core.quartz.MainSchedule;
 
 public class Config extends JpressConfig {
-
 
 	@Override
 	public void onJPressStarted() {
@@ -56,8 +61,22 @@ public class Config extends JpressConfig {
 		Jpress.addFunction("METADATA_CHECKED", new MetadataChecked());
 		Jpress.addFunction("METADATA_SELECTED", new MetadataSelected());
 
+		// 初始化权限管理列表
+		PermKit.init();
+		
+		// 加载银联支付初始化参数
+		SDKConfig.getConfig().loadPropertiesFromSrc(); 
+		
+		// 加载ChinaPay的初始化参数
+		ChinapayUtils.init();
+		
+		//推送的始始化
+		Push.init();
+		
+		//启动几个定时任务
+		MainSchedule.init();
+		
 		MessageKit.sendMessage(Actions.JPRESS_STARTED);
-
 	}
 
 

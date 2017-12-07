@@ -1,0 +1,122 @@
+<#include "_layout.html"/> 
+<@layout>
+<style>
+body{background-color:#f9faf9;padding:3%;}
+.title-tip{color:#476076;font-size:1.1em;margin-top:0.5em;padding-left:3%;padding-top:3%;}
+.content-tip{border-left:0.25em solid #439ed5;padding-left:0.4em;font-size:1.0em;margin-bottom:3%;margin-left:3%;margin-top:3%;color:#666;}
+textarea{border-top:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;border-right:0px;border-left:0px;width:100%;padding:3%;font-size:1.2em;}
+button{background-color:#439ed5;border:0px;color:white;padding:12px 72px 12px 72px;font-size:1.2em;}
+
+.item{border-top:1px solid #f0f0f0;padding:1em;padding-bottom:0.5em;}
+.item>.user>div:nth-child(1){float:left;}
+.item>.user>div:nth-child(2){float:left;}
+.item>.user>div:nth-child(3){float:right;}
+.item>.user>.username{height:2.5em;line-height:2.5em;margin-left:0.8em;font-size:1.1em;}
+.item>.user>.avatar>img{width:2.5em;height:2.5em;border-radius:1.25em;}
+.item>.user>.created{color:#ccc;font-size:0.8em;}
+.item>.title{color:#476076;font-size:1.0em;margin-top:0.5em;}
+.item>.title>.valuable{margin-left:0.8em;background-color:#b00;color:white;border-radius:5px;padding:3px;}
+.item>.content{margin-top:0.5em;}
+.item>.stat{margin-top:1em;color:#9d9d9d;}
+.item>.stat>div:not(:last-child){float:left;}
+.item>.stat>div:first-child>img{width:2em;height:2em;}
+.item>.stat>div:nth-child(2){height:2em;line-height:2em;margin-left:0.2em;font-size:1em;}
+.item>.stat>div:nth-child(4){height:2em;line-height:2em;margin-left:0.2em;font-size:1em;}
+.item>.stat>div:nth-child(3){width:2em;height:2em;margin-left:1em;}
+#nocomment{padding:5%; color:#ccc; text-align:center;}
+</style>
+<script src="${CPATH!}/static/plugins/jquery/jquery-2.1.4.min.js"></script>
+<script src="${CPATH!}/static/plugins/moment.min.js"></script>
+<script src="${CPATH!}/static/plugins/toastr/toastr.js"></script>
+<link rel="stylesheet" href="${CPATH!}/static/plugins/toastr/toastr.css" />
+<script id="item_template" type="text/template">
+<div class="item">
+	<div class="user">
+		<div class="avatar"><img src="${CPATH!}<%avatar%>"/></div>
+		<div class="username"><%author%></div>
+		<div class="created"><%created%></div>
+		<div style="clear:both;"></div>
+	</div>
+	<div class="content"><%text%></div>
+</div>
+</script>
+<script>
+var sync = false;
+var stop = false;
+var page = ${pageIndex!1};
+var size = ${pageSize!10};
+$(document).ready(function(){
+	$("#post").click(function(){
+		var text = $("#newComment").val();
+		text = $.trim(text);
+		if(text == "") {
+			toastr.error("写点内容吧",'');
+			return;
+		}
+
+		$.post("${CPATH!}/forum/postComment",{"contentId":${content.id},"text":text},function(ret){
+			if(ret.errorCode == 0){
+				toastr.success(ret.message,'');
+				setTimeout(function(){location.reload();}, 2000);
+			} else {
+				toastr.error(ret.message,'');
+			}
+		});
+	});
+	function loadComment(){
+		$.post("${CPATH!}/forum/query_comment", {"page":page,"size":size,"contentId":${content.id}}, function(ret){
+			console.log(ret);
+			sync = false;
+			if(ret.totalRow > 0){
+				var item = $("#item_template").html();
+				if(ret.list.length == 0) {
+					stop = true;
+					return;
+				}
+				$("#nocomment").hide();
+				var container = $("#comment_container");
+				for(var i = 0; i<ret.list.length; i++){
+					var item_html = item;
+					var obj = ret.list[i];
+					for (attr in obj){
+						if(obj[attr] != null){
+							if(attr == "created"){
+								obj["created"] = moment(obj['created'],'YYYY-MM-DD HH:mm:ss').fromNow();
+							}
+							item_html = item_html.replace(new RegExp("<%"+attr+"%>","gm"),obj[attr]);
+						}
+					}
+					container.append(item_html);
+				}
+			}
+		});
+	}
+	loadComment();
+	$(window).scroll(function() {
+		if(stop == true) return;
+		if(sync == true) return;
+		
+		var scrollTop = $(this).scrollTop();
+		var scrollHeight = $(document).height();
+		var windowHeight = $(this).height();
+		if (Math.abs((scrollTop + windowHeight) - scrollHeight) > windowHeight * 0.05) {
+			return;
+		}
+		sync = true;
+		page ++;
+		loadComment();
+	});
+});
+</script>
+
+<div class="title-tip">${content.title!}</div>
+<div style="padding:3%;">${content.text!}</div>
+<div class="content-tip">发表评论</div>
+<div style="background-color:#fff;"><textarea id="newComment" rows="6" placeholder="说点什么吧..."></textarea></div>
+<div style="text-align:right;margin-right:3%;margin-top:3%;">
+	<button id="post">发表评论</button>
+</div>
+<div class="content-tip">全部评论</div>
+<div class="container" id="comment_container"></div>
+<div id="nocomment">暂时还没有评论</div>
+</@layout>

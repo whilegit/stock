@@ -9,32 +9,31 @@
 	<div class="row content-row">
 		<ul class="jp-common-pad list-inline" style="float: left">
 			<li class="all">
-				<a class="current" href="#">
+				<a class="current" href="${CPATH}/admin/user?p=user&c=list">
 					全部 <span class="count">（${userCount!'0'}）</span>
 				</a>
 				|
 			</li>
 			<li class="publish">
-				<a href="#">
+				<a href="${CPATH}/admin/user?p=user&c=list&r=administrator">
 					管理员 <span class="count">（${adminCount!'0'}）</span>
 				</a>
 			</li>
 
 		</ul>
 
-
-		<form class="form-horizontal" style="float: right">
+		<form class="form-horizontal" style="float: right" method="POST" action="${CPATH}/admin/user?p=user&c=list">
 
 			<div class="input-group input-group-sm">
-				<input id="post-search-input" class="form-control" type="search" value="" name="" placeholder="搜索">&nbsp; <input id="search-submit" class="btn btn-default btn-sm" type="submit"
+				<input id="post-search-input" class="form-control" type="search" value="${keyword!}" name="keyword" placeholder="搜索">&nbsp; <input id="search-submit" class="btn btn-default btn-sm" type="submit"
 					value="搜索用户">
 			</div>
 
 		</form>
 	</div>
 	<div class="row content-row">
-
-		<div class="jp-left ">
+		
+		<!--div class="jp-left ">
 			<select style="width: 120px" class="form-control input-sm"  >
 				<option value="10">批量操作</option>
 				<option value="25">删除</option>
@@ -42,21 +41,20 @@
 		</div>
 		<div class="jp-left  ">
 			<button class="btn  btn-sm btn-default" type="button">应用</button>
-		</div>
+		</div-->
 
 		<div class="jp-left ">
-			<select style="width: 120px" class="form-control input-sm"  >
-				<option value="10">将角色更为</option>
-				<option value="25">订阅者</option>
-				<option value="50">投稿者</option>
+			<select style="width: 120px" class="form-control input-sm"  id="role_select">
+				<option value="10">将角色变更为</option>
+				<option value="25">客户</option>
+				<!-- option value="50">投稿者</option>
 				<option value="25">作者</option>
-				<option value="50">编辑</option>
-				<option value="25">管理员</option>
-
+				<option value="50">编辑</option-->
+				<option value="30">管理员</option>
 			</select>
 		</div>
 		<div class="jp-left  ">
-			<button class="btn  btn-sm btn-default" type="button">筛选</button>
+			<button class="btn  btn-sm btn-default" type="button" onclick="changeRole()">应用</button>
 		</div>
 	</div>
 
@@ -70,38 +68,61 @@
 					<tr>
 						<th style="width: 20px"><label class="jp-common-pad "> <input class="jp-common-pad " id="dataItem" onclick="checkAll(this)" title="全选" type="checkbox">
 						</label></th>
-						<th style="width: 20%">用户名</th>
-						<th>昵称</th>
-						<th>简介</th>
-						<th>电子邮件</th>
-						<th>角色</th>
-						<th>文章数量</th>
+						<th style="width: 15%">手机号</th>
+						<th style="width: 5%">管理员</th>
+						<th style="width: 10%">姓名</th>
+						<th style="width: 15%">头像</th>
+						<th style="width: 10%">余额</th>
+						<th style="width: 10%">信用额度</th>
+						<th style="width: 20%">认证</th>
+						<th style="width: 15%">注册日期</th>
 					</tr>
 				</thead>
 				<tbody>
 					<#if page??> <#list page.getList() as bean>
 					<tr class="jp-onmouse">
-						<td><label class="jp-common-pad"> <input class="jp-common-pad" name="dataItem" type="checkbox">
-						</label></td>
+						<td><label class="jp-common-pad"> <input class="jp-common-pad" name="dataItem" type="checkbox" idx="${bean.id}"></label></td>
 						<td>
-						<strong><a href="${CPATH}/admin/user/edit?id=${bean.id}&c=${c!}&p=${p!}">${bean.username!}</a> <#if "frozen" == bean.status!> (冻结)</#if></strong>
+							<strong><a href="${CPATH}/admin/user/edit?id=${bean.id}&c=${c!}&p=${p!}">${bean.mobile!}</a> <#if "frozen" == bean.status!> (冻结)</#if></strong>
 							<div class="jp-flash-comment">
 								<p class="row-actions jp-cancel-pad">
 									<span class="approve"> <a class="vim-a" href="${CPATH}/admin/user/edit?id=${bean.id}&c=${c!}&p=${p!}">编辑</a></span>
+									<#if bean.role == 'administrator'><span class="approve"> <a class="vim-a" href="${CPATH}/admin/user/perm?id=${bean.id}">编辑权限</a> </span></#if>
+									<span class="approve"> <a class="vim-a" href="${CPATH}/admin/user/balance?id=${bean.id}&c=${c!}&p=${p!}">收支明细</a></span>
+									<span class="approve"> <a class="vim-a" href="${CPATH}/admin/user/credit?id=${bean.id}&c=${c!}&p=${p!}">借出列表</a></span>
+									<span class="approve"> <a class="vim-a" href="${CPATH}/admin/user/debit?id=${bean.id}&c=${c!}&p=${p!}">借入列表</a></span>
+									<!-- 
 									<#if "frozen" != bean.status!> 
 									<span class="spam"> | <a class="vim-s vim-destructive" href="javascript:;" onclick="frozen('${bean.id}')">冻结</a></span> 
 									<#else> 
 									<span class="approve"> | <a class="vim-a" href="javascript:;" onclick="restore('${bean.id}')">解冻</a></span> 
 									</#if>
 									<span class="spam"> | <a class="vim-s vim-destructive" href="javascript:;" onclick="del('${bean.id}')">永久删除</a></span> 
+									-->
 								</p>
 							</div>
 						</td>
-						<td>${bean.nickname!}</td>
-						<td>${bean.signature!}</td>
-						<td>${bean.email!}</td>
-						<td>${bean.role!}</td>
-						<td>${bean.content_count!'0'}</td>
+						<td><#if bean.role ?? && bean.role=='administrator'><span style="color:#0b0;font-weight:bold;">√</span></#if></td>
+						<td>${bean.realname!}</td>
+						<td><img width="40" height="40" src="${CPATH}${bean.avatar!}"></td>
+						<td>${bean.amount?string.currency}</td>
+						<td>${bean.can_borrow_money!}</td>
+						<td>
+							 <#if bean.auth_card=1>
+							 	<span style='color:#b0b;' title="身份证号：${bean.idcard}">实名</span>
+							 <#else>
+							 	<span style='color: #ccc;'>实名</span>
+							 </#if>
+							<span style='color: <#if bean.mobileStatus=="1">#b0b;<#else>#ccc;</#if>'>手机号</span>
+							<span style='color: <#if bean.auth_bank=1>#b0b;<#else>#ccc;</#if>'>银行卡</span>
+							<span style='color: <#if bean.auth_book=1>#0b0;<#else>#ccc;</#if>'>通讯录</span>
+							<#if bean.auth_face=1>
+								<a href="${bean.faceimg}" target="_blank"><span style='color:#0b0;'>肖像</span></a>
+							<#else>
+								<span style='color: #ccc;'>肖像</span>
+							</#if>
+						</td>
+						<td><#if bean.created??>${bean.created?string("yyyy-MM-dd")}</#if></td>
 					</tr>
 					</#list> </#if>
 				</tbody>
@@ -113,7 +134,31 @@
 	<!-- /.box -->
 
 	<div class="cf">
-		<div class="pull-right"><#include "../_inc/_paginate_wrapper.html" /></div>
+		<div class="pull-right">
+			<#if page??> 
+			<#include "../_inc/_paginate.html" /> 
+			<@paginate currentPage=page.pageNumber totalPage=page.totalPage actionUrl="?p="+(p!)+"&c="+(c!)+"&m="+(m!)+"&t="+(t!)+"&s="+(s!)+"&k="+(k!)+"&tids="+(tids!)+"&page="/> 
+			</#if>
+		</div>
 	</div>
 	<!-- /.row -->
 </section>
+
+<!-- 模态框（Modal） -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+					&times;
+				</button>
+				<h4 class="modal-title myModalLabel">模态框（Modal）标题</h4>
+			</div>
+			<div class="modal-body myModalBody"></div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+				<button type="button" class="btn btn-primary myModalUpdate">提交更改</button>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal -->
+</div>

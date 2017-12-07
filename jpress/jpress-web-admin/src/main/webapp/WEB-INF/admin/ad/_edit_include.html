@@ -1,0 +1,91 @@
+<!-- Content Header (Page header) -->
+<section class="content-header">
+	<h1>广告编辑</h1>
+</section>
+<!-- Main content -->
+<section class="content">
+	<form action="${CPATH}/admin/ad/save" method="post" id="form" enctype="multipart/form-data">
+	<input type="hidden" name="ad.id" value="${(bean.id)!}">
+	<div class="col-xs-12 ">
+		<div class="row">
+			<h4 class="jp-set-pad jp-set-title"></h4>
+			<ul class="list-unstyled">
+
+				<li class="jp-set-pad">
+					<div class="col-sm-3 jp-common-pad  jp-set-info">广告标题</div>
+					<div class="col-sm-9 jp-common-pad ">
+						<div class="col-sm-6  ">
+							<input class="form-control input-md" type="text" name="ad.title" value="${(bean.title)!}">
+						</div>
+					</div>
+					<div class="clr"></div>
+				</li>
+				<li class="jp-set-pad">
+					<div class="col-sm-3 jp-common-pad  jp-set-info">链接</div>
+					<div class="col-sm-9 jp-common-pad ">
+						<div class="col-sm-6  ">
+							<input class="form-control input-md" type="text" name="ad.url" value="${(bean.url)!}">
+						</div>
+					</div>
+					<div class="clr"></div>
+				</li>
+				<li class="jp-set-pad">
+					<div class="col-sm-3 jp-set-info">图片</div>
+					<div class="col-sm-9 jp-common-pad ">
+						<div class="col-sm-7 ">
+							<#if bean?? && bean.img ??>
+							<img alt="" src="${CPATH}${(bean.img)!}" class="jp-grids-photos img-responsive">
+							<br />
+							</#if>
+							<input class="form-control input-md" type="text" name="ad.img" value="${(bean.img)!}">
+							<input name="ad.img" type="file">
+						</div>
+					</div>
+					<div class="clr"></div>
+				</li>
+				
+				<li class="jp-set-pad">
+					<div class="col-sm-3 jp-common-pad  jp-set-info">说明 </div>
+					<div class="col-sm-9 jp-common-pad ">
+						<div class="col-sm-6  ">
+							<input class="form-control input-md" type="text" name="ad.dscrpt" value="${(bean.dscrpt)!}">
+						</div>
+					</div>
+					<div class="clr"></div>
+				</li>
+				<li class="jp-set-pad">
+					<div class="col-sm-3 jp-common-pad  jp-set-info">排序 </div>
+					<div class="col-sm-9 jp-common-pad ">
+						<div class="col-sm-6  ">
+							<input class="form-control input-md" type="text" name="ad.order_num" value="${(bean.order_num)!}">
+						</div>
+					</div>
+					<div class="clr"></div>
+				</li>
+
+				<li class="jp-set-pad">
+					<div class="col-sm-3 jp-common-pad  jp-set-info">状态 </div>
+					<div class="col-sm-9 jp-common-pad ">
+						<div class="col-sm-6  ">
+							<label class="radio-inline"><input type="radio" name="ad.status" value="0" <#if bean.status==0>checked</#if>> 已关闭</label>
+							<label class="radio-inline"><input type="radio" name="ad.status" value="1" <#if bean.status==1>checked</#if>> 已开启</label>
+						</div>
+					</div>
+					<div class="clr"></div>
+				</li>
+			</ul>
+		</div>
+	</div>
+	<#if hasEditPerm?? && hasEditPerm>
+	<div class="row">
+		<div class="col-xs-12">
+			<button type="button" onclick="doSubmit()" class="btn btn-primary">保存更改</button>
+		</div>
+	</div>
+	</#if>
+	</form>
+	
+</section>
+
+
+

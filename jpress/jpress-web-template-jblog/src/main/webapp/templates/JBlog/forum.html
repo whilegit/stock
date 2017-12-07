@@ -1,0 +1,224 @@
+<#include "_layout.html"/> 
+<@layout>
+<style>
+body{background-color:#f9faf9;}
+.btn-group{text-align:center;width:84%;margin-left:8%;padding-top:4%;}
+.btn-group > div{float:left;border:0px;margin:0px;padding-top:0.5em;padding-bottom:0.5em;width:50%;background-color:#fff;color:#333;}
+.btn-group > div.selected{background-color:#3e9fd6;color:white;}
+.container:not(:first-child){display:none;}
+.left{float:left;}
+.right{float:right;}
+.inline{display:inline-block;}
+.item{border-top:1px solid #f0f0f0;padding:1em;padding-bottom:0.5em;}
+.item>.user>div:nth-child(1){float:left;}
+.item>.user>div:nth-child(2){float:left;}
+.item>.user>div:nth-child(3){float:right;}
+.item>.user>.username{height:2.5em;line-height:2.5em;margin-left:0.8em;font-size:1.1em;}
+.item>.user>.avatar>img{width:2.5em;height:2.5em;border-radius:1.25em;}
+.item>.user>.created{color:#ccc;font-size:0.8em;}
+.item>.title{color:#476076;font-size:1.0em;margin-top:0.5em;}
+.item>.title>.valuable{margin-left:0.8em;background-color:#b00;color:white;border-radius:5px;padding:3px;}
+.item>.content{margin-top:0.5em;display: -webkit-box;-webkit-box-orient: vertical;-webkit-line-clamp: 4;overflow: hidden;/*max-height:6em;*/}
+.item>.stat{margin-top:1em;color:#9d9d9d;}
+.item>.stat>div:not(:last-child){float:left;}
+.item>.stat>div:first-child>img{width:2em;height:2em;}
+.item>.stat>div:nth-child(2){height:2em;line-height:2em;margin-left:0.2em;font-size:1em;}
+.item>.stat>div:nth-child(4){height:2em;line-height:2em;margin-left:0.2em;font-size:1em;}
+.item>.stat>div:nth-child(3){width:2em;height:2em;margin-left:1em;}
+</style>
+<link rel="stylesheet" href="${CPATH!}/static/bootstrap/css/bootstrap.min.css">
+<script src="${CPATH!}/static/plugins/jquery/jquery-2.1.4.min.js"></script>
+<script src="${CPATH!}/static/plugins/moment.min.js"></script>
+<script src="${CPATH!}/static/bootstrap/js/bootstrap.min.js"></script>
+<script src="${CPATH!}/static/plugins/toastr/toastr.js"></script>
+<link rel="stylesheet" href="${CPATH!}/static/plugins/toastr/toastr.css" />
+
+<script>
+var new_page = 1;
+var new_size = 5;
+var new_stop = false;
+var new_sync = false;
+var valuable_page = 1;
+var valuable_size = 5;
+var valuable_stop = false;
+var valuable_sync = false;
+
+$(document).ready(function(){
+	$(".tab").click(function(){
+		var id = $(this).attr("id");
+		$(".tab").removeClass("selected");
+		$(this).addClass("selected");
+		$(".container").hide();
+		$("#tab_" + id + "_container").show();
+	});
+	
+	function loadArticle(container_id){
+		
+		var container = $(container_id);
+		var type = null;
+		var page = 0;
+		var size = 0;
+		if(container_id == "#tab_newArticle_container"){
+			type = "news";
+			page = new_page;
+			size = new_size;
+			if(new_sync == true) return;
+			new_sync = true;
+		} else {
+			type = "valuable";
+			page = valuable_page;
+			size = valuable_size;
+			if(valuable_sync == true) return;
+			valuable_sync = true;
+		}
+		$.post("${CPATH!}/forum/query",{"page":page,"size":size,"type":type}, function(ret){
+			console.log(ret);
+			if(type == "news"){
+				new_sync = false;
+			} else {
+				valuable_sync = false;
+			}
+			
+			if(ret.totalRow > 0){
+				var item = $("#item_template").html();
+				if(ret.list.length == 0) {
+					if(type == "news"){
+						new_stop = true;
+					} else {
+						valuable_stop = true;
+					}
+				}
+				for(var i = 0; i<ret.list.length; i++){
+					var item_html = item;
+					var obj = ret.list[i];
+					for (attr in obj){
+						if(obj[attr] != null){
+							if(attr == "title"){
+								var valuable = (parseInt(obj["valuable"]) == 1) ? "<span class=\"valuable\">精华</span>" : "";
+								obj["title"] = obj["title"] + valuable;
+							}
+							
+							if(attr == "author"){
+								var tmp = obj["author"].split("@&@");
+								if(tmp.length == 2){
+									item_html = item_html.replace(new RegExp("<%author%>","gm"),tmp[0]);
+									item_html = item_html.replace(new RegExp("<%avatar%>","gm"),tmp[1]);
+								} else {
+									item_html = item_html.replace(new RegExp("<%author%>","gm"),"网友");
+									item_html = item_html.replace(new RegExp("<%avatar%>","gm"),"");
+								}
+								continue;
+							}
+							
+							if(attr == "created"){
+								obj["created"] = moment(obj['created'],'YYYY-MM-DD HH:mm:ss').fromNow();
+							}
+							item_html = item_html.replace(new RegExp("<%"+attr+"%>","gm"),obj[attr]);
+						}
+					}
+					container.append(item_html);
+				}
+			}
+		});
+	}
+	loadArticle("#tab_newArticle_container");
+	loadArticle("#tab_valuableArticle_container");
+	
+	$(window).scroll(function() {
+		var scrollTop = $(this).scrollTop();
+		var scrollHeight = $(document).height();
+		var windowHeight = $(this).height();
+		if (Math.abs((scrollTop + windowHeight) - scrollHeight) < windowHeight * 0.05) {
+			var flag = $("#tab_newArticle_container").is(":visible");
+			if(flag){
+				if(new_stop == true) return;
+				if(new_sync == true) return;
+				new_page++; 
+				loadArticle("#tab_newArticle_container");
+			} else {
+				if(valuable_stop == true) return;
+				if(valuable_sync == true) return;
+				valuable_page++; 
+				loadArticle("#tab_valuableArticle_container");
+			}
+		}
+	});
+	$(".container").on("click", ".item", function(){
+		var idx = $(this).attr("idx");
+		location.href = "${CPATH!}/forum/detail?id=" + idx;
+	});
+	
+	if(${shouldSetNickname!0}){
+		$("#modal_trigger").trigger("click");
+	}
+	
+	$("#nickSetPost").click(function(){
+		var nickname = $("#nicknameInput").val();
+		nickname = $.trim(nickname);
+		if(nickname == ""){
+			toastr.error("昵称不能为空","");
+			return;
+		}
+		$.post("${CPATH!}/forum/setNickname",{"nickname":nickname}, function(ret){
+			if(ret.errorCode == 0){
+				toastr.success(ret.message,'');
+				setTimeout(function(){location.reload();}, 2000);
+			} else {
+				toastr.error(ret.message,'');
+			}
+		});
+	});
+});
+</script>
+<script id="item_template" type="text/template">
+<div class="item" idx="<%id%>">
+	<div class="user">
+		<div class="avatar"><img src="${CPATH!}<%avatar%>"/></div>
+		<div class="username"><%author%></div>
+		<div class="created"><%created%></div>
+		<div style="clear:both;"></div>
+	</div>
+	
+	<div class="title"><%title%></div>
+	<div class="content"><%text%></div>
+	<div class="stat">
+		<div><img src="${CPATH!}/attachment/20171121/visual.png"/></div>
+		<div><%view_count%></div>
+		<div><img src="${CPATH!}/attachment/20171121/comment.jpg" /></div>
+		<div><%comment_count%></div>
+		<div style="clear:both;"></div>
+	</div>
+</div>
+</script>
+<div class="btn-group">
+   <div class="tab selected" id="newArticle">最新</div>
+   <div class="tab" id="valuableArticle">精华</div>
+</div>
+<div style="clear:both;"></div>
+<div style="margin-top:4%;background-color:#fff;">
+	<div class="container" id="tab_newArticle_container"></div>
+	<div class="container" id="tab_valuableArticle_container"></div>
+</div>
+
+<div class="modal fade" id="modal">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-radius:5px;">
+ 			<div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">设置昵称</h4>
+            </div>
+            <div class="modal-body">
+            	<div>进入论坛前，请先设置 昵称</div>
+            	<div style="padding:3%;"><input type="text" id="nicknameInput" placeholder="你的昵称"  class="form-control"/></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="nickSetPost">设置</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button class="btn btn-primary btn-lg" id="modal_trigger" data-toggle="modal" style="display:none;" data-target="#modal">
+
+</@layout>

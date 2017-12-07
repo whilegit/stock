@@ -1,0 +1,31 @@
+<#include "../_inc/_layout.html"/> 
+<#include "_option_script.html"/> 
+<@layout active_id=p child_active_id=c>
+<section class="content-header">
+	<h1>敏感词设置</h1>
+</section>
+<style>
+	td{border:1px solid #ccc;padding:10px;}
+	.del{cursor:pointer;background-color:#b00;color:white;padding:3px;border-radius:2px;}
+</style>
+<!-- Main content -->
+<section class="content">
+	<p class="content-msg">
+	请上传敏感词文件<#if path??>(<a target="_blank" href="${CPATH}/${path!}"> 另存为 </a>)</#if><br>
+	<span style="color:red;">注意：使用utf-8无BOM格式的文本文件，各词汇之间以英文逗号分隔</span>
+	</p>
+	<form action="${CPATH}/admin/option/sensitive_edit" method="POST" id="form" enctype="multipart/form-data">
+		<input type="hidden" name="ucode" value="${ucode}"> 
+		<input type="file" name="file">
+		<div class="row" style="margin-top:20px;">
+			<div class="col-xs-12">
+				<button type="submit" class="btn btn-danger">确认上传</button>
+			</div>
+		</div>
+		<!-- /.row -->
+	</form>
+</section>
+<!-- /.content -->
+</@layout>
+<script>
+</script>
